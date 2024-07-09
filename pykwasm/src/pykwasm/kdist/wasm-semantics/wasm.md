@@ -1384,7 +1384,8 @@ The value is encoded as bytes and stored at the "effective address", which is th
 
     rule <instrs> store { WIDTH EA VAL ADDR } => .K ... </instrs>
          <mems> MEMS => MEMS [ ADDR <- #let memInst(MAX, SIZE, DATA) = MEMS[ADDR] #in memInst(MAX, SIZE, #setRange(DATA, EA, VAL, #numBytes(WIDTH))) ] </mems>
-         requires (EA +Int #numBytes(WIDTH)) <=Int (msize(MEMS[ADDR]) *Int #pageSize())
+         requires ADDR <Int size(MEMS)
+           andBool (EA +Int #numBytes(WIDTH)) <=Int (msize(MEMS[ADDR]) *Int #pageSize())
          [preserves-definedness]
     // Preserving definedness:
     //   - #setRange is total
@@ -1392,7 +1393,8 @@ The value is encoded as bytes and stored at the "effective address", which is th
 
     rule <instrs> store { WIDTH  EA  _ ADDR } => trap ... </instrs>
          <mems> MEMS </mems>
-         requires (EA +Int #numBytes(WIDTH)) >Int (msize(MEMS[ADDR]) *Int #pageSize())
+         requires ADDR <Int size(MEMS)
+           andBool (EA +Int #numBytes(WIDTH)) >Int (msize(MEMS[ADDR]) *Int #pageSize())
 
     rule <instrs> ITYPE . store   EA VAL => store { ITYPE EA VAL           } ... </instrs>
     rule <instrs> _     . store8  EA VAL => store { i8    EA #wrap(1, VAL) } ... </instrs>
@@ -1433,11 +1435,13 @@ Sort `Signedness` is defined in module `BYTES`.
 
     rule <instrs> load { ITYPE WIDTH EA SIGN ADDR:Int} => load { ITYPE WIDTH EA SIGN mdata(MEMS[ADDR]) } ... </instrs>
          <mems> MEMS </mems>
-      requires (EA +Int #numBytes(WIDTH)) <=Int (msize(MEMS[ADDR]) *Int #pageSize())
+      requires ADDR <Int size(MEMS)
+        andBool (EA +Int #numBytes(WIDTH)) <=Int (msize(MEMS[ADDR]) *Int #pageSize())
 
     rule <instrs> load { _ WIDTH EA _ ADDR:Int} => trap ... </instrs>
          <mems> MEMS </mems>
-      requires (EA +Int #numBytes(WIDTH)) >Int (msize(MEMS[ADDR]) *Int #pageSize())
+      requires ADDR <Int size(MEMS)
+        andBool (EA +Int #numBytes(WIDTH)) >Int (msize(MEMS[ADDR]) *Int #pageSize())
 
     rule <instrs> load { ITYPE WIDTH EA   Signed DATA:SparseBytes } => #chop(< ITYPE > #signed(WIDTH, #getRange(DATA, EA, #numBytes(WIDTH)))) ... </instrs>
         [preserves-definedness]
@@ -1459,6 +1463,7 @@ The `size` operation returns the size of the memory, measured in pages.
            ...
          </moduleInst>
          <mems> MEMS </mems>
+      requires ADDR <Int size(MEMS)
 ```
 
 `grow` increases the size of memory in units of pages.
@@ -1481,7 +1486,8 @@ By setting the `<deterministicMemoryGrowth>` field in the configuration to `true
            ...
          </moduleInst>
          <mems> MEMS => #let memInst(MAX, SIZE, DATA) = MEMS[ADDR] #in MEMS[ADDR <- memInst(MAX, SIZE +Int N, DATA)] </mems>
-      requires #let memInst(MAX, SIZE, _) = MEMS[ADDR] #in #growthAllowed(SIZE +Int N, MAX)
+      requires ADDR <Int size(MEMS)
+        andBool (#let memInst(MAX, SIZE, _) = MEMS[ADDR] #in #growthAllowed(SIZE +Int N, MAX))
 
     rule <instrs> grow N => < i32 > #unsigned(i32, -1) ... </instrs>
          <deterministicMemoryGrowth> DET:Bool </deterministicMemoryGrowth>
@@ -1492,8 +1498,9 @@ By setting the `<deterministicMemoryGrowth>` field in the configuration to `true
            ...
          </moduleInst>
          <mems> MEMS </mems>
-      requires #let memInst(MAX, SIZE, _) = MEMS[ADDR] #in (notBool DET
-        orBool notBool #growthAllowed(SIZE +Int N, MAX))
+      requires ADDR <Int size(MEMS)
+        andBool (#let memInst(MAX, SIZE, _) = MEMS[ADDR] #in (notBool DET
+        orBool notBool #growthAllowed(SIZE +Int N, MAX)))
 
     syntax Bool ::= #growthAllowed(Int, OptionalInt) [function, total]
  // -----------------------------------------------------------
@@ -1605,7 +1612,7 @@ The `data` initializer simply puts these bytes into the specified memory, starti
            ...
          </moduleInst>
          <mems> MEMS => #let memInst(MAX, SIZE, DATA) = MEMS[ADDR] #in MEMS [ ADDR <- memInst(MAX, SIZE, #setRange(DATA, OFFSET, Bytes2Int(DSBYTES, LE, Unsigned), lengthBytes(DSBYTES))) ] </mems>
-       
+      requires ADDR <Int size(MEMS)
 
     syntax Int ::= Int "up/Int" Int [function]
  // ------------------------------------------
@@ -1731,7 +1738,9 @@ The value of a global gets copied when it is imported.
            ...
          </moduleInst>
          <mems> MEMS </mems>
-       requires #let memInst(MAX, SIZE, _) = MEMS[{ADDRS[#ContextLookup(IDS', TFIDX)]}:>Int] #in #limitsMatchImport(SIZE, MAX, LIM)
+       requires #ContextLookup(IDS', TFIDX) <Int size(ADDRS)
+         andBool {ADDRS[#ContextLookup(IDS', TFIDX)]}:>Int <Int size(MEMS)
+         andBool (#let memInst(MAX, SIZE, _) = MEMS[{ADDRS[#ContextLookup(IDS', TFIDX)]}:>Int] #in #limitsMatchImport(SIZE, MAX, LIM))
 
     rule <instrs> #import(MOD, NAME, #globalDesc(... id: OID, type: MUT TYP) ) => .K ... </instrs>
          <curModIdx> CUR </curModIdx>

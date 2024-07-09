@@ -574,7 +574,8 @@ This checks that the last allocated memory has the given size and max value.
            ...
          </moduleInst>
          <mems> MEMS </mems>
-      requires #ContextLookup(IDS, TFIDX) ==K 0 andBool (#let memInst(MAX', SIZE', _) = MEMS[ADDR] #in MAX ==K MAX' andBool SIZE ==K SIZE')
+      requires ADDR <Int size(MEMS)
+        andBool #ContextLookup(IDS, TFIDX) ==K 0 andBool (#let memInst(MAX', SIZE', _) = MEMS[ADDR] #in MAX ==K MAX' andBool SIZE ==K SIZE')
 
     rule <instrs> #assertMemoryData (KEY , VAL) MSG => #assertMemoryData CUR (KEY, VAL) MSG ... </instrs>
          <curModIdx> CUR </curModIdx>
@@ -586,7 +587,8 @@ This checks that the last allocated memory has the given size and max value.
            ...
          </moduleInst>
          <mems> MEMS </mems>
-      requires #let memInst(_, _, BM) = MEMS[ADDR] #in #getRange(BM, KEY, 1) ==Int VAL
+      requires ADDR <Int size(MEMS)
+        andBool (#let memInst(_, _, BM) = MEMS[ADDR] #in #getRange(BM, KEY, 1) ==Int VAL)
 ```
 
 ### Module Assertions
