@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import shutil
+from fractions import Fraction
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -60,6 +61,7 @@ __TARGETS__: Final = {
             'warnings_to_errors': True,
             'gen_glr_bison_parser': True,
             'opt_level': 3,
+            'iterated_threshold': Fraction(1),
             'ccopts': ['-g'],
         },
     ),
