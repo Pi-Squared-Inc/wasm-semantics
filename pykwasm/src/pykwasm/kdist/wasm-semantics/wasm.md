@@ -162,9 +162,10 @@ Internal Syntax
 ```k
 module WASM-INTERNAL-SYNTAX
     imports WASM-DATA-INTERNAL-SYNTAX
+    imports LIST
 
-    syntax Instr ::=  "init_locals" ValStack
-                   | "#init_locals" ValStack
+    syntax Instr ::=  "init_locals" List
+                   | "#init_locals" List
  // ----------------------------------------
 
     syntax Int ::= #pageSize()      [function, total]
@@ -197,7 +198,7 @@ module WASM
     configuration
       <wasm>
         <instrs> .K </instrs>
-        <valstack> .ValStack </valstack>
+        <valstack> .List </valstack>
         <curFrame>
           <locals>    .List </locals>
           <curModIdx> .Int  </curModIdx>
@@ -349,7 +350,7 @@ If the value is the special `undefined`, then `trap` is generated instead.
 ```k
     rule <instrs> undefined => trap ... </instrs>
     rule <instrs>   V:Val    => .K       ... </instrs>
-         <valstack> VALSTACK => V : VALSTACK </valstack>
+         <valstack> VALSTACK => ListItem(V:Val) VALSTACK </valstack>
       requires V =/=K undefined
 ```
 
@@ -379,11 +380,11 @@ An `*UnOp` operator always produces a result of the same type as its operand.
 
 ```k
     rule <instrs> ITYPE . UOP:IUnOp => ITYPE . UOP C1 ... </instrs>
-         <valstack> < ITYPE > C1 : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(< ITYPE > C1) VALSTACK => VALSTACK </valstack>
     rule <instrs> FTYPE . UOP:FUnOp => FTYPE . UOP C1 ... </instrs>
-         <valstack> < FTYPE > C1 : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(< FTYPE > C1) VALSTACK => VALSTACK </valstack>
     rule <instrs> ITYPE . UOP:ExtendS => ITYPE . UOP C1 ... </instrs>
-         <valstack> < ITYPE > C1 : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(< ITYPE > C1) VALSTACK => VALSTACK </valstack>
 ```
 
 ### Binary Operations
@@ -392,9 +393,9 @@ When a binary operator is the next instruction, the two arguments are loaded fro
 
 ```k
     rule <instrs> ITYPE . BOP:IBinOp => ITYPE . BOP C1 C2 ... </instrs>
-         <valstack> < ITYPE > C2 : < ITYPE > C1 : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(< ITYPE > C2) ListItem(< ITYPE > C1) VALSTACK => VALSTACK </valstack>
     rule <instrs> FTYPE . BOP:FBinOp => FTYPE . BOP C1 C2 ... </instrs>
-         <valstack> < FTYPE > C2 : < FTYPE > C1 : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(< FTYPE > C2) ListItem(< FTYPE > C1) VALSTACK => VALSTACK </valstack>
 ```
 
 ### Test Operations
@@ -403,7 +404,7 @@ When a test operator is the next instruction, the single argument is loaded from
 
 ```k
     rule <instrs> TYPE . TOP:TestOp => TYPE . TOP C1 ... </instrs>
-         <valstack> < TYPE > C1 : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(< TYPE > C1) VALSTACK => VALSTACK </valstack>
 ```
 
 ### Relationship Operations
@@ -412,9 +413,9 @@ When a relationship operator is the next instruction, the two arguments are load
 
 ```k
     rule <instrs> ITYPE . ROP:IRelOp => ITYPE . ROP C1 C2 ... </instrs>
-         <valstack> < ITYPE > C2 : < ITYPE > C1 : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(< ITYPE > C2) ListItem(< ITYPE > C1) VALSTACK => VALSTACK </valstack>
     rule <instrs> FTYPE . ROP:FRelOp => FTYPE . ROP C1 C2 ... </instrs>
-         <valstack> < FTYPE > C2 : < FTYPE > C1 : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(< FTYPE > C2) ListItem(< FTYPE > C1) VALSTACK => VALSTACK </valstack>
 ```
 
 ### Conversion Operations
@@ -423,16 +424,16 @@ Conversion Operation convert constant elements at the top of the stack to anothe
 
 ```k
     rule <instrs> TYPE:ValType . CVTOP:Cvti32Op => TYPE . CVTOP C1  ... </instrs>
-         <valstack> < i32 > C1 : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(< i32 > C1) VALSTACK => VALSTACK </valstack>
 
     rule <instrs> TYPE:ValType . CVTOP:Cvti64Op => TYPE . CVTOP C1  ... </instrs>
-         <valstack> < i64 > C1 : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(< i64 > C1) VALSTACK => VALSTACK </valstack>
 
     rule <instrs> TYPE:ValType . CVTOP:Cvtf32Op => TYPE . CVTOP C1  ... </instrs>
-         <valstack> < f32 > C1 : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(< f32 > C1) VALSTACK => VALSTACK </valstack>
 
     rule <instrs> TYPE:ValType . CVTOP:Cvtf64Op => TYPE . CVTOP C1  ... </instrs>
-         <valstack> < f64 > C1 : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(< f64 > C1) VALSTACK => VALSTACK </valstack>
 ```
 
 ValStack Operations
@@ -443,17 +444,17 @@ The `select` operator picks one of the second or third stack values based on the
 
 ```k
     rule <instrs> drop => .K ... </instrs>
-         <valstack> _ : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(_) VALSTACK => VALSTACK </valstack>
 
     rule <instrs> select => .K ... </instrs>
-         <valstack> < i32 > C : V2 : V1 : VALSTACK
-                 =>             V2      : VALSTACK
+         <valstack> ListItem(< i32 > C) ListItem(V2) ListItem(V1) VALSTACK
+                 =>                     ListItem(V2) VALSTACK
          </valstack>
       requires C ==Int 0 andBool #sameType(V1, V2)
 
     rule <instrs> select => .K ... </instrs>
-         <valstack> < i32 > C : V2 : V1 : VALSTACK
-                 =>                  V1 : VALSTACK
+          <valstack> ListItem(< i32 > C) ListItem(V2) ListItem(V1) VALSTACK
+                  =>                                     ListItem(V1) VALSTACK
          </valstack>
       requires C =/=Int 0 andBool #sameType(V1, V2)
 ```
@@ -481,7 +482,7 @@ A block is the simplest way to create targets for break instructions (ie. jump d
 It simply executes the block then records a label with an empty continuation.
 
 ```k
-    syntax Label ::= "label" VecType "{" Instrs "}" ValStack
+    syntax Label ::= "label" VecType "{" Instrs "}" List
  // --------------------------------------------------------
     rule <instrs> label [ TYPES ] { _ } VALSTACK' => .K ... </instrs>
          <valstack> VALSTACK => #take(lengthValTypes(TYPES), VALSTACK) ++ VALSTACK' </valstack>
@@ -492,7 +493,7 @@ It simply executes the block then records a label with an empty continuation.
     syntax Instr ::= #block(VecType, Instrs, BlockMetaData) [symbol(aBlock)]
  // --------------------------------------------------------------------------------
     rule <instrs> #block(VECTYP, IS, _) => sequenceInstrs(IS) ~> label VECTYP { .Instrs } VALSTACK ... </instrs>
-         <valstack> VALSTACK => .ValStack </valstack>
+         <valstack> VALSTACK => .List </valstack>
 ```
 
 The `br*` instructions search through the instruction stack (the `<instrs>` cell) for the correct label index.
@@ -512,16 +513,16 @@ Note that, unlike in the WebAssembly specification document, we do not need the 
     syntax Instr ::= "#br_if" "(" Int ")" [symbol(aBr_if)]
  // --------------------------------------------------------------
     rule <instrs> #br_if(IDX) => #br(IDX) ... </instrs>
-         <valstack> <i32> VAL : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(<i32> VAL) VALSTACK => VALSTACK </valstack>
       requires VAL =/=Int 0
     rule <instrs> #br_if(_IDX) => .K    ... </instrs>
-         <valstack> <i32> VAL : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(<i32> VAL) VALSTACK => VALSTACK </valstack>
       requires VAL  ==Int 0
 
     syntax Instr ::= "#br_table" "(" Ints ")" [symbol(aBr_table)]
  // ---------------------------------------------------------------------
     rule <instrs> #br_table(ES) => #br(#getInts(ES, minInt(VAL, #lenInts(ES) -Int 1))) ... </instrs>
-         <valstack> <i32> VAL : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(<i32> VAL) VALSTACK => VALSTACK </valstack>
       requires 0 <=Int VAL
        andBool #lenInts(ES) >Int 0
       [preserves-definedness]
@@ -536,17 +537,17 @@ Finally, we have the conditional and loop instructions.
     syntax Instr ::= #if( VecType, then : Instrs, else : Instrs, blockInfo: BlockMetaData) [symbol(aIf)]
  // ------------------------------------------------------------------------------------------------------------
     rule <instrs> #if(VECTYP, IS, _, _)  => sequenceInstrs(IS) ~> label VECTYP { .Instrs } VALSTACK ... </instrs>
-         <valstack> < i32 > VAL : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(< i32 > VAL) VALSTACK => VALSTACK </valstack>
       requires VAL =/=Int 0
 
     rule <instrs> #if(VECTYP, _, IS, _) => sequenceInstrs(IS) ~> label VECTYP { .Instrs } VALSTACK ... </instrs>
-         <valstack> < i32 > VAL : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(< i32 > VAL) VALSTACK => VALSTACK </valstack>
       requires VAL ==Int 0
 
     syntax Instr ::= #loop(VecType, Instrs, BlockMetaData) [symbol(aLoop)]
  // ------------------------------------------------------------------------------
     rule <instrs> #loop(VECTYP, IS, BLOCKMETA) => sequenceInstrs(IS) ~> label VECTYP { #loop(VECTYP, IS, BLOCKMETA) } VALSTACK ... </instrs>
-         <valstack> VALSTACK => .ValStack </valstack>
+         <valstack> VALSTACK => .List </valstack>
 ```
 
 Variable Operators
@@ -560,8 +561,8 @@ The various `init_local` variants assist in setting up the `locals` cell.
     rule <instrs> init_locals VALUES => #init_locals VALUES ... </instrs>
          <locals> _ => .List </locals>
 
-    rule <instrs> #init_locals .ValStack => .K ... </instrs>
-    rule <instrs> #init_locals (VALUE : VALSTACK)
+    rule <instrs> #init_locals .List => .K ... </instrs>
+    rule <instrs> #init_locals ListItem(VALUE) VALSTACK
                => #init_locals VALSTACK
                ...
           </instrs>
@@ -576,16 +577,16 @@ The `*_local` instructions are defined here.
                    | "#local.tee" "(" Int ")" [symbol(aLocal.tee)]
  // ----------------------------------------------------------------------
     rule <instrs> #local.get(I) => .K ... </instrs>
-         <valstack> VALSTACK => {LOCALS [ I ]}:>Val : VALSTACK </valstack>
+         <valstack> VALSTACK => ListItem({LOCALS [ I ]}:>Val) VALSTACK </valstack>
          <locals> LOCALS </locals>
 
     rule <instrs> #local.set(I) => .K ... </instrs>
-         <valstack> VALUE : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(VALUE) VALSTACK => VALSTACK </valstack>
          <locals> LOCALS => LOCALS[I <- VALUE] </locals>
         requires I >=Int 0 andBool I <Int size(LOCALS)
 
     rule <instrs> #local.tee(I) => .K ... </instrs>
-         <valstack> VALUE : _VALSTACK </valstack>
+         <valstack> ListItem(VALUE) _VALSTACK </valstack>
          <locals> LOCALS => LOCALS[I <- VALUE] </locals>
         requires I >=Int 0 andBool I <Int size(LOCALS)
 ```
@@ -608,7 +609,7 @@ The importing and exporting parts of specifications are dealt with in the respec
     rule <instrs> #global(... type: TYP, init: IS, metadata: OID) => sequenceInstrs(IS) ~> allocglobal(OID, TYP) ... </instrs>
 
     rule <instrs> allocglobal(OID:OptionalId, MUT:Mut TYP:ValType) => .K ... </instrs>
-         <valstack> VAL : STACK => STACK </valstack>
+         <valstack> ListItem(VAL) STACK => STACK </valstack>
          <curModIdx> CUR </curModIdx>
          <moduleInst>
            <modIdx> CUR </modIdx>
@@ -639,7 +640,7 @@ The `get` and `set` instructions read and write globals.
                    | "#global.set" "(" Int ")" [symbol(aGlobal.set)]
  // ------------------------------------------------------------------------
     rule <instrs> #global.get(IDX) => .K ... </instrs>
-         <valstack> VALSTACK => VALUE : VALSTACK </valstack>
+         <valstack> VALSTACK => ListItem(VALUE) VALSTACK </valstack>
          <curModIdx> CUR </curModIdx>
          <moduleInst>
            <modIdx> CUR </modIdx>
@@ -653,7 +654,7 @@ The `get` and `set` instructions read and write globals.
          </globalInst>
 
     rule <instrs> #global.set(IDX) => .K ... </instrs>
-         <valstack> VALUE : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(VALUE) VALSTACK => VALSTACK </valstack>
          <curModIdx> CUR </curModIdx>
          <moduleInst>
            <modIdx> CUR </modIdx>
@@ -692,7 +693,7 @@ The `get` and `set` instructions read and write globals.
 ```k
     rule [table.get]:
         <instrs> #table.get( TID ) => #tableGet(TADDR, I) ... </instrs>
-        <valstack> <i32> I : REST => REST </valstack>
+        <valstack> ListItem(<i32> I) REST => REST </valstack>
         <curModIdx> CUR </curModIdx>
         <moduleInst>
           <modIdx>   CUR    </modIdx>
@@ -731,7 +732,7 @@ The `get` and `set` instructions read and write globals.
         <instrs> #table.set( TID )
               => #tableSet(TADDR, VAL, I) ...
         </instrs>
-        <valstack> VAL:RefVal : <i32> I : REST => REST </valstack>
+        <valstack> ListItem(VAL:RefVal) ListItem(<i32> I) REST => REST </valstack>
         <curModIdx> CUR </curModIdx>
         <moduleInst>
           <modIdx> CUR </modIdx>
@@ -786,7 +787,7 @@ The `get` and `set` instructions read and write globals.
 ```k
     rule [table.grow]:
         <instrs> #table.grow(TID) => i32.const size(TDATA) ... </instrs>
-        <valstack> <i32> N : REFVAL : STACK => STACK </valstack>
+        <valstack> ListItem(<i32> N) ListItem(REFVAL) STACK => STACK </valstack>
         <curModIdx> CUR </curModIdx>
         <moduleInst>
           <modIdx> CUR </modIdx>
@@ -803,7 +804,7 @@ The `get` and `set` instructions read and write globals.
 
     rule [table.grow-fail]:
         <instrs> #table.grow(TID) => i32.const (#pow(i32) -Int 1) ... </instrs>
-        <valstack> <i32> N : _REFVAL : STACK => STACK </valstack>
+        <valstack> ListItem(<i32> N) ListItem(_REFVAL) STACK => STACK </valstack>
         <curModIdx> CUR </curModIdx>
         <moduleInst>
           <modIdx> CUR </modIdx>
@@ -834,7 +835,7 @@ The `get` and `set` instructions read and write globals.
               => #tableCheckSizeGTE(TADDR, I +Int N)
               ~> #tableFill(TID, N, RVAL, I) ...
         </instrs>
-        <valstack> <i32> N : RVAL : <i32> I : STACK => STACK </valstack>
+        <valstack> ListItem(<i32> N) ListItem(RVAL) ListItem(<i32> I) STACK => STACK </valstack>
         <curModIdx> CUR </curModIdx>
         <moduleInst>
           <modIdx> CUR </modIdx>
@@ -869,7 +870,7 @@ The `get` and `set` instructions read and write globals.
               ~> #tableCopy(TX, TY, N, S, D)
                  ...
         </instrs>
-        <valstack> <i32> N : <i32> S : <i32> D : STACK => STACK </valstack>
+        <valstack> ListItem(<i32> N) ListItem(<i32> S) ListItem(<i32> D) STACK => STACK </valstack>
         <curModIdx> CUR </curModIdx>
         <moduleInst>
           <modIdx> CUR </modIdx>
@@ -883,7 +884,7 @@ The `get` and `set` instructions read and write globals.
               ~> #tableCopy(TX, TX, N, S, D)
                  ...
         </instrs>
-        <valstack> <i32> N : <i32> S : <i32> D : STACK => STACK </valstack>
+        <valstack> ListItem(<i32> N) ListItem(<i32> S) ListItem(<i32> D) STACK => STACK </valstack>
         <curModIdx> CUR </curModIdx>
         <moduleInst>
           <modIdx> CUR </modIdx>
@@ -933,7 +934,7 @@ The `get` and `set` instructions read and write globals.
               ~> #tableInit(TID, N, D, dropListRef(S, ELEM))
                  ...
         </instrs>
-        <valstack> <i32> N : <i32> S : <i32> D : REST => REST </valstack>
+        <valstack> ListItem(<i32> N) ListItem(<i32> S) ListItem(<i32> D) REST => REST </valstack>
         <curModIdx> CUR </curModIdx>
         <moduleInst>
           <modIdx>   CUR    </modIdx>
@@ -958,7 +959,7 @@ The `get` and `set` instructions read and write globals.
               ~> #tableInit(TID, N -Int 1, D +Int 1, RS)
                  ...
         </instrs>
-        <valstack> STACK => R : <i32> D : STACK </valstack>
+        <valstack> STACK => ListItem(R) ListItem(<i32> D) STACK </valstack>
       requires N >Int 0
 
 ```
@@ -1034,11 +1035,11 @@ The `get` and `set` instructions read and write globals.
 
     rule [ref.isNull-true]:
         <instrs> #ref.is_null => i32.const 1 ... </instrs>
-        <valstack> <_:RefValType> null : STACK => STACK </valstack>
+        <valstack> ListItem(<_:RefValType> null) STACK => STACK </valstack>
 
     rule [ref.isNull-false]:
         <instrs> #ref.is_null => i32.const 0 ... </instrs>
-        <valstack> <_:RefValType> _:Int : STACK => STACK </valstack>
+        <valstack> ListItem(<_:RefValType> _:Int) STACK => STACK </valstack>
 
     rule [ref.func]:
         <instrs> #ref.func(IDX) => (<funcref> FUNCADDRS {{ IDX }} orDefault 0 )  ... </instrs>
@@ -1170,7 +1171,7 @@ Similar to labels, they sit on the instruction stack (the `<instrs>` cell), and 
 Unlike labels, only one frame can be "broken" through at a time.
 
 ```k
-    syntax Frame ::= "frame" Int ValTypes ValStack List
+    syntax Frame ::= "frame" Int ValTypes List List
  // ---------------------------------------------------
     rule <instrs> frame MODIDX' TRANGE VALSTACK' LOCAL' => .K ... </instrs>
          <valstack> VALSTACK => #take(lengthValTypes(TRANGE), VALSTACK) ++ VALSTACK' </valstack>
@@ -1192,7 +1193,7 @@ The `#take` function will return the parameter stack in the reversed order, then
                ~> frame MODIDX TRANGE #drop(lengthValTypes(TDOMAIN), VALSTACK) LOCAL
                ...
          </instrs>
-         <valstack>  VALSTACK => .ValStack </valstack>
+         <valstack>  VALSTACK => .List </valstack>
          <locals> LOCAL </locals>
          <curModIdx> MODIDX => MODIDX' </curModIdx>
          <funcDef>
@@ -1245,7 +1246,7 @@ The types need to be inserted at the definitions level, if a previously undeclar
                   ) ...
         </instrs>
         <curModIdx> CUR </curModIdx>
-        <valstack> < i32 > IDX : VALSTACK => VALSTACK </valstack>
+        <valstack> ListItem(< i32 > IDX) VALSTACK => VALSTACK </valstack>
         <moduleInst>
           <modIdx> CUR </modIdx>
           <typeIds> TYPEIDS </typeIds>
@@ -1390,7 +1391,7 @@ The value is encoded as bytes and stored at the "effective address", which is th
                    | "store" "{" IWidth Int Number Int "}"
  // -----------------------------------------------
     rule <instrs> #store(ITYPE:IValType, SOP, OFFSET) => ITYPE . SOP (IDX +Int OFFSET) VAL ... </instrs>
-         <valstack> < ITYPE > VAL : < i32 > IDX : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(< ITYPE > VAL) ListItem(< i32 > IDX) VALSTACK => VALSTACK </valstack>
 
     rule <instrs> store { WIDTH EA VAL } => store { WIDTH EA VAL ({MEMADDRS[0] orDefault 0}:>Int) } ... </instrs>
          <curModIdx> CUR </curModIdx>
@@ -1442,7 +1443,7 @@ Sort `Signedness` is defined in module `BYTES`.
                    | IValType "." LoadOp Int
  // ----------------------------------------
     rule <instrs> #load(ITYPE:IValType, LOP, OFFSET) => ITYPE . LOP (IDX +Int OFFSET)  ... </instrs>
-         <valstack> < i32 > IDX : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(< i32 > IDX) VALSTACK => VALSTACK </valstack>
 
     rule <instrs> ITYPE . load     EA:Int => load { ITYPE ITYPE EA Unsigned } ... </instrs>
     rule <instrs> ITYPE . load8_u  EA:Int => load { ITYPE i8    EA Unsigned } ... </instrs>
@@ -1515,7 +1516,7 @@ By setting the `<deterministicMemoryGrowth>` field in the configuration to `true
     syntax Instr ::= "grow" Int
  // ---------------------------
     rule <instrs> memory.grow => grow N ... </instrs>
-         <valstack> < i32 > N : VALSTACK => VALSTACK </valstack>
+         <valstack> ListItem(< i32 > N) VALSTACK => VALSTACK </valstack>
 
     rule <instrs> grow N => < i32 > SIZE ... </instrs>
          <curModIdx> CUR </curModIdx>
@@ -1593,20 +1594,20 @@ Element Segments
               ~> #elem.drop(IDX)
                  ...
         </instrs>
-        <valstack> <i32> IDX : S => S </valstack>
+        <valstack> ListItem(<i32> IDX) S => S </valstack>
 
     rule [elem-declarative-aux]:
         <instrs> #elemAux(_LEN:Int, #elemDeclarative)
               => #elem.drop(IDX)
                  ...
         </instrs>
-        <valstack> <i32> IDX : S => S </valstack>
+        <valstack> ListItem(<i32> IDX) S => S </valstack>
 
     rule [elem-passive-aux]:
         <instrs> #elemAux(_LEN:Int, #elemPassive)
               => .K ...
         </instrs>
-        <valstack> <i32> _IDX : S => S </valstack>
+        <valstack> ListItem(<i32> _IDX) S => S </valstack>
 
     rule [allocelem]:
       <instrs> allocelem(TYPE, ELEMS, OID) => i32.const NEXTIDX ... </instrs>
@@ -1651,7 +1652,7 @@ The `data` initializer simply puts these bytes into the specified memory, starti
 
     // For now, deal only with memory 0.
     rule <instrs> data { MEMIDX DSBYTES } => .K ... </instrs>
-         <valstack> < i32 > OFFSET : STACK => STACK </valstack>
+         <valstack> ListItem(< i32 > OFFSET) STACK => STACK </valstack>
          <curModIdx> CUR </curModIdx>
          <moduleInst>
            <modIdx> CUR </modIdx>
