@@ -516,15 +516,24 @@ Note that, unlike in the WebAssembly specification document, we do not need the 
 ```k
     syntax Instr ::= #br( Int ) [symbol(aBr)] | "#br_aux" "(" Int ")" [symbol(aBr_aux)]
  // -------------------------------------------------
-     rule <instrs> #br(0   ) ~> label [ TYPES ] { IS } VALSTACK' => sequenceInstrs(IS) ... </instrs>
-          <valstack> VALSTACK => #take(lengthValTypes(TYPES), VALSTACK) ++ VALSTACK' </valstack>
+    rule <instrs> #br(_IDX) ~> (_S:Stmt => .K) ... </instrs>
+    rule <instrs> #br(0   ) ~> label [ TYPES ] { IS } VALSTACK' => sequenceInstrs(IS) ... </instrs>
+         <valstack> VALSTACK => #take(lengthValTypes(TYPES), VALSTACK) ++ VALSTACK' </valstack>
+
+
     rule <instrs> #br(N:Int) ~> _L:Label => #br_aux(SIZE -Int N -Int 1) ... </instrs>
          <sizelblInst> SIZE </sizelblInst>
       requires N >Int 0
 
     rule <instrs> #br_aux(_IDX) ~> (_S:Stmt => .K) ... </instrs>
 
-    rule <instrs> #br_aux(N:Int) ~> _L:Label => #br_aux(N:Int) ... </instrs>    
+    rule <instrs> #br_aux(N:Int) ~> _L:Label => sequenceInstrs(IS) ... </instrs>
+         <labelsInstance>
+            <idxLabel> N </idxLabel>
+            <label> label [ TYPES ] { IS } VALSTACK' </label>
+         </labelsInstance>
+         <valstack> VALSTACK => #take(lengthValTypes(TYPES), VALSTACK) ++ VALSTACK' </valstack>
+    
     rule <instrs> #br_aux(N:Int) => sequenceInstrs(IS) ... </instrs>
          <labelsInstance>
             <idxLabel> N </idxLabel>
