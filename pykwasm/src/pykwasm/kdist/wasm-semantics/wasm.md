@@ -235,6 +235,13 @@ module WASM
         </moduleInstances>
         <nextModuleIdx> 0 </nextModuleIdx>
         <mainStore>
+          <sizelblInst> 0 </sizelblInst>
+          <labels>
+            <labelsInstance multiplicity="*" type="Map">
+              <idxLabel> 0 </idxLabel>
+              <label> .Label </label>
+            </labelsInstance>
+          </labels>
           <funcs>
             <funcDef multiplicity="*" type="Map">
               <fAddr>    0              </fAddr>
@@ -475,7 +482,7 @@ A block is the simplest way to create targets for break instructions (ie. jump d
 It simply executes the block then records a label with an empty continuation.
 
 ```k
-    syntax Label ::= "label" VecType "{" Instrs "}" ValStack
+    syntax Label ::= "label" VecType "{" Instrs "}" ValStack | ".Label"
  // --------------------------------------------------------
     rule <instrs> label [ TYPES ] { _ } VALSTACK' => .K ... </instrs>
          <valstack> VALSTACK => #take(lengthValTypes(TYPES), VALSTACK) ++ VALSTACK' </valstack>
@@ -487,6 +494,18 @@ It simply executes the block then records a label with an empty continuation.
  // --------------------------------------------------------------------------------
     rule <instrs> #block(VECTYP, IS, _) => sequenceInstrs(IS) ~> label VECTYP { .Instrs } VALSTACK ... </instrs>
          <valstack> VALSTACK => .ValStack </valstack>
+         <sizelblInst> NEXTID => NEXTID +Int 1 </sizelblInst>
+         <labels>
+          (.Bag
+          => <labelsInstance>
+            <idxLabel> NEXTID </idxLabel>
+            <label> (label VECTYP { .Instrs } VALSTACK) </label>
+          </labelsInstance>
+         )
+         ...
+         </labels>
+         
+         
 ```
 
 The `br*` instructions search through the instruction stack (the `<instrs>` cell) for the correct label index.
@@ -495,13 +514,23 @@ Upon reaching it, the label itself is executed.
 Note that, unlike in the WebAssembly specification document, we do not need the special "context" operator here because the value and instruction stacks are separate.
 
 ```k
-    syntax Instr ::= #br( Int ) [symbol(aBr)]
+    syntax Instr ::= #br( Int ) [symbol(aBr)] | "#br_aux" "(" Int ")" [symbol(aBr_aux)]
  // -------------------------------------------------
-    rule <instrs> #br(_IDX) ~> (_S:Stmt => .K) ... </instrs>
-    rule <instrs> #br(0   ) ~> label [ TYPES ] { IS } VALSTACK' => sequenceInstrs(IS) ... </instrs>
-         <valstack> VALSTACK => #take(lengthValTypes(TYPES), VALSTACK) ++ VALSTACK' </valstack>
-    rule <instrs> #br(N:Int) ~> _L:Label => #br(N -Int 1) ... </instrs>
+     rule <instrs> #br(0   ) ~> label [ TYPES ] { IS } VALSTACK' => sequenceInstrs(IS) ... </instrs>
+          <valstack> VALSTACK => #take(lengthValTypes(TYPES), VALSTACK) ++ VALSTACK' </valstack>
+    rule <instrs> #br(N:Int) ~> _L:Label => #br_aux(SIZE -Int N -Int 1) ... </instrs>
+         <sizelblInst> SIZE </sizelblInst>
       requires N >Int 0
+
+    rule <instrs> #br_aux(_IDX) ~> (_S:Stmt => .K) ... </instrs>
+
+    rule <instrs> #br_aux(N:Int) ~> _L:Label => #br_aux(N:Int) ... </instrs>    
+    rule <instrs> #br_aux(N:Int) => sequenceInstrs(IS) ... </instrs>
+         <labelsInstance>
+            <idxLabel> N </idxLabel>
+            <label> label [ TYPES ] { IS } VALSTACK' </label>
+         </labelsInstance>
+         <valstack> VALSTACK => #take(lengthValTypes(TYPES), VALSTACK) ++ VALSTACK' </valstack> [owise]
 
     syntax Instr ::= "#br_if" "(" Int ")" [symbol(aBr_if)]
  // --------------------------------------------------------------
