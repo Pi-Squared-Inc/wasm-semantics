@@ -507,29 +507,29 @@ Operator `_++_` implements an append operator for sort `ValStack`.
 Each call site _must_ ensure that this is desired behavior before using these functions.
 
 ```k
-    syntax ValStack ::= #zero ( ValTypes )            [function, total]
-                      | #take ( Int , ValStack )      [function, total]
-                      | #drop ( Int , ValStack )      [function, total]
-                      | #revs ( ValStack )            [function, total]
-                      | #revs ( ValStack , ValStack ) [function, total, symbol(#revsAux)]
+   syntax List ::=      #take ( Int , List )          [function, total]
+                |       #zero ( ValTypes )            [function, total]
+                |       #drop ( Int , List )          [function, total]
+                |       #revs ( List )                [function, total]
+                |       #revs ( List , List )         [function, total, symbol(#revsAux)]
  // ------------------------------------------------------------------------------------------
-    rule #zero(.ValTypes)               => .ValStack
-    rule #zero(ITYPE:IValType VTYPES)   => < ITYPE > 0    : #zero(VTYPES)
-    rule #zero(FTYPE:FValType VTYPES)   => < FTYPE > 0.0  : #zero(VTYPES)
-    rule #zero(RTYPE:RefValType VTYPES) => < RTYPE > null : #zero(VTYPES)
+    rule #zero(.ValTypes)               => .List
+    rule #zero(ITYPE:IValType VTYPES)   => pushList(< ITYPE > 0,    #zero(VTYPES))
+    rule #zero(FTYPE:FValType VTYPES)   => pushList(< FTYPE > 0.0,  #zero(VTYPES))
+    rule #zero(RTYPE:RefValType VTYPES) => pushList(< RTYPE > null, #zero(VTYPES))
 
-    rule #take(N, _)         => .ValStack               requires notBool N >Int 0
-    rule #take(N, .ValStack) => .ValStack               requires         N >Int 0
-    rule #take(N, V : VS)    => V : #take(N -Int 1, VS) requires         N >Int 0
+    rule #take(N, _)              => .List                   requires notBool N >Int 0
+    rule #take(N, .List)          => .List                   requires         N >Int 0
+    rule #take(N, ListItem(V) VS) => pushList(V, #take(N -Int 1, VS)) requires         N >Int 0
 
-    rule #drop(N, VS)        => VS                  requires notBool N >Int 0
-    rule #drop(N, .ValStack) => .ValStack           requires         N >Int 0
-    rule #drop(N, _ : VS)    => #drop(N -Int 1, VS) requires         N >Int 0
+    rule #drop(N, VS)             => VS                  requires notBool N >Int 0
+    rule #drop(N, .List)          => .List               requires         N >Int 0
+    rule #drop(N, ListItem(_) VS) => #drop(N -Int 1, VS) requires         N >Int 0
 
-    rule #revs(VS) => #revs(VS, .ValStack)
+    rule #revs(VS) => #revs(VS, .List)
 
-    rule #revs(.ValStack, VS') => VS'
-    rule #revs(V : VS   , VS') => #revs(VS, V : VS')
+    rule #revs(.List, VS') => VS'
+    rule #revs(ListItem(V) VS   , VS') => #revs(VS, pushList(V, VS'))
 ```
 
 ### Strings

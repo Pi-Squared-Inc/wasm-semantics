@@ -1186,7 +1186,7 @@ They are currently supported in KWasm text files, but may be deprecated.
 
     rule #t2aInstr<C>(#block(VT:VecType, IS:Instrs, BLOCKINFO)) => #block(VT, #t2aInstrs<C>(IS), BLOCKINFO)
 
-    rule #t2aInstr<_>(init_locals VS) => init_locals VS
+    rule #t2aInstr<_>(init_locals VS:ValStack) => init_locals VS
 ```
 
 #### List Functions

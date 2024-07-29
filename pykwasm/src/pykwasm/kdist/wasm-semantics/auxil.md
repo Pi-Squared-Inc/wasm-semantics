@@ -23,7 +23,7 @@ module WASM-AUXIL
     rule [clearConfig]:
          <instrs> #clearConfig => .K ...    </instrs>
          <curModIdx>         _ => .Int      </curModIdx>
-         <valstack>          _ => .ValStack </valstack>
+         <valstack>          _ => .List </valstack>
          <locals>            _ => .List     </locals>
          <moduleInstances>   _ => .Bag      </moduleInstances>
          <moduleIds>         _ => .Map      </moduleIds>

@@ -7,7 +7,7 @@
       .K
     </instrs>
     <valstack>
-      .ValStack
+      .List
     </valstack>
     <curFrame>
       <locals>

@@ -168,19 +168,19 @@ We add `token` as a value in order to use as a separator in `<valstack>`.
     rule #sameType(token, _) => false
 
     rule <instrs> token => .K ... </instrs>
-         <valstack> S => token : S </valstack>
+         <valstack> S => ListItem(token) S </valstack>
 
-    syntax ValStack ::= takeUntilToken(ValStack)    [function, total]
-                      | dropUntilToken(ValStack)    [function, total]
+    syntax List      ::= takeUntilToken(List)    [function, total]
+                      | dropUntilToken(List)    [function, total]
  // -----------------------------------------------------------------
-    rule takeUntilToken(.ValStack)  => .ValStack
-    rule takeUntilToken(token : _ ) => token : .ValStack
-    rule takeUntilToken(V     : Vs) => V : takeUntilToken(Vs)
+    rule takeUntilToken(.List)  => .List
+    rule takeUntilToken(ListItem(token) _ ) => pushList(token, .List)
+    rule takeUntilToken(ListItem(V)     Vs) => pushList(V, takeUntilToken(Vs))
       requires V =/=K token
 
-    rule dropUntilToken(.ValStack)   => .ValStack
-    rule dropUntilToken(token : Vs ) => Vs
-    rule dropUntilToken(V     : Vs)  => dropUntilToken(Vs)
+    rule dropUntilToken(.List)   => .List
+    rule dropUntilToken(ListItem(token) Vs ) => Vs
+    rule dropUntilToken(ListItem(V)     Vs)  => dropUntilToken(Vs)
       requires V =/=K token
 
     syntax Assertion ::= "#dropUntilToken"
@@ -395,24 +395,34 @@ This asserts that a `trap` was just thrown.
     rule <instrs> trap ~> #assertTrap _ => .K ... </instrs>
 ```
 
+### ValStack To List
+
+```k
+    syntax List ::= valStackToList(ValStack) [function]
+ // ---------------------------------------------------------
+    rule valStackToList(.ValStack) => .List
+    rule valStackToList(V : VS)    => pushList(V, valStackToList(VS))
+      requires V =/=K token
+```
+
 ### ValStack Assertions
 
 These functions make assertions about the state of the `<valstack>` cell.
 
 ```k
-    syntax Assertion ::= "#assertStackAux"        ValStack ValStack
+    syntax Assertion ::= "#assertStackAux"        List List
  // ---------------------------------------------------------------
     rule <instrs> #assertTopStack VAL _ => .K ... </instrs>
-         <valstack> VAL' : _ </valstack>
+         <valstack> ListItem(VAL') ...</valstack>
       requires equalVal(VAL, VAL')
 
-    rule <instrs> #assertTopStackExactly A _ => .K ... </instrs> <valstack> A : _VALSTACK </valstack>
+    rule <instrs> #assertTopStackExactly A _ => .K ... </instrs> <valstack> ListItem(A) ...</valstack>
 
-    rule <instrs> #assertStack S1 _ => #assertStackAux S1 S2  ... </instrs>
+    rule <instrs> #assertStack S1 _ => #assertStackAux valStackToList(S1) S2  ... </instrs>
          <valstack> S2 </valstack>
 
-    rule <instrs> #assertStackAux .ValStack  _ => .K ... </instrs>
-    rule <instrs> #assertStackAux (V1 : S1) (V2 : S2) => #assertStackAux S1 S2 ... </instrs>
+    rule <instrs> #assertStackAux .List  _ => .K ... </instrs>
+    rule <instrs> #assertStackAux (ListItem(V1) S1) (ListItem(V2) S2) => #assertStackAux S1 S2 ... </instrs>
       requires equalVal(V1, V2)
 
     syntax Bool ::= equalVal(Val, Val)    [function, total]
