@@ -569,16 +569,46 @@ Finally, we have the conditional and loop instructions.
  // ------------------------------------------------------------------------------------------------------------
     rule <instrs> #if(VECTYP, IS, _, _)  => sequenceInstrs(IS) ~> label VECTYP { .Instrs } VALSTACK ... </instrs>
          <valstack> < i32 > VAL : VALSTACK => VALSTACK </valstack>
+         <sizelblInst> NEXTID => NEXTID +Int 1 </sizelblInst>
+         <labels>
+          (.Bag
+          => <labelsInstance>
+            <idxLabel> NEXTID </idxLabel>
+            <label> (label VECTYP { .Instrs } VALSTACK) </label>
+          </labelsInstance>
+         )
+         ...
+         </labels>
       requires VAL =/=Int 0
 
     rule <instrs> #if(VECTYP, _, IS, _) => sequenceInstrs(IS) ~> label VECTYP { .Instrs } VALSTACK ... </instrs>
          <valstack> < i32 > VAL : VALSTACK => VALSTACK </valstack>
+         <sizelblInst> NEXTID => NEXTID +Int 1 </sizelblInst>
+         <labels>
+          (.Bag
+          => <labelsInstance>
+            <idxLabel> NEXTID </idxLabel>
+            <label> (label VECTYP { .Instrs } VALSTACK) </label>
+          </labelsInstance>
+         )
+         ...
+         </labels>
       requires VAL ==Int 0
 
     syntax Instr ::= #loop(VecType, Instrs, BlockMetaData) [symbol(aLoop)]
  // ------------------------------------------------------------------------------
     rule <instrs> #loop(VECTYP, IS, BLOCKMETA) => sequenceInstrs(IS) ~> label VECTYP { #loop(VECTYP, IS, BLOCKMETA) } VALSTACK ... </instrs>
          <valstack> VALSTACK => .ValStack </valstack>
+         <sizelblInst> NEXTID => NEXTID +Int 1 </sizelblInst>
+         <labels>
+          (.Bag
+          => <labelsInstance>
+            <idxLabel> NEXTID </idxLabel>
+            <label> (label VECTYP { #loop(VECTYP, IS, BLOCKMETA) } VALSTACK) </label>
+          </labelsInstance>
+         )
+         ...
+         </labels>
 ```
 
 Variable Operators
