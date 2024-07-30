@@ -30,8 +30,7 @@ module WASM-AUXIL
          <nextModuleIdx>     _ => 0         </nextModuleIdx>
          <moduleRegistry>    _ => .Map      </moduleRegistry>
          <mainStore>
-           <sizelblInst>     _ => 0         </sizelblInst>
-           <labels>          _ => .Bag      </labels>
+           <labels>          _ => .List    </labels>
            <nextFuncAddr>    _ => 0         </nextFuncAddr>
            <funcs>           _ => .Bag      </funcs>
            <nextTabAddr>     _ => 0         </nextTabAddr>
