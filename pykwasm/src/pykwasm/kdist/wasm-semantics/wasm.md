@@ -476,7 +476,7 @@ A block is the simplest way to create targets for break instructions (ie. jump d
 It simply executes the block then records a label with an empty continuation.
 
 ```k
-    syntax Label ::= "label" VecType "{" Instrs "}" ValStack K | ".Label"
+    syntax Label ::= "label" VecType "{" Instrs "}" ValStack K
  // --------------------------------------------------------
     rule <instrs> label [ TYPES ] { IS } VALSTACK' KCELL => KCELL </instrs>
          <valstack> VALSTACK => #take(lengthValTypes(TYPES), VALSTACK) ++ VALSTACK' </valstack>
@@ -1207,8 +1207,9 @@ The `#take` function will return the parameter stack in the reversed order, then
          </funcDef>
 
     rule <instrs> return ~> (_S:Stmt  => .K)  ... </instrs>
-    rule <instrs> return ~> (label [_] {_} _ KCELL) ~> _ => (return ~> KCELL) </instrs>
-    rule <instrs> (return => .K) ~> _FR:Frame ... </instrs>
+    rule <instrs> return ~> (label [_] {_} _ KCELL ~> _) => (return ~> KCELL) </instrs>
+    rule <instrs> return ~> _FR:Frame ~> (label [_] {_} _ KCELL) ~> _ => (return ~> KCELL) </instrs>
+    rule <instrs> (return => .K) ~> _FR:Frame ... </instrs> [owise]
 ```
 
 ### Function Call
