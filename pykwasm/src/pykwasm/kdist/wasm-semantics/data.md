@@ -64,8 +64,8 @@ In the abstract syntax of Wasm, indices are 32 bit unsigned integers.
 However, we extend the `Index` sort with another subsort, `Identifier`, in the text format.
 
 ```k
-    syntax Index ::= WasmInt
- // ------------------------
+    syntax Index ::= Int
+ // --------------------
 ```
 
 ### ElemSegment
@@ -88,7 +88,9 @@ WebAssembly has three kinds of [Value types](https://webassembly.github.io/spec/
   3. [Reference types](https://webassembly.github.io/spec/core/syntax/types.html#reference-types)
   
 ```k
-    syntax IValType ::= "i32" [symbol(i32)] | "i64" [symbol(i64)]
+    syntax I32ValType ::= "i32" [symbol(i32)]
+    syntax I64ValType ::= "i64" [symbol(i64)]
+    syntax IValType ::= I32ValType | I64ValType
     syntax FValType ::= "f32" [symbol(f32)] | "f64" [symbol(f64)]
     syntax RefValType ::= "funcref"     [symbol(funcref)]
                         | "externref"   [symbol(externref)]
@@ -114,8 +116,8 @@ Here we define the rules about what integer formats can be used in Wasm.
 For the core language, only regular integers are allowed.
 
 ```k
-    syntax WasmInt ::= Int
- // ----------------------
+    syntax WasmInt ::= MInt{64}
+ // ---------------------------
 ```
 ### Type Mutability
 
@@ -131,8 +133,14 @@ For the core language, only regular integers are allowed.
 WebAssembly values are either integers or floating-point numbers, of 32- or 64-bit widths.
 
 ```k
-    syntax Number ::= Int | Float
- // -----------------------------
+    syntax MInt{8}
+    syntax MInt{16}
+    syntax MInt{32}
+    syntax MInt{64}
+    syntax INumber ::= MInt{32} | MInt{64}
+    syntax Number ::= INumber | Float
+    syntax WasmFloat ::= Int | Float
+ // ---------------------------------
 ```
 
 ### External Values
@@ -157,9 +165,8 @@ endmodule
 module WASM-DATA-INTERNAL-SYNTAX
     imports WASM-DATA-COMMON-SYNTAX
     imports BOOL
-
-    syntax ValStack ::= ".ValStack"            [symbol(.ValStack)]
-                      | Val      ":"  ValStack [symbol(concatValStack)]
+    imports MINT-SYNTAX
+    imports private MINT
 ```
 
 ### Values
@@ -167,24 +174,30 @@ module WASM-DATA-INTERNAL-SYNTAX
 Proper values are numbers annotated with their types.
 
 ```k
-    syntax IVal ::= "<" IValType ">" Int        [symbol(IVal)]
+    syntax I32Val ::= "<" I32ValType ">" MInt{32}        [symbol(I32Val)]
+    syntax I64Val ::= "<" I64ValType ">" MInt{64}        [symbol(I64Val)]
+    syntax IVal ::= I32Val | I64Val
     syntax FVal ::= "<" FValType ">" Float      [symbol(FVal)]
     syntax RefVal ::= "<" RefValType ">" Int    [symbol(RefVal)]
                     | "<" RefValType ">" "null" [symbol(RefValNull)]
     syntax  Val ::= IVal | FVal | RefVal
  // ---------------------------
 
+    syntax ValStack ::= ".ValStack"            [symbol(.ValStack)]
+                      | Val      ":"  ValStack [symbol(concatValStack)]
     syntax Bool ::= #typeMatches(ValType, Val)  [function, total]
  // -------------------------------------------------------------
-    rule #typeMatches(TYP:IValType,   <TYP> _:Int)   => true
-    rule #typeMatches(TYP:FValType,   <TYP> _:Float) => true
-    rule #typeMatches(TYP:RefValType, <TYP> _:Int)   => true
-    rule #typeMatches(TYP:RefValType, <TYP> null)    => true
-    rule #typeMatches(_, _)                          => false [owise]
+    rule #typeMatches(TYP:I32ValType, <TYP> _:MInt{32})   => true
+    rule #typeMatches(TYP:I64ValType, <TYP> _:MInt{64})   => true
+    rule #typeMatches(TYP:FValType,   <TYP> _:Float)      => true
+    rule #typeMatches(TYP:RefValType, <TYP> _:Int)        => true
+    rule #typeMatches(TYP:RefValType, <TYP> null)         => true
+    rule #typeMatches(_, _)                               => false [owise]
 
     syntax Bool ::= #sameType(Val, Val)   [function, total]
  // -------------------------------------------------------
-    rule #sameType(<T:IValType> _,   V) => #typeMatches(T, V)
+    rule #sameType(<T:I32ValType> _, V) => #typeMatches(T, V)
+    rule #sameType(<T:I64ValType> _, V) => #typeMatches(T, V)
     rule #sameType(<T:FValType> _,   V) => #typeMatches(T, V)
     rule #sameType(<T:RefValType> _, V) => #typeMatches(T, V)
     rule #sameType(<T> null,         V) => #typeMatches(T, V)
@@ -221,7 +234,9 @@ In some cases, an integer is optional, such as when either giving or omitting th
 The sort `OptionalInt` provides this potentially "undefined" `Int`.
 
 ```k
-    syntax OptionalInt ::= Int | ".Int"  [symbol(.Int)]
+    syntax OptionalInt ::= Int | ".Int" [symbol(.Int)]
+    syntax OptionalMInt32 ::= MInt{32} | ".MInt32" [symbol(.MInt32)]
+    syntax OptionalMInt64 ::= MInt{64} | ".MInt64" [symbol(.MInt64)]
 ```
 
 ### Integer bounds
@@ -260,6 +275,7 @@ module WASM-DATA-COMMON
     imports FLOAT
     imports SPARSE-BYTES
     imports K-EQUAL
+    imports MINT
 ```
 
 ### Identifiers
@@ -303,13 +319,13 @@ For `Int`, however, a the context is irrelevant and the index always just resolv
     syntax Ints ::= List{Int, ""} [symbol(listInt), terminator-symbol(".List{\"listInt\"}")]
  // -------------------------------------------------------
 
-    syntax Int   ::= #lenElemSegment (ElemSegment)      [function, total]
+    syntax MInt{64} ::= #lenElemSegment (ElemSegment)   [function, total]
     syntax Index ::= #getElemSegment (ElemSegment, Int) [function]
     syntax Int   ::= #lenInts        (Ints)             [function, total]
     syntax Int   ::= #getInts        (Ints,        Int) [function]
  // --------------------------------------------------------------
-    rule #lenElemSegment(.ElemSegment) => 0
-    rule #lenElemSegment(_TFIDX    ES) => 1 +Int #lenElemSegment(ES)
+    rule #lenElemSegment(.ElemSegment) => 0p64
+    rule #lenElemSegment(_TFIDX    ES) => 1p64 +MInt #lenElemSegment(ES)
 
     rule #getElemSegment(E _ES, 0) => E
     rule #getElemSegment(_E ES, I) => #getElemSegment(ES, I -Int 1) requires I >Int 0
@@ -332,9 +348,9 @@ For `Int`, however, a the context is irrelevant and the index always just resolv
 Tables and memories have limits, defined as either a single `Int` or two `Int`s, representing min and max bounds.
 
 ```k
-    syntax Limits ::= #limitsMin(Int)   [symbol(limitsMin)]
-                    | #limits(Int, Int) [symbol(limitsMinMax)]
- // ------------------------------------------------------------------
+    syntax Limits ::= #limitsMin(MInt{32})        [symbol(limitsMin)]
+                    | #limits(MInt{32}, MInt{32}) [symbol(limitsMinMax)]
+ // --------------------------------------------------------------------
 ```
 
 ### Type Constructors
@@ -373,15 +389,18 @@ Also we can reverse a `ValTypes` with `#revt`
 The `#width` function returns the bit-width of a given `IValType`.
 
 ```k
-    syntax Int ::= #width    ( IWidth ) [function, total]
-    syntax Int ::= #numBytes ( IWidth ) [function, total, smtlib(numBytes)]
+    syntax MInt{64} ::= #width    ( IWidth ) [function, total]
+    syntax MInt{64} ::= #numBytes ( IWidth ) [function, total, smtlib(numBytes)]
  // ------------------------------------------------------------------------------
-    rule #width(i8)  => 8
-    rule #width(i16) => 16
-    rule #width(i32) => 32
-    rule #width(i64) => 64
+    rule #width(i8)  => 8p64
+    rule #width(i16) => 16p64
+    rule #width(i32) => 32p64
+    rule #width(i64) => 64p64
 
-    rule #numBytes(ITYPE) => #width(ITYPE) /Int 8 [concrete]
+    rule #numBytes(i8)  => 1p64
+    rule #numBytes(i16) => 2p64
+    rule #numBytes(i32) => 4p64
+    rule #numBytes(i64) => 8p64
 ```
 
 `2 ^Int 32` and `2 ^Int 64` are used often enough to warrant providing helpers for them.
@@ -406,22 +425,12 @@ The `#width` function returns the bit-width of a given `IValType`.
 
 #### Value Operations
 
-The `#chop` function will ensure that an integer value is wrapped to the correct bit-width.
 The `#wrap` function wraps an integer to a given byte width.
-The `#get` function extracts the underlying K integer from a WASM `IVal`.
 
 ```k
-    syntax IVal ::= #chop ( IVal ) [function, total]
- // -----------------------------------------------------
-    rule #chop(< ITYPE > N) => < ITYPE > (N modInt #pow(ITYPE))
-
     syntax Int ::= #wrap ( Int , Int ) [function, total]
  // ---------------------------------------------------------
     rule #wrap(WIDTH, _N) => 0      requires notBool 0 <Int WIDTH
-
-    syntax Int ::= #get( IVal ) [function, total]
- // --------------------------------------------------
-    rule #get(< _ > N) => N
 ```
 
 In `K` all `Float` numbers are of 64-bits width by default, so we need to downcast a `f32` float to 32-bit manually.
@@ -430,8 +439,9 @@ The `#round` function casts a `f64` float to a `f32` float.
 `f32` floats has 1 bit for the sign, 23 bits for the value and 8 bits for exponent.
 
 ```k
-    syntax FVal ::= #round ( FValType , Number ) [function, total]
- // -------------------------------------------------------
+    syntax FVal ::= #round ( FValType , Float ) [function, total]
+    syntax FVal ::= #round ( FValType , Int   ) [function, total]
+ // -------------------------------------------------------------
     rule #round(f64 , N:Float) => < f64 > roundFloat(N, 53, 11) [concrete]
     rule #round(f32 , N:Float) => < f32 > roundFloat(N, 24, 8)  [concrete]
     rule #round(f64 , N:Int  ) => < f64 >  Int2Float(N, 53, 11) [concrete]
@@ -480,10 +490,10 @@ Some operations extend integers from 1, 2, or 4 bytes, so a special function wit
 Function `#bool` converts a `Bool` into an `Int`.
 
 ```k
-    syntax Int ::= #bool ( Bool ) [function, total, smtlib(boolToInt), symbol(boolToInt)]
+    syntax MInt{32} ::= #bool ( Bool ) [function, total, smtlib(boolToInt), symbol(boolToInt)]
  // ----------------------------------------------------
-    rule #bool( B:Bool ) => 1 requires         B
-    rule #bool( B:Bool ) => 0 requires notBool B
+    rule #bool( B:Bool ) => 1p32 requires         B
+    rule #bool( B:Bool ) => 0p32 requires notBool B
 ```
 
 ### Data Structures
@@ -513,10 +523,11 @@ Each call site _must_ ensure that this is desired behavior before using these fu
                       | #revs ( ValStack )            [function, total]
                       | #revs ( ValStack , ValStack ) [function, total, symbol(#revsAux)]
  // ------------------------------------------------------------------------------------------
-    rule #zero(.ValTypes)               => .ValStack
-    rule #zero(ITYPE:IValType VTYPES)   => < ITYPE > 0    : #zero(VTYPES)
-    rule #zero(FTYPE:FValType VTYPES)   => < FTYPE > 0.0  : #zero(VTYPES)
-    rule #zero(RTYPE:RefValType VTYPES) => < RTYPE > null : #zero(VTYPES)
+    rule #zero(.ValTypes)                 => .ValStack
+    rule #zero(ITYPE:I32ValType VTYPES)   => < ITYPE > 0p32 : #zero(VTYPES)
+    rule #zero(ITYPE:I64ValType VTYPES)   => < ITYPE > 0p64 : #zero(VTYPES)
+    rule #zero(FTYPE:FValType VTYPES)     => < FTYPE > 0.0  : #zero(VTYPES)
+    rule #zero(RTYPE:RefValType VTYPES)   => < RTYPE > null : #zero(VTYPES)
 
     rule #take(N, _)         => .ValStack               requires notBool N >Int 0
     rule #take(N, .ValStack) => .ValStack               requires         N >Int 0
@@ -639,14 +650,12 @@ Wasm memories are byte arrays, sized in pages of 65536 bytes, initialized to be 
 - `#setRange(BM, START, VAL, WIDTH)` writes the integer `I` to memory as bytes (little-endian), starting at index `N`.
 
 ```k
-    syntax SparseBytes ::= #setBytesRange ( SparseBytes , Int , Bytes ) [function, total]
- // ------------------------------------------------------------------------------
-    rule #setBytesRange(BM, START, BS) => replaceAt(BM, START, BS)
+    syntax SparseBytes ::= #setBytesRange ( SparseBytes , MInt{64} , Bytes ) [function, total]
+ // ------------------------------------------------------------------------------------------
+    rule #setBytesRange(BM, START, BS) => replaceAt(BM, MInt2Unsigned(START), BS)
 
-    syntax SparseBytes ::= #setRange ( SparseBytes , Int , Int , Int ) [function, total, smtlib(setRange)]
- // -----------------------------------------------------------------------------------------------
-    rule #setRange(BM, ADDR, VAL, WIDTH) => BM
-      requires notBool (0 <Int WIDTH andBool 0 <=Int VAL andBool 0 <=Int ADDR)
+    syntax SparseBytes ::= #setRange ( SparseBytes , MInt{64} , INumber , IWidth ) [function, total, smtlib(setRange)]
+ // ------------------------------------------------------------------------------------------------------------------
 
 ```
 
@@ -659,10 +668,8 @@ Wasm memories are byte arrays, sized in pages of 65536 bytes, initialized to be 
     rule #getBytesRange(BM, START, WIDTH) 
       => padRightBytes(unwrap(substrSparseBytes(BM, START, START +Int WIDTH)), WIDTH, 0)
 
-    syntax Int ::= #getRange(SparseBytes, Int, Int) [function, total, smtlib(getRange)]
- // ----------------------------------------------------------------------------------
-    rule #getRange( _, ADDR, WIDTH) => 0
-      requires notBool (0 <Int WIDTH andBool 0 <=Int ADDR)
+    syntax INumber ::= #getRange(SparseBytes, MInt{64}, IWidth, IValType, Signedness) [function, total, smtlib(getRange)]
+ // --------------------------------------------------------------------------------------------------------------------
 
 ```
 
@@ -677,13 +684,15 @@ module WASM-DATA-CONCRETE  [concrete]
    rule [wrap-Positive] : #wrap(WIDTH,  N) => N &Int ((1 <<Int (WIDTH *Int 8)) -Int 1)
       requires 0 <Int WIDTH
    
-   rule [setRange-Positive] : #setRange(BM, ADDR, VAL, WIDTH)
-      => #setBytesRange(BM, ADDR, Int2Bytes(WIDTH, VAL, LE))
-      requires 0 <Int WIDTH andBool 0 <=Int VAL andBool 0 <=Int ADDR
+   rule [setRange-Positive-32] : #setRange(BM, ADDR, VAL:MInt{32}, WIDTH)
+      => #setBytesRange(BM, ADDR, Int2Bytes(MInt2Unsigned(#numBytes(WIDTH)), MInt2Unsigned(VAL), LE))
+   rule [setRange-Positive-64] : #setRange(BM, ADDR, VAL:MInt{64}, WIDTH)
+      => #setBytesRange(BM, ADDR, Int2Bytes(MInt2Unsigned(#numBytes(WIDTH)), MInt2Unsigned(VAL), LE))
 
-   rule [getRange-Positive] : #getRange(BM, ADDR, WIDTH)
-      => Bytes2Int(#getBytesRange(BM, ADDR, WIDTH), LE, Unsigned)
-      requires 0 <Int WIDTH andBool 0 <=Int ADDR
+   rule [getRange-Positive-32] : #getRange(BM, ADDR, WIDTH, i32, SIGN)
+      => Int2MInt(Bytes2Int(#getBytesRange(BM, MInt2Unsigned(ADDR), MInt2Unsigned(#numBytes(WIDTH))), LE, SIGN))::MInt{32}
+   rule [getRange-Positive-64] : #getRange(BM, ADDR, WIDTH, i64, SIGN)
+      => Int2MInt(Bytes2Int(#getBytesRange(BM, MInt2Unsigned(ADDR), MInt2Unsigned(#numBytes(WIDTH))), LE, SIGN))::MInt{64}
 
 endmodule
 

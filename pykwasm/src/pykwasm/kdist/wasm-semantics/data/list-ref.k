@@ -4,6 +4,7 @@ module LIST-REF
   imports WASM-DATA-INTERNAL-SYNTAX
   imports private INT-SYNTAX
   imports private BASIC-K
+  imports private MINT-SYNTAX
 
   syntax Int
 
@@ -24,8 +25,8 @@ module LIST-REF
           ]
   syntax RefVal ::= ListRef "[" Int "]"
           [ function, hook(LIST.get), symbol(ListRef:get) ]
-  syntax ListRef ::= ListRef "[" index: Int "<-" value: RefVal "]"
-          [function, hook(LIST.update), symbol(ListRef:set)]
+  syntax ListRef ::= ListRef "[" index: MInt{64} "<-" value: RefVal "]"
+          [function, hook(LIST.update_long), symbol(ListRef:set)]
   syntax ListRef ::= makeListRef(length: Int, value: RefVal)
           [function, hook(LIST.make)]
   syntax ListRef ::= updateList(dest: ListRef, index: Int, src: ListRef)
@@ -36,53 +37,53 @@ module LIST-REF
           [function, hook(LIST.range), symbol(ListRef:range)]
   syntax Bool ::= RefVal "in" ListRef
           [function, total, hook(LIST.in), symbol(_inListRef_)]
-  syntax Int ::= size(ListRef)
-          [function, total, hook(LIST.size), symbol(sizeListRef), smtlib(smt_seq_len)]
+  syntax MInt{64} ::= size(ListRef)
+          [function, total, hook(LIST.size_long), symbol(sizeListRef), smtlib(smt_seq_len)]
 endmodule
 
 module LIST-REF-EXTENSIONS
   imports LIST-REF
   imports BOOL
   imports INT
+  imports MINT
 
-  syntax RefVal ::= ListRef "[" Int "]" "orDefault" RefVal
+  syntax RefVal ::= ListRef "[" MInt{64} "]" "orDefault" RefVal
           [ function, total, symbol(ListRef:getOrDefault) ]
 // ----------------------------------------------------------------
-  rule ListItem(V:RefVal) _:ListRef [0] orDefault _:RefVal
+  rule ListItem(V:RefVal) _:ListRef [N] orDefault _:RefVal
       => V
-  rule _:ListRef ListItem(V:RefVal) [-1] orDefault _:RefVal
+    requires N ==MInt 0p64
+  rule _:ListRef ListItem(V:RefVal) [N] orDefault _:RefVal
       => V
-  rule .ListRef [_:Int] orDefault D:RefVal => D
+    requires N ==MInt -1p64
+  rule .ListRef [_:MInt{64}] orDefault D:RefVal => D
 
-  rule ListItem(_:RefVal) L:ListRef [I:Int] orDefault D:RefVal
-      => L[I -Int 1] orDefault D
-    requires 0 <Int I
-  rule L:ListRef ListItem(_:RefVal) [I:Int] orDefault D:RefVal
-      => L[I +Int 1] orDefault D
-    requires I <Int 0
+  rule ListItem(_:RefVal) L:ListRef [I:MInt{64}] orDefault D:RefVal
+      => L[I -MInt 1p64] orDefault D
+    requires 0p64 <sMInt I
+  rule L:ListRef ListItem(_:RefVal) [I:MInt{64}] orDefault D:RefVal
+      => L[I +MInt 1p64] orDefault D
+    requires I <sMInt 0p64
 
-  rule L:ListRef[I:Int] orDefault D:RefVal => D
-    requires notBool (0 -Int size(L) <=Int I andBool I <Int size(L))
+  rule L:ListRef[I:MInt{64}] orDefault D:RefVal => D
+    requires notBool (0p64 -MInt size(L)) <=sMInt I andBool I <sMInt size(L)
     [simplification]
 
-  syntax RefVal ::= getRefOrNull(ListRef, Int)
+  syntax RefVal ::= getRefOrNull(ListRef, MInt{64})
           [ function, total, symbol(ListRef:getOrNull) ]
 // -------------------------------------------------------------
   rule getRefOrNull(L, N) => L [N] orDefault (<funcref> null)
 
-  syntax ListRef ::= makeListRefTotal(Int, RefVal)
+  syntax ListRef ::= makeListRefTotal(MInt{32}, RefVal)
       [function, total, symbol(ListRef:makeTotal)]
 // ----------------------------------------------------
-  rule makeListRefTotal(N, V) => makeListRef(N, V)
-    requires N >=Int 0
-  rule makeListRefTotal(N, _) => .ListRef
-    requires N <Int 0
+  rule makeListRefTotal(N, V) => makeListRef(MInt2Unsigned(N), V)
   
-  syntax ListRef ::= dropListRef(Int, ListRef)
+  syntax ListRef ::= dropListRef(MInt{32}, ListRef)
       [function, total, symbol(ListRef:drop)]
 // --------------------------------------------------------------
-  rule dropListRef(N, ListItem(_) L) => dropListRef(N -Int 1, L)
-    requires N >Int 0
+  rule dropListRef(N, ListItem(_) L) => dropListRef(N -MInt 1p32, L)
+    requires N =/=MInt 0p32
   rule dropListRef(_, L)             => L
     [owise]
   
