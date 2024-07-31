@@ -332,7 +332,7 @@ Thus, a `trap` "bubbles up" (more correctly, to "consumes the continuation") unt
 ```k
     syntax Instr ::= "trap"
  // -----------------------
-    rule <instrs> trap ~> (_L:Label => .K) ... </instrs>
+    rule <instrs> trap ~> label _ {_} _ KCELL ~> _ => (trap ~> KCELL) </instrs>
     rule <instrs> trap ~> (_F:Frame => .K) ... </instrs>
     rule <instrs> trap ~> (_I:Instr => .K) ... </instrs>
     rule <instrs> trap ~> (_D:Defn  => .K) ... </instrs>
@@ -1207,7 +1207,7 @@ The `#take` function will return the parameter stack in the reversed order, then
          </funcDef>
 
     rule <instrs> return ~> (_S:Stmt  => .K)  ... </instrs>
-    rule <instrs> return ~> (_L:Label => .K)  ... </instrs>
+    rule <instrs> return ~> (label [_] {_} _ KCELL) ~> _ => (return ~> KCELL) </instrs>
     rule <instrs> (return => .K) ~> _FR:Frame ... </instrs>
 ```
 
