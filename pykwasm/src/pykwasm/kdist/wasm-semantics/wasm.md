@@ -344,7 +344,7 @@ If the value is the special `undefined`, then `trap` is generated instead.
     rule <instrs> undefined => trap ... </instrs>
     rule <instrs>   V:Val    => .K       ... </instrs>
          <valstack> VALSTACK => V : VALSTACK </valstack>
-      requires V =/=K undefined
+    [owise]
 ```
 
 Common Operator Machinery
