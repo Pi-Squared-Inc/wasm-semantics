@@ -30,6 +30,9 @@
       0
     </nextModuleIdx>
     <mainStore>
+      <labels>
+        .List
+      </labels>
       <funcs>
         .FuncDefCellMap
       </funcs>
