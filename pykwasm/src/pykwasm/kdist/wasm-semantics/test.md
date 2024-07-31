@@ -305,14 +305,14 @@ The conformance tests contain imports of the `"spectest"` module.
                 #func (... type: 6 , locals: [ .ValTypes ] , body: .EmptyStmts , metadata: #meta (... id: , localIds: .Map ) )  
                 .EmptyStmts ,
             tables: 
-                #table (... limits: #limits ( 10 , 20 ) , type: funcref, metadata:  )  
+                #table (... limits: #limits ( 10p32 , 20p32 ) , type: funcref, metadata:  )  
                 .EmptyStmts , 
             mems: 
-                #memory (... limits: #limits ( 1 , 2 ) , metadata:  )  
+                #memory (... limits: #limits ( 1p32 , 2p32 ) , metadata:  )  
                 .EmptyStmts , 
             globals: 
-                #global (... type: const i32 , init: i32 . const 666  .EmptyStmts , metadata:  )  
-                #global (... type: const i64 , init: i64 . const 666  .EmptyStmts , metadata:  )  
+                #global (... type: const i32 , init: i32 . const 666p64  .EmptyStmts , metadata:  )  
+                #global (... type: const i64 , init: i64 . const 666p64  .EmptyStmts , metadata:  )  
                 #global (... type: const f32 , init: f32 . const 666.0  .EmptyStmts , metadata:  )  
                 #global (... type: const f64 , init: f64 . const 666.0  .EmptyStmts , metadata:  )  
                 .EmptyStmts , 
@@ -417,7 +417,8 @@ These functions make assertions about the state of the `<valstack>` cell.
 
     syntax Bool ::= equalVal(Val, Val)    [function, total]
  // -------------------------------------------------------
-    rule equalVal(<ITYPE:IValType> X, <ITYPE> Y)   => #unsigned(ITYPE, X) ==Int Y
+    rule equalVal(<ITYPE:I32ValType> X, <ITYPE> Y)   => X ==MInt Y
+    rule equalVal(<ITYPE:I64ValType> X, <ITYPE> Y)   => X ==MInt Y
     rule equalVal(<FTYPE:FValType> X, <FTYPE> Y)   => signFloat(X) ==Bool signFloat(Y) andBool X ==Float Y
     rule equalVal(<RTYPE:RefValType> X, <RTYPE> Y) => X ==Int   Y
     rule equalVal(                 X,         Y) => X ==K     Y       [owise]
@@ -518,13 +519,31 @@ This asserts related operation about tables.
          <tabs>
            <tabInst>
              <tAddr> ADDR </tAddr>
-             <tmax>  MAX  </tmax>
+             <tmax>  MAX'  </tmax>
              <tdata> DATA </tdata>
              ...
            </tabInst>
            ...
          </tabs>
-      requires size(DATA) ==Int SIZE
+      requires MInt2Unsigned(size(DATA)) ==Int SIZE andBool MInt2Unsigned(MAX') ==Int MAX
+    rule <instrs> #assertTable TFIDX SIZE .Int _MSG => .K ... </instrs>
+         <curModIdx> CUR </curModIdx>
+         <moduleInst>
+           <modIdx> CUR </modIdx>
+           <tabIds> IDS </tabIds>
+           <tabAddrs> #ContextLookup(IDS, TFIDX) |-> ADDR </tabAddrs>
+           ...
+         </moduleInst>
+         <tabs>
+           <tabInst>
+             <tAddr> ADDR </tAddr>
+             <tmax>  .MInt32 </tmax>
+             <tdata> DATA </tdata>
+             ...
+           </tabInst>
+           ...
+         </tabs>
+      requires MInt2Unsigned(size(DATA)) ==Int SIZE
 
     rule <instrs> #assertTableElem (KEY , VAL:Int) _MSG => .K ... </instrs>
          <curModIdx> CUR </curModIdx>
@@ -541,7 +560,7 @@ This asserts related operation about tables.
            </tabInst>
            ...
          </tabs>
-      requires <funcref> VAL ==K getRefOrNull(TDATA, KEY)
+      requires <funcref> VAL ==K getRefOrNull(TDATA, Int2MInt(KEY))
 
     rule <instrs> #assertTableElem (KEY , FID:Identifier) MSG 
                => #assertTableElem (KEY , FADDRS {{ FUNC_ID }} orDefault -1) MSG
@@ -575,7 +594,18 @@ This checks that the last allocated memory has the given size and max value.
          </moduleInst>
          <mems> MEMS </mems>
       requires ADDR <Int size(MEMS)
-        andBool #ContextLookup(IDS, TFIDX) ==K 0 andBool (#let memInst(MAX', SIZE', _) = MEMS[ADDR] #in MAX ==K MAX' andBool SIZE ==K SIZE')
+        andBool #ContextLookup(IDS, TFIDX) ==K 0 andBool (#let memInst(MAX', SIZE', _) = MEMS[ADDR] #in MAX ==Int MInt2Unsigned(MAX') andBool SIZE ==Int MInt2Unsigned(SIZE'))
+    rule <instrs> #assertMemory TFIDX SIZE .Int _MSG => .K ... </instrs>
+         <curModIdx> CUR </curModIdx>
+         <moduleInst>
+           <modIdx> CUR </modIdx>
+           <memIds> IDS </memIds>
+           <memAddrs> ListItem(ADDR) </memAddrs>
+           ...
+         </moduleInst>
+         <mems> MEMS </mems>
+      requires ADDR <Int size(MEMS)
+        andBool #ContextLookup(IDS, TFIDX) ==K 0 andBool (#let memInst(MAX', SIZE', _) = MEMS[ADDR] #in MAX' ==K .MInt32 andBool SIZE ==Int MInt2Unsigned(SIZE'))
 
     rule <instrs> #assertMemoryData (KEY , VAL) MSG => #assertMemoryData CUR (KEY, VAL) MSG ... </instrs>
          <curModIdx> CUR </curModIdx>
@@ -588,7 +618,7 @@ This checks that the last allocated memory has the given size and max value.
          </moduleInst>
          <mems> MEMS </mems>
       requires ADDR <Int size(MEMS)
-        andBool (#let memInst(_, _, BM) = MEMS[ADDR] #in #getRange(BM, KEY, 1) ==Int VAL)
+        andBool (#let memInst(_, _, BM) = MEMS[ADDR] #in (Bytes2Int(#getBytesRange(BM, KEY, 1), LE, Unsigned) ==Int VAL))
 ```
 
 ### Module Assertions

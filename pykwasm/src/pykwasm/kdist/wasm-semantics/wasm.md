@@ -76,7 +76,7 @@ The sorts `EmptyStmt` and `EmptyStmts` are administrative so that the empty list
 
 ```k
     syntax PlainInstr ::= IValType "." "const" WasmInt    [symbol(aIConst)]
-                        | FValType "." "const" Number     [symbol(aFConst)]
+                        | FValType "." "const" WasmFloat  [symbol(aFConst)]
                         | "ref.null" HeapType             [symbol(aRef.null)]
                         | IValType "." IUnOp              [symbol(aIUnOp)]
                         | FValType "." FUnOp              [symbol(aFUnOp)]
@@ -169,9 +169,9 @@ module WASM-INTERNAL-SYNTAX
                    | "#init_locals" ValStack
  // ----------------------------------------
 
-    syntax Int ::= #pageSize()      [function, total]
-    syntax Int ::= #maxMemorySize() [function, total]
-    syntax Int ::= #maxTableSize()  [function, total]
+    syntax MInt{32} ::= #pageSize()      [function, total]
+    syntax MInt{32} ::= #maxMemorySize() [function, total]
+    syntax MInt{64} ::= #maxTableSize()  [function, total]
  // ------------------------------------------
 
 endmodule
@@ -252,7 +252,7 @@ module WASM
           <tabs>
             <tabInst multiplicity="*" type="Map">
               <tAddr> 0     </tAddr>
-              <tmax>  .Int  </tmax>
+              <tmax>  .MInt32  </tmax>
               <tdata> .ListRef </tdata> // TODO use ARRAY O(1) lookup
             </tabInst>
           </tabs>
@@ -359,8 +359,10 @@ Constants are moved directly to the value stack.
 Function `#unsigned` is called on integers to allow programs to use negative numbers directly.
 
 ```k
-    rule <instrs> ITYPE:IValType . const VAL => #chop (< ITYPE > VAL) ... </instrs>
-    rule <instrs> FTYPE:FValType . const VAL => #round(  FTYPE , VAL) ... </instrs>
+    rule <instrs> ITYPE:I32ValType . const VAL:MInt{64} => < ITYPE > roundMInt(VAL) ... </instrs>
+    rule <instrs> ITYPE:I64ValType . const VAL:MInt{64} => < ITYPE > VAL ... </instrs>
+    rule <instrs> FTYPE:FValType . const VAL:Int => #round(  FTYPE , VAL) ... </instrs>
+    rule <instrs> FTYPE:FValType . const VAL:Float => #round(  FTYPE , VAL) ... </instrs>
 
     rule <instrs> ref.null extern => <externref> null ... </instrs>
     rule <instrs> ref.null func   => <funcref>   null ... </instrs>
@@ -372,11 +374,15 @@ When a unary operator is the next instruction, the single argument is loaded fro
 An `*UnOp` operator always produces a result of the same type as its operand.
 
 ```k
-    rule <instrs> ITYPE . UOP:IUnOp => ITYPE . UOP C1 ... </instrs>
+    rule <instrs> ITYPE:I32ValType . UOP:IUnOp => ITYPE . UOP C1 ... </instrs>
+         <valstack> < ITYPE > C1 : VALSTACK => VALSTACK </valstack>
+    rule <instrs> ITYPE:I64ValType . UOP:IUnOp => ITYPE . UOP C1 ... </instrs>
          <valstack> < ITYPE > C1 : VALSTACK => VALSTACK </valstack>
     rule <instrs> FTYPE . UOP:FUnOp => FTYPE . UOP C1 ... </instrs>
          <valstack> < FTYPE > C1 : VALSTACK => VALSTACK </valstack>
-    rule <instrs> ITYPE . UOP:ExtendS => ITYPE . UOP C1 ... </instrs>
+    rule <instrs> ITYPE:I32ValType . UOP:ExtendS => ITYPE . UOP C1 ... </instrs>
+         <valstack> < ITYPE > C1 : VALSTACK => VALSTACK </valstack>
+    rule <instrs> ITYPE:I64ValType . UOP:ExtendS => ITYPE . UOP C1 ... </instrs>
          <valstack> < ITYPE > C1 : VALSTACK => VALSTACK </valstack>
 ```
 
@@ -385,7 +391,9 @@ An `*UnOp` operator always produces a result of the same type as its operand.
 When a binary operator is the next instruction, the two arguments are loaded from the `<valstack>` automatically.
 
 ```k
-    rule <instrs> ITYPE . BOP:IBinOp => ITYPE . BOP C1 C2 ... </instrs>
+    rule <instrs> ITYPE:I32ValType . BOP:IBinOp => ITYPE . BOP C1 C2 ... </instrs>
+         <valstack> < ITYPE > C2 : < ITYPE > C1 : VALSTACK => VALSTACK </valstack>
+    rule <instrs> ITYPE:I64ValType . BOP:IBinOp => ITYPE . BOP C1 C2 ... </instrs>
          <valstack> < ITYPE > C2 : < ITYPE > C1 : VALSTACK => VALSTACK </valstack>
     rule <instrs> FTYPE . BOP:FBinOp => FTYPE . BOP C1 C2 ... </instrs>
          <valstack> < FTYPE > C2 : < FTYPE > C1 : VALSTACK => VALSTACK </valstack>
@@ -396,7 +404,9 @@ When a binary operator is the next instruction, the two arguments are loaded fro
 When a test operator is the next instruction, the single argument is loaded from the `<valstack>` automatically.
 
 ```k
-    rule <instrs> TYPE . TOP:TestOp => TYPE . TOP C1 ... </instrs>
+    rule <instrs> TYPE:I32ValType . TOP:TestOp => TYPE . TOP C1 ... </instrs>
+         <valstack> < TYPE > C1 : VALSTACK => VALSTACK </valstack>
+    rule <instrs> TYPE:I64ValType . TOP:TestOp => TYPE . TOP C1 ... </instrs>
          <valstack> < TYPE > C1 : VALSTACK => VALSTACK </valstack>
 ```
 
@@ -405,7 +415,9 @@ When a test operator is the next instruction, the single argument is loaded from
 When a relationship operator is the next instruction, the two arguments are loaded from the `<valstack>` automatically.
 
 ```k
-    rule <instrs> ITYPE . ROP:IRelOp => ITYPE . ROP C1 C2 ... </instrs>
+    rule <instrs> ITYPE:I32ValType . ROP:IRelOp => ITYPE . ROP C1 C2 ... </instrs>
+         <valstack> < ITYPE > C2 : < ITYPE > C1 : VALSTACK => VALSTACK </valstack>
+    rule <instrs> ITYPE:I64ValType . ROP:IRelOp => ITYPE . ROP C1 C2 ... </instrs>
          <valstack> < ITYPE > C2 : < ITYPE > C1 : VALSTACK => VALSTACK </valstack>
     rule <instrs> FTYPE . ROP:FRelOp => FTYPE . ROP C1 C2 ... </instrs>
          <valstack> < FTYPE > C2 : < FTYPE > C1 : VALSTACK => VALSTACK </valstack>
@@ -443,13 +455,13 @@ The `select` operator picks one of the second or third stack values based on the
          <valstack> < i32 > C : V2 : V1 : VALSTACK
                  =>             V2      : VALSTACK
          </valstack>
-      requires C ==Int 0 andBool #sameType(V1, V2)
+      requires C ==MInt 0p32 andBool #sameType(V1, V2)
 
     rule <instrs> select => .K ... </instrs>
          <valstack> < i32 > C : V2 : V1 : VALSTACK
                  =>                  V1 : VALSTACK
          </valstack>
-      requires C =/=Int 0 andBool #sameType(V1, V2)
+      requires C =/=MInt 0p32 andBool #sameType(V1, V2)
 ```
 
 Structured Control Flow
@@ -507,17 +519,16 @@ Note that, unlike in the WebAssembly specification document, we do not need the 
  // --------------------------------------------------------------
     rule <instrs> #br_if(IDX) => #br(IDX) ... </instrs>
          <valstack> <i32> VAL : VALSTACK => VALSTACK </valstack>
-      requires VAL =/=Int 0
+      requires VAL =/=MInt 0p32
     rule <instrs> #br_if(_IDX) => .K    ... </instrs>
          <valstack> <i32> VAL : VALSTACK => VALSTACK </valstack>
-      requires VAL  ==Int 0
+      requires VAL  ==MInt 0p32
 
     syntax Instr ::= "#br_table" "(" Ints ")" [symbol(aBr_table)]
  // ---------------------------------------------------------------------
-    rule <instrs> #br_table(ES) => #br(#getInts(ES, minInt(VAL, #lenInts(ES) -Int 1))) ... </instrs>
+    rule <instrs> #br_table(ES) => #br(#getInts(ES, minInt(MInt2Unsigned(VAL), #lenInts(ES) -Int 1))) ... </instrs>
          <valstack> <i32> VAL : VALSTACK => VALSTACK </valstack>
-      requires 0 <=Int VAL
-       andBool #lenInts(ES) >Int 0
+      requires #lenInts(ES) >Int 0
       [preserves-definedness]
       // preserves-definedness:
       // - 0 <= VAL and minInt(VAL, #lenInts(ES) -Int 1) ensures #getInts(_) is defined
@@ -531,11 +542,11 @@ Finally, we have the conditional and loop instructions.
  // ------------------------------------------------------------------------------------------------------------
     rule <instrs> #if(VECTYP, IS, _, _)  => sequenceInstrs(IS) ~> label VECTYP { .Instrs } VALSTACK ... </instrs>
          <valstack> < i32 > VAL : VALSTACK => VALSTACK </valstack>
-      requires VAL =/=Int 0
+      requires VAL =/=MInt 0p32
 
     rule <instrs> #if(VECTYP, _, IS, _) => sequenceInstrs(IS) ~> label VECTYP { .Instrs } VALSTACK ... </instrs>
          <valstack> < i32 > VAL : VALSTACK => VALSTACK </valstack>
-      requires VAL ==Int 0
+      requires VAL ==MInt 0p32
 
     syntax Instr ::= #loop(VecType, Instrs, BlockMetaData) [symbol(aLoop)]
  // ------------------------------------------------------------------------------
@@ -694,16 +705,15 @@ The `get` and `set` instructions read and write globals.
           ...
         </moduleInst>
 
-    syntax Instr ::= #tableGet( addr: Int, index: Int)
+    syntax Instr ::= #tableGet( addr: Int, index: MInt{32})
     rule [tableGet]:
-        <instrs> #tableGet( TADDR, I) => getRefOrNull(TDATA, I) ... </instrs>
+        <instrs> #tableGet( TADDR, I) => getRefOrNull(TDATA, roundMInt(I)) ... </instrs>
         <tabInst>
           <tAddr> TADDR </tAddr>
           <tdata> TDATA </tdata>
           ...
         </tabInst>
-      requires 0 <=Int I
-       andBool I <Int size(TDATA)
+      requires roundMInt(I) <uMInt size(TDATA)
         
     rule [tableGet-trap]:
         <instrs> #tableGet( TADDR, I) => trap ... </instrs>
@@ -712,14 +722,13 @@ The `get` and `set` instructions read and write globals.
           <tdata> TDATA </tdata>
           ...
         </tabInst>
-      requires I <Int 0
-        orBool size(TDATA) <=Int I
+      requires size(TDATA) <=uMInt roundMInt(I)
 ```
 
 #### `table.set`
 
 ```k
-    syntax Instr ::= #tableSet( addr: Int , val: RefVal , idx: Int )
+    syntax Instr ::= #tableSet( addr: Int , val: RefVal , idx: MInt{32} )
  // -----------------------------------------
     rule [table.set]:
         <instrs> #table.set( TID )
@@ -740,18 +749,16 @@ The `get` and `set` instructions read and write globals.
           <tdata> TDATA </tdata>
           ...
         </tabInst>
-      requires I <Int 0
-        orBool size(TDATA) <=Int I
+      requires size(TDATA) <=uMInt roundMInt(I)
 
     rule [tableSet]:
         <instrs> #tableSet(TADDR, VAL, I) => .K ... </instrs>
         <tabInst>
           <tAddr> TADDR </tAddr>
-          <tdata> TDATA => TDATA [ I <- VAL ] </tdata>
+          <tdata> TDATA => TDATA [ roundMInt(I) <- VAL ] </tdata>
           ...
         </tabInst>
-      requires 0 <=Int I
-       andBool I <Int size(TDATA)
+      requires roundMInt(I) <uMInt size(TDATA)
       [preserves-definedness]
     // Preserving definedness:
     //   - I is in list bounds
@@ -793,10 +800,10 @@ The `get` and `set` instructions read and write globals.
           <tdata> TDATA => TDATA makeListRefTotal(N, REFVAL) </tdata>
           ...
         </tabInst>
-      requires #canGrow(size(TDATA), N, TMAX)
+      requires #canGrow(roundMInt(size(TDATA)), N, TMAX)
 
     rule [table.grow-fail]:
-        <instrs> #table.grow(TID) => i32.const (#pow(i32) -Int 1) ... </instrs>
+        <instrs> #table.grow(TID) => <i32> -1p32 ... </instrs>
         <valstack> <i32> N : _REFVAL : STACK => STACK </valstack>
         <curModIdx> CUR </curModIdx>
         <moduleInst>
@@ -810,13 +817,12 @@ The `get` and `set` instructions read and write globals.
           <tdata> TDATA </tdata>
           ...
         </tabInst>
-      requires notBool #canGrow(size(TDATA), N, TMAX)
+      requires notBool #canGrow(roundMInt(size(TDATA)), N, TMAX)
 
-    syntax Bool ::= #canGrow(len: Int, n: Int, max: OptionalInt)   [function, total]
+    syntax Bool ::= #canGrow(len: MInt{32}, n: MInt{32}, max: OptionalMInt32)   [function, total]
  // --------------------------------------------------------------------------------
-    rule #canGrow(LEN, N, MAX) => LEN +Int N <Int #pow(i32)
-                          andBool LEN +Int N <=Int MAX
-    rule #canGrow(LEN, N, .Int) => LEN +Int N <Int #pow(i32)
+    rule #canGrow(LEN, N, MAX) => N <=uMInt MAX andBool LEN <=uMInt MAX -MInt N
+    rule #canGrow(LEN, N, .MInt32) => LEN <=uMInt -1p32 -MInt N
 
 ```
 
@@ -825,7 +831,7 @@ The `get` and `set` instructions read and write globals.
 ```k
     rule [table.fill]:
         <instrs> #table.fill(TID)
-              => #tableCheckSizeGTE(TADDR, I +Int N)
+              => #tableCheckSizeGTE(TADDR, I, N)
               ~> #tableFill(TID, N, RVAL, I) ...
         </instrs>
         <valstack> <i32> N : RVAL : <i32> I : STACK => STACK </valstack>
@@ -836,20 +842,21 @@ The `get` and `set` instructions read and write globals.
           ...
         </moduleInst>
 
-    syntax Instr ::= #tableFill(Int, Int, RefVal, Int)
- // ------------------------------------------------------
+    syntax Instr ::= #tableFill(Int, MInt{32}, RefVal, MInt{32})
+ // ------------------------------------------------------------
     rule [tableFill-zero]:
-        <instrs> #tableFill(_, 0, _, _) => .K ... </instrs>
+        <instrs> #tableFill(_, N, _, _) => .K ... </instrs>
+      requires N ==MInt 0p32
     
     rule [tableFill-loop]:
         <instrs> #tableFill(TID, N, RVAL, I)
               => <i32> I
               ~> RVAL
               ~> #table.set(TID)
-              ~> #tableFill(TID, N -Int 1, RVAL, I +Int 1)
+              ~> #tableFill(TID, N -MInt 1p32, RVAL, I +MInt 1p32)
                  ...
         </instrs>
-      requires N >Int 0
+      requires N =/=MInt 0p32
 
 ```
 
@@ -858,8 +865,8 @@ The `get` and `set` instructions read and write globals.
 ```k
     rule [table.copy]:
         <instrs> #table.copy(TX, TY)
-              => #tableCheckSizeGTE(TYADDR, S +Int N)
-              ~> #tableCheckSizeGTE(TXADDR, D +Int N)
+              => #tableCheckSizeGTE(TYADDR, S, N)
+              ~> #tableCheckSizeGTE(TXADDR, D, N)
               ~> #tableCopy(TX, TY, N, S, D)
                  ...
         </instrs>
@@ -873,7 +880,7 @@ The `get` and `set` instructions read and write globals.
 
     rule [table.copy-self]:
         <instrs> #table.copy(TX, TX)
-              => #tableCheckSizeGTE(TXADDR, maxInt(S, D) +Int N)
+              => #tableCheckSizeGTE(TXADDR, uMaxMInt(S, D), N)
               ~> #tableCopy(TX, TX, N, S, D)
                  ...
         </instrs>
@@ -885,10 +892,11 @@ The `get` and `set` instructions read and write globals.
           ...
         </moduleInst>
 
-    syntax Instr ::= #tableCopy(tix: Int, tiy: Int, n: Int, s: Int, d: Int)
+    syntax Instr ::= #tableCopy(tix: Int, tiy: Int, n: MInt{32}, s: MInt{32}, d: MInt{32})
  // -----------------------------------------------------------------------
     rule [tableCopy-zero]:
-        <instrs> #tableCopy(_, _, 0, _, _) => .K ... </instrs>
+        <instrs> #tableCopy(_, _, N, _, _) => .K ... </instrs>
+      requires N ==MInt 0p32
 
     // If D (destination index) is less than S (source), go from left to right
     // Otherwise, start from the end
@@ -898,23 +906,23 @@ The `get` and `set` instructions read and write globals.
               ~> <i32> S
               ~> #table.get(TIY)
               ~> #table.set(TIX)
-              ~> #tableCopy(TIX, TIY, N -Int 1, S +Int 1, D +Int 1)
+              ~> #tableCopy(TIX, TIY, N -MInt 1p32, S +MInt 1p32, D +MInt 1p32)
                  ...
         </instrs>
-      requires N >Int 0
-       andBool D <=Int S
+      requires N =/=MInt 0p32
+       andBool D <=uMInt S
 
     rule [tableCopy-RL]:
         <instrs> #tableCopy(TIX, TIY, N, S, D)
-              => <i32> (D +Int N -Int 1)
-              ~> <i32> (S +Int N -Int 1)
+              => <i32> (D +MInt N -MInt 1p32)
+              ~> <i32> (S +MInt N -MInt 1p32)
               ~> #table.get(TIY)
               ~> #table.set(TIX)
-              ~> #tableCopy(TIX, TIY, N -Int 1, S, D)
+              ~> #tableCopy(TIX, TIY, N -MInt 1p32, S, D)
                  ...
         </instrs>
-      requires N >Int 0
-       andBool D >Int S
+      requires N =/=MInt 0p32
+       andBool D >uMInt S
 ```
 
 #### `table.init`
@@ -922,8 +930,8 @@ The `get` and `set` instructions read and write globals.
 ```k
     rule [table.init]:
         <instrs> #table.init(TID, EID)
-              => #elemCheckSizeGTE (EA, S +Int N)
-              ~> #tableCheckSizeGTE(TA, D +Int N)
+              => #elemCheckSizeGTE (EA, S, N)
+              ~> #tableCheckSizeGTE(TA, D, N)
               ~> #tableInit(TID, N, D, dropListRef(S, ELEM))
                  ...
         </instrs>
@@ -941,19 +949,20 @@ The `get` and `set` instructions read and write globals.
           ...
         </elemInst>
 
-    syntax Instr ::= #tableInit(tidx: Int, n: Int, d: Int, es: ListRef)
- // ----------------------------------------------------
+    syntax Instr ::= #tableInit(tidx: Int, n: MInt{32}, d: MInt{32}, es: ListRef)
+ // -----------------------------------------------------------------------------
     rule [tableInit-done]:
-        <instrs> #tableInit(_, 0, _, _) => .K ... </instrs>
+        <instrs> #tableInit(_, N, _, _) => .K ... </instrs>
+      requires N ==MInt 0p32
 
     rule [tableInit]:
         <instrs> #tableInit(TID, N, D, ListItem(R) RS)
               => #table.set(TID)
-              ~> #tableInit(TID, N -Int 1, D +Int 1, RS)
+              ~> #tableInit(TID, N -MInt 1p32, D +MInt 1p32, RS)
                  ...
         </instrs>
         <valstack> STACK => R : <i32> D : STACK </valstack>
-      requires N >Int 0
+      requires N =/=MInt 0p32
 
 ```
 
@@ -979,35 +988,35 @@ The `get` and `set` instructions read and write globals.
 #### Misc
 
 ```k
-    syntax Instr ::= #tableCheckSizeGTE(addr: Int, n: Int)
- // -------------------------------------------------------
+    syntax Instr ::= #tableCheckSizeGTE(addr: Int, a: MInt{32}, b: MInt{32})
+ // ------------------------------------------------------------------------
     rule [tableCheckSizeGTE-pass]:
-        <instrs> #tableCheckSizeGTE(ADDR, N) => .K ... </instrs>
+        <instrs> #tableCheckSizeGTE(ADDR, A, B) => .K ... </instrs>
         <tabInst>
           <tAddr> ADDR </tAddr>
           <tdata> TDATA </tdata>
           ...
         </tabInst>
-      requires N <=Int size(TDATA)
+      requires roundMInt(B) <=uMInt size(TDATA) andBool roundMInt(A) <=uMInt size(TDATA) -MInt roundMInt(B)
 
     rule [tableCheckSizeGTE-fail]:
-        <instrs> #tableCheckSizeGTE(_, _) => trap ... </instrs>
+        <instrs> #tableCheckSizeGTE(_, _, _) => trap ... </instrs>
       [owise]
 
 
-    syntax Instr ::= #elemCheckSizeGTE(addr: Int, n: Int)
- // -------------------------------------------------------
+    syntax Instr ::= #elemCheckSizeGTE(addr: Int, a: MInt{32}, b: MInt{32})
+ // -----------------------------------------------------------------------
     rule [elemCheckSizeGTE-pass]:
-        <instrs> #elemCheckSizeGTE(ADDR, N) => .K ... </instrs>
+        <instrs> #elemCheckSizeGTE(ADDR, A, B) => .K ... </instrs>
         <elemInst>
           <eAddr>  ADDR </eAddr>
           <eValue> ELEM </eValue>
           ...
         </elemInst>
-      requires N <=Int size(ELEM)
+      requires roundMInt(B) <=uMInt size(ELEM) andBool roundMInt(A) <=uMInt size(ELEM) -MInt roundMInt(B)
 
     rule [elemCheckSizeGTE-fail]:
-        <instrs> #elemCheckSizeGTE(_, _) => trap ... </instrs>
+        <instrs> #elemCheckSizeGTE(_, _, _) => trap ... </instrs>
       [owise]
 ```
 
@@ -1027,11 +1036,11 @@ The `get` and `set` instructions read and write globals.
         <instrs> ref.null extern => <externref> null ... </instrs>
 
     rule [ref.isNull-true]:
-        <instrs> #ref.is_null => i32.const 1 ... </instrs>
+        <instrs> #ref.is_null => <i32> 1p32 ... </instrs>
         <valstack> <_:RefValType> null : STACK => STACK </valstack>
 
     rule [ref.isNull-false]:
-        <instrs> #ref.is_null => i32.const 0 ... </instrs>
+        <instrs> #ref.is_null => <i32> 0p32 ... </instrs>
         <valstack> <_:RefValType> _:Int : STACK => STACK </valstack>
 
     rule [ref.func]:
@@ -1234,7 +1243,7 @@ The types need to be inserted at the definitions level, if a previously undeclar
     rule [call-indirect-getRef]:
         <instrs> #call_indirect(TIDX:Int,TUSE:TypeUse)
               => #callIndirect(
-                    getRefOrNull(TDATA, IDX),
+                    getRefOrNull(TDATA, roundMInt(IDX)),
                     asFuncType(TYPEIDS, TYPES, TUSE)
                   ) ...
         </instrs>
@@ -1297,13 +1306,10 @@ The importing and exporting parts of specifications are dealt with in the respec
 
 ```k
     syntax TableDefn ::= #table (limits: Limits, type: RefValType, metadata: OptionalId) [symbol(aTableDefn)]
-    syntax Alloc ::= alloctable (OptionalId, Int, OptionalInt, RefValType)
+    syntax Alloc ::= alloctable (OptionalId, MInt{32}, OptionalMInt32, RefValType)
  // --------------------------------------------------------------------
-    rule <instrs> #table(... limits: #limitsMin(MIN), type: TYP, metadata: OID)   => alloctable(OID, MIN, .Int, TYP) ... </instrs>
-      requires MIN <=Int #maxTableSize()
+    rule <instrs> #table(... limits: #limitsMin(MIN), type: TYP, metadata: OID)   => alloctable(OID, MIN, .MInt32, TYP) ... </instrs>
     rule <instrs> #table(... limits: #limits(MIN, MAX), type: TYP, metadata: OID) => alloctable(OID, MIN, MAX, TYP) ... </instrs>
-      requires MIN <=Int #maxTableSize()
-       andBool MAX <=Int #maxTableSize()
 
     rule <instrs> alloctable(ID, MIN, MAX, TYP) => .K ... </instrs>
          <curModIdx> CUR </curModIdx>
@@ -1343,14 +1349,14 @@ The importing and exporting parts of specifications are dealt with in the respec
 
 ```k
     syntax MemoryDefn ::= #memory(limits: Limits, metadata: OptionalId) [symbol(aMemoryDefn)]
-    syntax Alloc ::= allocmemory (OptionalId, Int, OptionalInt)
-    syntax KItem ::= memInst(mmax: OptionalInt, msize: Int, mdata: SparseBytes)
+    syntax Alloc ::= allocmemory (OptionalId, MInt{32}, OptionalMInt32)
+    syntax KItem ::= memInst(mmax: OptionalMInt32, msize: MInt{32}, mdata: SparseBytes)
  // ---------------------------------------------------------------------------
-    rule <instrs> #memory(... limits: #limitsMin(MIN),   metadata: OID) => allocmemory(OID, MIN, .Int) ... </instrs>
-      requires MIN <=Int #maxMemorySize()
+    rule <instrs> #memory(... limits: #limitsMin(MIN),   metadata: OID) => allocmemory(OID, MIN, .MInt32) ... </instrs>
+      requires MIN <=uMInt #maxMemorySize()
     rule <instrs> #memory(... limits: #limits(MIN, MAX), metadata: OID) => allocmemory(OID, MIN, MAX)  ... </instrs>
-      requires MIN <=Int #maxMemorySize()
-       andBool MAX <=Int #maxMemorySize()
+      requires MIN <=uMInt #maxMemorySize()
+       andBool MAX <=uMInt #maxMemorySize()
 
     rule <instrs> allocmemory(ID, MIN, MAX) => .K ... </instrs>
          <curModIdx> CUR </curModIdx>
@@ -1369,14 +1375,17 @@ The value is encoded as bytes and stored at the "effective address", which is th
 [Store Instructions](https://webassembly.github.io/spec/core/exec/instructions.html#t-mathsf-xref-syntax-instructions-syntax-instr-memory-mathsf-store-xref-syntax-instructions-syntax-memarg-mathit-memarg-and-t-mathsf-xref-syntax-instructions-syntax-instr-memory-mathsf-store-n-xref-syntax-instructions-syntax-memarg-mathit-memarg)
 
 ```k
-    syntax Instr ::= #store(ValType, StoreOp, offset : Int) [symbol(aStore)]
-                   | IValType "." StoreOp Int Int
+    syntax Instr ::= #store(ValType, StoreOp, offset : MInt{32}) [symbol(aStore)]
+                   | I32ValType "." StoreOp MInt{64} MInt{32}
+                   | I64ValType "." StoreOp MInt{64} MInt{64}
  //                | FValType "." StoreOp Int Float
-                   | "store" "{" IWidth Int Number "}"
-                   | "store" "{" IWidth Int Number Int "}"
+                   | "store" "{" IWidth MInt{64} Number "}"
+                   | "store" "{" IWidth MInt{64} Number Int "}"
  // -----------------------------------------------
-    rule <instrs> #store(ITYPE:IValType, SOP, OFFSET) => ITYPE . SOP (IDX +Int OFFSET) VAL ... </instrs>
-         <valstack> < ITYPE > VAL : < i32 > IDX : VALSTACK => VALSTACK </valstack>
+    rule <instrs> #store(i32, SOP, OFFSET) => i32 . SOP (roundMInt(IDX) +MInt roundMInt(OFFSET)) VAL ... </instrs>
+         <valstack> < i32 > VAL : < i32 > IDX : VALSTACK => VALSTACK </valstack>
+    rule <instrs> #store(i64, SOP, OFFSET) => i64 . SOP (roundMInt(IDX) +MInt roundMInt(OFFSET)) VAL ... </instrs>
+         <valstack> < i64 > VAL : < i32 > IDX : VALSTACK => VALSTACK </valstack>
 
     rule <instrs> store { WIDTH EA VAL } => store { WIDTH EA VAL ADDR } ... </instrs>
          <curModIdx> CUR </curModIdx>
@@ -1387,9 +1396,9 @@ The value is encoded as bytes and stored at the "effective address", which is th
          </moduleInst>
 
     rule <instrs> store { WIDTH EA VAL ADDR } => .K ... </instrs>
-         <mems> MEMS => MEMS [ ADDR <- #let memInst(MAX, SIZE, DATA) = MEMS[ADDR] #in memInst(MAX, SIZE, #setRange(DATA, EA, VAL, #numBytes(WIDTH))) ] </mems>
+         <mems> MEMS => MEMS [ ADDR <- #let memInst(MAX, SIZE, DATA) = MEMS[ADDR] #in memInst(MAX, SIZE, #setRange(DATA, EA, VAL, WIDTH)) ] </mems>
          requires ADDR <Int size(MEMS)
-           andBool (EA +Int #numBytes(WIDTH)) <=Int (msize(MEMS[ADDR]) *Int #pageSize())
+          andBool (EA +MInt #numBytes(WIDTH)) <=uMInt (roundMInt(msize(MEMS[ADDR])) <<MInt 16p64)
          [preserves-definedness]
     // Preserving definedness:
     //   - #setRange is total
@@ -1398,12 +1407,15 @@ The value is encoded as bytes and stored at the "effective address", which is th
     rule <instrs> store { WIDTH  EA  _ ADDR } => trap ... </instrs>
          <mems> MEMS </mems>
          requires ADDR <Int size(MEMS)
-           andBool (EA +Int #numBytes(WIDTH)) >Int (msize(MEMS[ADDR]) *Int #pageSize())
+          andBool (EA +MInt #numBytes(WIDTH)) >uMInt (roundMInt(msize(MEMS[ADDR])) <<MInt 16p64)
 
-    rule <instrs> ITYPE . store   EA VAL => store { ITYPE EA VAL           } ... </instrs>
-    rule <instrs> _     . store8  EA VAL => store { i8    EA #wrap(1, VAL) } ... </instrs>
-    rule <instrs> _     . store16 EA VAL => store { i16   EA #wrap(2, VAL) } ... </instrs>
-    rule <instrs> i64   . store32 EA VAL => store { i32   EA #wrap(4, VAL) } ... </instrs>
+    rule <instrs> i32 . store8  EA VAL => store { i8    EA roundMInt(roundMInt(VAL)::MInt{8})::MInt{32}  } ... </instrs>
+    rule <instrs> i32 . store16 EA VAL => store { i16   EA roundMInt(roundMInt(VAL)::MInt{16})::MInt{32} } ... </instrs>
+    rule <instrs> i32 . store   EA VAL => store { i32   EA VAL                      } ... </instrs>
+    rule <instrs> i64 . store8  EA VAL => store { i8    EA roundMInt(roundMInt(VAL)::MInt{8})::MInt{64}  } ... </instrs>
+    rule <instrs> i64 . store16 EA VAL => store { i16   EA roundMInt(roundMInt(VAL)::MInt{16})::MInt{64} } ... </instrs>
+    rule <instrs> i64 . store32 EA VAL => store { i32   EA roundMInt(roundMInt(VAL)::MInt{32})::MInt{64} } ... </instrs>
+    rule <instrs> i64 . store   EA VAL => store { i64   EA VAL                      } ... </instrs>
 ```
 
 The assorted load operations take an address of type `i32`.
@@ -1413,22 +1425,22 @@ Sort `Signedness` is defined in module `BYTES`.
 [Load Instructions](https://webassembly.github.io/spec/core/exec/instructions.html#t-mathsf-xref-syntax-instructions-syntax-instr-memory-mathsf-load-xref-syntax-instructions-syntax-memarg-mathit-memarg-and-t-mathsf-xref-syntax-instructions-syntax-instr-memory-mathsf-load-n-mathsf-xref-syntax-instructions-syntax-sx-mathit-sx-xref-syntax-instructions-syntax-memarg-mathit-memarg)
 
 ```k
-    syntax Instr ::= #load(ValType, LoadOp, offset : Int) [symbol(aLoad)]
-                   | "load" "{" IValType IWidth Int Signedness"}"
-                   | "load" "{" IValType IWidth Int Signedness Int"}"
-                   | "load" "{" IValType IWidth Int Signedness SparseBytes"}"
-                   | IValType "." LoadOp Int
- // ----------------------------------------
-    rule <instrs> #load(ITYPE:IValType, LOP, OFFSET) => ITYPE . LOP (IDX +Int OFFSET)  ... </instrs>
+    syntax Instr ::= #load(ValType, LoadOp, offset : MInt{32}) [symbol(aLoad)]
+                   | "load" "{" IValType IWidth MInt{64} Signedness"}"
+                   | "load" "{" IValType IWidth MInt{64} Signedness Int"}"
+                   | "load" "{" IValType IWidth MInt{64} Signedness SparseBytes"}"
+                   | IValType "." LoadOp MInt{64}
+ // ---------------------------------------------
+    rule <instrs> #load(ITYPE:IValType, LOP, OFFSET) => ITYPE . LOP (roundMInt(IDX) +MInt roundMInt(OFFSET))  ... </instrs>
          <valstack> < i32 > IDX : VALSTACK => VALSTACK </valstack>
 
-    rule <instrs> ITYPE . load     EA:Int => load { ITYPE ITYPE EA Unsigned } ... </instrs>
-    rule <instrs> ITYPE . load8_u  EA:Int => load { ITYPE i8    EA Unsigned } ... </instrs>
-    rule <instrs> ITYPE . load16_u EA:Int => load { ITYPE i16   EA Unsigned } ... </instrs>
-    rule <instrs> i64   . load32_u EA:Int => load { i64   i32   EA Unsigned } ... </instrs>
-    rule <instrs> ITYPE . load8_s  EA:Int => load { ITYPE i8    EA Signed   } ... </instrs>
-    rule <instrs> ITYPE . load16_s EA:Int => load { ITYPE i16   EA Signed   } ... </instrs>
-    rule <instrs> i64   . load32_s EA:Int => load { i64   i32   EA Signed   } ... </instrs>
+    rule <instrs> ITYPE . load     EA => load { ITYPE ITYPE EA Unsigned } ... </instrs>
+    rule <instrs> ITYPE . load8_u  EA => load { ITYPE i8    EA Unsigned } ... </instrs>
+    rule <instrs> ITYPE . load16_u EA => load { ITYPE i16   EA Unsigned } ... </instrs>
+    rule <instrs> i64   . load32_u EA => load { i64   i32   EA Unsigned } ... </instrs>
+    rule <instrs> ITYPE . load8_s  EA => load { ITYPE i8    EA Signed   } ... </instrs>
+    rule <instrs> ITYPE . load16_s EA => load { ITYPE i16   EA Signed   } ... </instrs>
+    rule <instrs> i64   . load32_s EA => load { i64   i32   EA Signed   } ... </instrs>
 
     rule <instrs> load { ITYPE WIDTH EA SIGN } => load { ITYPE WIDTH EA SIGN ADDR:Int } ... </instrs>
          <curModIdx> CUR </curModIdx>
@@ -1441,20 +1453,15 @@ Sort `Signedness` is defined in module `BYTES`.
     rule <instrs> load { ITYPE WIDTH EA SIGN ADDR:Int} => load { ITYPE WIDTH EA SIGN mdata(MEMS[ADDR]) } ... </instrs>
          <mems> MEMS </mems>
       requires ADDR <Int size(MEMS)
-        andBool (EA +Int #numBytes(WIDTH)) <=Int (msize(MEMS[ADDR]) *Int #pageSize())
+       andBool (EA +MInt #numBytes(WIDTH)) <=uMInt (roundMInt(msize(MEMS[ADDR])) <<MInt 16p64)
 
     rule <instrs> load { _ WIDTH EA _ ADDR:Int} => trap ... </instrs>
          <mems> MEMS </mems>
       requires ADDR <Int size(MEMS)
-        andBool (EA +Int #numBytes(WIDTH)) >Int (msize(MEMS[ADDR]) *Int #pageSize())
+       andBool (EA +MInt #numBytes(WIDTH)) >uMInt (roundMInt(msize(MEMS[ADDR])) <<MInt 16p64)
 
-    rule <instrs> load { ITYPE WIDTH EA   Signed DATA:SparseBytes } => #chop(< ITYPE > #signed(WIDTH, #getRange(DATA, EA, #numBytes(WIDTH)))) ... </instrs>
-        [preserves-definedness]
-        // #signed(WIDTH, N) is defined for 0 <= N <= #pow(WIDTH)
-        // #pow(WIDTH) == 2 ^ #width(WIDTH) == 2 ^ (#numBytes(WIDTH) * 8)
-        // and #getRange(_, _, SIZE) < 2 ^ (SIZE * 8)
-
-    rule <instrs> load { ITYPE WIDTH EA Unsigned DATA:SparseBytes } => < ITYPE > #getRange(DATA, EA, #numBytes(WIDTH)) ... </instrs>
+    rule <instrs> load { i32 WIDTH EA SIGN DATA:SparseBytes } => < i32 > {#getRange(DATA, EA, WIDTH, i32, SIGN)}:>MInt{32} ... </instrs>
+    rule <instrs> load { i64 WIDTH EA SIGN DATA:SparseBytes } => < i64 > {#getRange(DATA, EA, WIDTH, i64, SIGN)}:>MInt{64} ... </instrs>
 ```
 
 The `size` operation returns the size of the memory, measured in pages.
@@ -1480,7 +1487,7 @@ By setting the `<deterministicMemoryGrowth>` field in the configuration to `true
 [Memory Grow](https://webassembly.github.io/spec/core/exec/instructions.html#xref-syntax-instructions-syntax-instr-memory-mathsf-memory-grow)
 
 ```k
-    syntax Instr ::= "grow" Int
+    syntax Instr ::= "grow" MInt{32}
  // ---------------------------
     rule <instrs> memory.grow => grow N ... </instrs>
          <valstack> < i32 > N : VALSTACK => VALSTACK </valstack>
@@ -1492,11 +1499,11 @@ By setting the `<deterministicMemoryGrowth>` field in the configuration to `true
            <memAddrs> ListItem(ADDR) </memAddrs>
            ...
          </moduleInst>
-         <mems> MEMS => #let memInst(MAX, SIZE, DATA) = MEMS[ADDR] #in MEMS[ADDR <- memInst(MAX, SIZE +Int N, DATA)] </mems>
+         <mems> MEMS => #let memInst(MAX, SIZE, DATA) = MEMS[ADDR] #in MEMS[ADDR <- memInst(MAX, SIZE +MInt N, DATA)] </mems>
       requires ADDR <Int size(MEMS)
-        andBool (#let memInst(MAX, SIZE, _) = MEMS[ADDR] #in #growthAllowed(SIZE +Int N, MAX))
+        andBool (#let memInst(MAX, SIZE, _) = MEMS[ADDR] #in #growthAllowed(SIZE, N, MAX))
 
-    rule <instrs> grow N => < i32 > #unsigned(i32, -1) ... </instrs>
+    rule <instrs> grow N => < i32 > -1p32 ... </instrs>
          <deterministicMemoryGrowth> DET:Bool </deterministicMemoryGrowth>
          <curModIdx> CUR </curModIdx>
          <moduleInst>
@@ -1506,13 +1513,13 @@ By setting the `<deterministicMemoryGrowth>` field in the configuration to `true
          </moduleInst>
          <mems> MEMS </mems>
       requires ADDR <Int size(MEMS)
-        andBool (#let memInst(MAX, SIZE, _) = MEMS[ADDR] #in (notBool DET
-        orBool notBool #growthAllowed(SIZE +Int N, MAX)))
+       andBool (#let memInst(MAX, SIZE, _) = MEMS[ADDR] #in (notBool DET
+        orBool notBool #growthAllowed(SIZE, N, MAX)))
 
-    syntax Bool ::= #growthAllowed(Int, OptionalInt) [function, total]
- // -----------------------------------------------------------
-    rule #growthAllowed(SIZE, .Int ) => SIZE <=Int #maxMemorySize()
-    rule #growthAllowed(SIZE, I:Int) => #growthAllowed(SIZE, .Int) andBool SIZE <=Int I
+    syntax Bool ::= #growthAllowed(MInt{32}, MInt{32}, OptionalMInt32) [function, total]
+ // ------------------------------------------------------------------------------------
+    rule #growthAllowed(SIZE, N, .MInt32 ) => N <=uMInt #maxMemorySize() -MInt SIZE
+    rule #growthAllowed(SIZE, N, I:MInt{32}) => #growthAllowed(SIZE, N, .MInt32) andBool SIZE +MInt N <=uMInt I
 ```
 
 However, the absolute max allowed size if 2^16 pages.
@@ -1520,9 +1527,9 @@ Incidentally, the page size is 2^16 bytes.
 The maximum of table size is 2^32 bytes.
 
 ```k
-    rule #pageSize()      => 65536
-    rule #maxMemorySize() => 65536
-    rule #maxTableSize()  => 4294967296
+    rule #pageSize()      => 65536p32
+    rule #maxMemorySize() => 65536p32
+    rule #maxTableSize()  => 4294967296p64
 ```
 
 `fill` fills a contiguous section of memory with a value.
@@ -1532,8 +1539,8 @@ The spec states that this is really a sequence of `i32.store8` instructions, but
 [Memory Fill](https://webassembly.github.io/spec/core/exec/instructions.html#xref-syntax-instructions-syntax-instr-memory-mathsf-memory-fill)
 
 ```k
-    syntax Instr ::= "fillTrap" Int Int Int
-                   | "fill"     Int Int Int
+    syntax Instr ::= "fillTrap" MInt{32} MInt{32} MInt{32}
+                   | "fill"     MInt{32} MInt{32} MInt{32}
  // ---------------------------------------
     rule <instrs> memory.fill => fillTrap N VAL D ... </instrs>
          <valstack> < i32 > N : < i32 > VAL : < i32 > D : VALSTACK => VALSTACK </valstack>
@@ -1547,11 +1554,12 @@ The spec states that this is really a sequence of `i32.store8` instructions, but
          </moduleInst>
          <mems> MEMS </mems>
       requires ADDR <Int size(MEMS)
-       andBool (#let memInst(_, SIZE, _) = MEMS[ADDR] #in N +Int D >Int SIZE *Int #pageSize())
+       andBool (#let memInst(_, SIZE, _) = MEMS[ADDR] #in N +MInt D >uMInt SIZE *MInt #pageSize())
 
     rule <instrs> fillTrap N VAL D => fill N VAL D ... </instrs> [owise]
 
-    rule <instrs> fill 0 _VAL _D => .K ... </instrs>
+    rule <instrs> fill N _VAL _D => .K ... </instrs>
+      requires N ==MInt 0p32
 
     rule <instrs> fill N VAL D => .K ... </instrs>
          <curModIdx> CUR </curModIdx>
@@ -1560,8 +1568,8 @@ The spec states that this is really a sequence of `i32.store8` instructions, but
            <memAddrs> ListItem(ADDR) </memAddrs>
            ...
          </moduleInst>
-         <mems> MEMS => MEMS [ ADDR <- #let memInst(MAX, SIZE, DATA) = MEMS[ADDR] #in memInst(MAX, SIZE, replaceAt(DATA, D, padRightBytes(.Bytes, N, VAL))) ] </mems>
-      requires ADDR <Int size(MEMS) andBool notBool N ==Int 0
+         <mems> MEMS => MEMS [ ADDR <- #let memInst(MAX, SIZE, DATA) = MEMS[ADDR] #in memInst(MAX, SIZE, replaceAt(DATA, MInt2Unsigned(D), padRightBytes(.Bytes, MInt2Unsigned(N), MInt2Unsigned(VAL)))) ] </mems>
+      requires ADDR <Int size(MEMS) andBool N =/=MInt 0p32
 ```
 
 `copy` will copy a section of memory from one location to another.
@@ -1571,8 +1579,8 @@ performing a series of load and store operations as stated in the spec.
 [Memory Copy](https://webassembly.github.io/spec/core/exec/instructions.html#xref-syntax-instructions-syntax-instr-memory-mathsf-memory-copy)
 
 ```k
-    syntax Instr ::= "copyTrap" Int Int Int
-                   | "copy" Int Int Int
+    syntax Instr ::= "copyTrap" MInt{32} MInt{32} MInt{32}
+                   | "copy" MInt{32} MInt{32} MInt{32}
  // ---------------------------------------
     rule <instrs> memory.copy => copyTrap N S D ... </instrs>
          <valstack> < i32 > N : < i32 > S : < i32 > D : VALSTACK => VALSTACK </valstack>
@@ -1586,12 +1594,13 @@ performing a series of load and store operations as stated in the spec.
          </moduleInst>
          <mems> MEMS </mems>
       requires ADDR <Int size(MEMS)
-       andBool (#let memInst(_, SIZE, _) = MEMS[ADDR] #in D +Int N >Int SIZE *Int #pageSize()
-        orBool S +Int N >Int SIZE *Int #pageSize())
+       andBool (#let memInst(_, SIZE, _) = MEMS[ADDR] #in (D +MInt N >uMInt SIZE *MInt #pageSize()
+        orBool S +MInt N >uMInt SIZE *MInt #pageSize()))
 
     rule <instrs> copyTrap N S D => copy N S D ... </instrs> [owise]
 
-    rule <instrs> copy 0 _S _D => .K ... </instrs>
+    rule <instrs> copy N _S _D => .K ... </instrs>
+      requires N ==MInt 0p32
 
     rule <instrs> copy N S D => .K ... </instrs>
          <curModIdx> CUR </curModIdx>
@@ -1600,8 +1609,8 @@ performing a series of load and store operations as stated in the spec.
            <memAddrs> ListItem(ADDR) </memAddrs>
            ...
          </moduleInst>
-         <mems> MEMS => MEMS [ ADDR <- #let memInst(MAX, SIZE, DATA) = MEMS[ADDR] #in memInst(MAX, SIZE, replaceAt(DATA, D, #getBytesRange(DATA, S, N))) ] </mems>
-      requires ADDR <Int size(MEMS) andBool notBool N ==Int 0
+         <mems> MEMS => MEMS [ ADDR <- #let memInst(MAX, SIZE, DATA) = MEMS[ADDR] #in memInst(MAX, SIZE, replaceAt(DATA, MInt2Unsigned(D), #getBytesRange(DATA, MInt2Unsigned(S), MInt2Unsigned(N)))) ] </mems>
+      requires ADDR <Int size(MEMS) andBool N =/=MInt 0p32
 ```
 
 Element Segments
@@ -1609,7 +1618,7 @@ Element Segments
 
 ```k
     syntax ElemDefn ::= #elem(type: RefValType, elemSegment: ListRef, mode: ElemMode, oid: OptionalId)  [symbol(aElemDefn)]
-                      | #elemAux(segmentLen: Int, mode: ElemMode)
+                      | #elemAux(segmentLen: MInt{32}, mode: ElemMode)
     syntax ElemMode ::= #elemActive(table: Int, offset: Instrs)                           [symbol(aElemActive)]
                       | "#elemPassive"        [symbol(aElemPassive)]
                       | "#elemDeclarative"    [symbol(aElemDeclarative)]
@@ -1619,36 +1628,36 @@ Element Segments
     rule [elem-active]:
         <instrs> #elem(TYPE:RefValType, INIT:ListRef, MODE:ElemMode, OID:OptionalId) 
               => allocelem(TYPE, INIT, OID)
-              ~> #elemAux(size(INIT), MODE)
+              ~> #elemAux(roundMInt(size(INIT)), MODE)
                  ...
         </instrs>
 
     rule [elem-active-aux]:
-        <instrs> #elemAux(LEN:Int, #elemActive(... table: TID, offset: OFFSET))
+        <instrs> #elemAux(LEN:MInt{32}, #elemActive(... table: TID, offset: OFFSET))
               => sequenceInstrs(OFFSET)
-              ~> i32.const 0
-              ~> i32.const LEN
-              ~> #table.init(TID, IDX)
-              ~> #elem.drop(IDX)
+              ~> < i32 > 0p32
+              ~> < i32 > LEN
+              ~> #table.init(TID, MInt2Unsigned(IDX))
+              ~> #elem.drop(MInt2Unsigned(IDX))
                  ...
         </instrs>
         <valstack> <i32> IDX : S => S </valstack>
 
     rule [elem-declarative-aux]:
-        <instrs> #elemAux(_LEN:Int, #elemDeclarative)
-              => #elem.drop(IDX)
+        <instrs> #elemAux(_LEN:MInt{32}, #elemDeclarative)
+              => #elem.drop(MInt2Unsigned(IDX))
                  ...
         </instrs>
         <valstack> <i32> IDX : S => S </valstack>
 
     rule [elem-passive-aux]:
-        <instrs> #elemAux(_LEN:Int, #elemPassive)
+        <instrs> #elemAux(_LEN:MInt{32}, #elemPassive)
               => .K ...
         </instrs>
         <valstack> <i32> _IDX : S => S </valstack>
 
     rule [allocelem]:
-      <instrs> allocelem(TYPE, ELEMS, OID) => i32.const NEXTIDX ... </instrs>
+      <instrs> allocelem(TYPE, ELEMS, OID) => i32.const Int2MInt(NEXTIDX) ... </instrs>
       <curModIdx> CUR </curModIdx>
       <moduleInst>
         <modIdx> CUR </modIdx>
@@ -1698,7 +1707,7 @@ The `data` initializer simply puts these bytes into the specified memory, starti
          </moduleInst>
          <mems> MEMS </mems>
       requires ADDR <Int size(MEMS)
-       andBool (#let memInst(_, SIZE, _) = MEMS[ADDR] #in OFFSET +Int lengthBytes(DSBYTES) >Int SIZE *Int #pageSize())
+       andBool (#let memInst(_, SIZE, _) = MEMS[ADDR] #in OFFSET +MInt Int2MInt(lengthBytes(DSBYTES)) >uMInt SIZE *MInt #pageSize())
 
     // For now, deal only with memory 0.
     rule <instrs> data { 0 DSBYTES } => .K ... </instrs>
@@ -1709,13 +1718,13 @@ The `data` initializer simply puts these bytes into the specified memory, starti
            <memAddrs> ListItem(ADDR) </memAddrs>
            ...
          </moduleInst>
-         <mems> MEMS => #let memInst(MAX, SIZE, DATA) = MEMS[ADDR] #in MEMS [ ADDR <- memInst(MAX, SIZE, #setRange(DATA, OFFSET, Bytes2Int(DSBYTES, LE, Unsigned), lengthBytes(DSBYTES))) ] </mems>
+         <mems> MEMS => #let memInst(MAX, SIZE, DATA) = MEMS[ADDR] #in MEMS [ ADDR <- memInst(MAX, SIZE, #setBytesRange(DATA, roundMInt(OFFSET), DSBYTES)) ] </mems>
       requires ADDR <Int size(MEMS)
       [owise]
 
-    syntax Int ::= Int "up/Int" Int [function]
- // ------------------------------------------
-    rule I1 up/Int I2 => (I1 +Int (I2 -Int 1)) /Int I2 requires I2 >Int 0
+    syntax MInt{32} ::= MInt{32} "up/Int" MInt{32} [function]
+ // ---------------------------------------------------------
+    rule I1 up/Int I2 => (I1 +MInt (I2 -MInt 1p32)) /uMInt I2
 ```
 
 Start Function
@@ -1840,7 +1849,7 @@ The value of a global gets copied when it is imported.
          <mems> MEMS </mems>
        requires #ContextLookup(IDS', TFIDX) <Int size(ADDRS)
          andBool {ADDRS[#ContextLookup(IDS', TFIDX)]}:>Int <Int size(MEMS)
-         andBool (#let memInst(MAX, SIZE, _) = MEMS[{ADDRS[#ContextLookup(IDS', TFIDX)]}:>Int] #in #limitsMatchImport(SIZE, MAX, LIM))
+         andBool (#let memInst(MAX, SIZE, _) = MEMS[{ADDRS[#ContextLookup(IDS', TFIDX)]}:>Int] #in #limitsMatchImport(roundMInt(SIZE), MAX, LIM))
 
     rule <instrs> #import(MOD, NAME, #globalDesc(... id: OID, type: MUT TYP) ) => .K ... </instrs>
          <curModIdx> CUR </curModIdx>
@@ -1872,11 +1881,11 @@ Subtyping is determined by whether the limits of one table/memory fit in the lim
 The following function checks if the limits in the first parameter *match*, i.e. is a subtype of, the limits in the second.
 
 ```k
-    syntax Bool ::= #limitsMatchImport(Int, OptionalInt, Limits) [function]
+    syntax Bool ::= #limitsMatchImport(MInt{64}, OptionalMInt32, Limits) [function]
  // -----------------------------------------------------------------------
-    rule #limitsMatchImport(L1,      _, #limitsMin(L2:Int )) => L1 >=Int L2
-    rule #limitsMatchImport( _,   .Int, #limits( _:Int,  _)) => false
-    rule #limitsMatchImport(L1, U1:Int, #limits(L2:Int, U2)) => L1 >=Int L2 andBool U1 <=Int U2
+    rule #limitsMatchImport(L1,      _, #limitsMin(L2:MInt{32} )) => L1 >=uMInt roundMInt(L2)
+    rule #limitsMatchImport( _,   .MInt32, #limits( _:MInt{32},  _)) => false
+    rule #limitsMatchImport(L1, U1:MInt{32}, #limits(L2:MInt{32}, U2)) => L1 >=uMInt roundMInt(L2) andBool U1 <=uMInt U2
 ```
 
 Module Instantiation

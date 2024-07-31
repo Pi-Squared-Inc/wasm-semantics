@@ -18,6 +18,7 @@ Wasm Tokens
 
 ```k
 module WASM-TOKEN-SYNTAX
+  imports INT-SYNTAX
 ```
 
 ### Strings
@@ -47,7 +48,8 @@ In both cases, digits can optionally be separated by underscores.
 ```k
     syntax WasmIntToken ::= r"[\\+\\-]?[0-9]+(_[0-9]+)*"               [token]
                           | r"[\\+\\-]?0x[0-9a-fA-F]+(_[0-9a-fA-F]+)*" [token]
- // ------------------------------------------------------------------------
+    syntax WasmIntToken ::= Int                                        [token]
+ // --------------------------------------------------------------------------
 ```
 
 ### Layout
@@ -76,8 +78,8 @@ Wasm Textual Format Syntax
 module WASM-TEXT-COMMON-SYNTAX
     imports WASM-COMMON-SYNTAX
 
-    syntax WasmInt ::= Int
     syntax WasmInt ::= WasmIntToken [symbol(WasmInt), avoid, function]
+    syntax Index ::= WasmIntToken [function, symbol(WasmInt2Index), avoid]
 
     syntax Index ::= Identifier
  // ---------------------------
@@ -394,16 +396,18 @@ In the future should investigate which direction the subsort should go.
 (`WasmIntToken` under `Int`/`Int` under `WasmIntToken`)
 
 ```k
-    rule `WasmInt`(VAL) => WasmIntToken2Int(VAL)
+    rule `WasmInt2Index`(I) => MInt2Unsigned(WasmIntToken2MInt(I))
+
+    rule `WasmInt`(VAL) => WasmIntToken2MInt(VAL)
 
     syntax String ::= WasmIntToken2String    ( WasmIntToken ) [function, total, hook(STRING.token2string)]
-    syntax Int    ::= WasmIntTokenString2Int ( String       ) [function]
-                    | WasmIntToken2Int       ( WasmIntToken ) [function]
+    syntax MInt{64} ::= WasmIntTokenString2MInt ( String       ) [function]
+                      | WasmIntToken2MInt       ( WasmIntToken ) [function]
  // --------------------------------------------------------------------
-    rule WasmIntTokenString2Int(S)  => String2Base(replaceFirst(S, "0x", ""), 16) requires findString(S, "0x", 0) =/=Int -1
-    rule WasmIntTokenString2Int(S)  => String2Base(                        S, 10) requires findString(S, "0x", 0)  ==Int -1
+    rule WasmIntTokenString2MInt(S)  => Int2MInt(String2Base(replaceFirst(S, "0x", ""), 16)) requires findString(S, "0x", 0) =/=Int -1
+    rule WasmIntTokenString2MInt(S)  => Int2MInt(String2Base(                        S, 10)) requires findString(S, "0x", 0)  ==Int -1
 
-    rule WasmIntToken2Int(VAL) => WasmIntTokenString2Int(replaceAll(WasmIntToken2String(VAL), "_", ""))
+    rule WasmIntToken2MInt(VAL) => WasmIntTokenString2MInt(replaceAll(WasmIntToken2String(VAL), "_", ""))
 ```
 
 ### Identifiers
@@ -531,18 +535,18 @@ Since the inserted type is module-level, any subsequent functions declaring the 
 
     rule #unfoldDefns(( table ID:Identifier funcref ( elem ELEM:ElemSegment ) ) DS, I, M)
       => ( table ID #lenElemSegment(ELEM) #lenElemSegment(ELEM) funcref ):TableDefn
-         ( elem  ID (offset (i32.const 0) .Instrs) func ELEM )
+         ( elem  ID (offset (i32.const 0p64) .Instrs) func ELEM )
          #unfoldDefns(DS, I, M)
 
     rule #unfoldDefns(( table ID:Identifier funcref ( elem ELEM:ElemExprs ) ) DS, I, M)
       => ( table ID #lenElemExprs(ELEM) #lenElemExprs(ELEM) funcref ):TableDefn
-         ( elem  ID (offset (i32.const 0) .Instrs) funcref ELEM )
+         ( elem  ID (offset (i32.const 0p64) .Instrs) funcref ELEM )
          #unfoldDefns(DS, I, M)
 
-    syntax Int ::= #lenElemExprs(ElemExprs)   [function, total]
- // -----------------------------------------------------------
-    rule #lenElemExprs(.ElemExprs) => 0
-    rule #lenElemExprs(_ EE)       => 1 +Int #lenElemExprs(EE)
+    syntax MInt{64} ::= #lenElemExprs(ElemExprs)   [function, total]
+ // ----------------------------------------------------------------
+    rule #lenElemExprs(.ElemExprs) => 0p64
+    rule #lenElemExprs(_ EE)       => 1p64 +MInt #lenElemExprs(EE)
 
     rule #unfoldDefns(( table OID:OptionalId (import MOD NAME) TT:TableType ) DS, I, M)
       => #unfoldDefns(( import MOD NAME (table OID TT) ) DS, I, M)
@@ -561,8 +565,8 @@ Since the inserted type is module-level, any subsequent functions declaring the 
       => #unfoldDefns(( memory #freshId(I) ( data DATA ) ) DS, I +Int 1, M)
 
     rule #unfoldDefns(( memory ID:Identifier ( data DATA ) ) DS, I, M)
-      => ( memory ID #lengthDataPages(DATA) #lengthDataPages(DATA) ):MemoryDefn
-         ( data   ID (offset (i32.const 0) .Instrs) DATA )
+      => ( memory ID roundMInt(#lengthDataPages(DATA)) roundMInt(#lengthDataPages(DATA)) ):MemoryDefn
+         ( data   ID (offset (i32.const 0p64) .Instrs) DATA )
          #unfoldDefns(DS, I, M)
 
     rule #unfoldDefns(( memory OID:OptionalId (import MOD NAME) MT:MemType ) DS, I, M)
@@ -574,9 +578,9 @@ Since the inserted type is module-level, any subsequent functions declaring the 
     rule #unfoldDefns(( memory ID:Identifier ( export ENAME ) SPEC:MemorySpec ) DS, I, M)
       => ( export ENAME ( memory ID ) ) #unfoldDefns( ( memory ID SPEC ) DS, I, M)
 
-    syntax Int ::= #lengthDataPages ( DataString ) [function]
- // ---------------------------------------------------------
-    rule #lengthDataPages(DS:DataString) => lengthBytes(#DS2Bytes(DS)) up/Int #pageSize()
+    syntax MInt{32} ::= #lengthDataPages ( DataString ) [function]
+ // --------------------------------------------------------------
+    rule #lengthDataPages(DS:DataString) => Int2MInt(lengthBytes(#DS2Bytes(DS))) up/Int #pageSize()
 ```
 
 #### Globals
@@ -932,8 +936,8 @@ After unfolding, each type use in a function starts with an explicit reference t
 ```k
     syntax Limits ::= t2aLimits(TextLimits) [function, total]
  // --------------------------------------------------------------
-    rule t2aLimits(MIN:Int) => #limitsMin(MIN)
-    rule t2aLimits(MIN:Int MAX:Int) => #limits(MIN, MAX)
+    rule t2aLimits(MIN:MInt{64}) => #limitsMin(roundMInt(MIN))
+    rule t2aLimits(MIN:MInt{64} MAX:MInt{64}) => #limits(roundMInt(MIN), roundMInt(MAX))
 ```
 
 #### Start Function
@@ -1131,24 +1135,24 @@ The `offset` parameter is added to the the address given on the stack, resulting
 The `align` parameter is for optimization only and is not allowed to influence the semantics, so we ignore it.
 
 ```k
-    rule #t2aInstr<_>(ITYPE:IValType.OP:StoreOp)        => #store(ITYPE, OP, 0)
+    rule #t2aInstr<_>(ITYPE:IValType.OP:StoreOp)        => #store(ITYPE, OP, 0p32)
     rule #t2aInstr<_>(ITYPE:IValType.OP:StoreOp MemArg) => #store(ITYPE, OP, #getOffset(MemArg))
-    rule #t2aInstr<_>(FTYPE:FValType.OP:StoreOp)        => #store(FTYPE, OP, 0)
+    rule #t2aInstr<_>(FTYPE:FValType.OP:StoreOp)        => #store(FTYPE, OP, 0p32)
     rule #t2aInstr<_>(FTYPE:FValType.OP:StoreOp MemArg) => #store(FTYPE, OP, #getOffset(MemArg))
-    rule #t2aInstr<_>(ITYPE:IValType.OP:LoadOp)         => #load(ITYPE, OP, 0)
+    rule #t2aInstr<_>(ITYPE:IValType.OP:LoadOp)         => #load(ITYPE, OP, 0p32)
     rule #t2aInstr<_>(ITYPE:IValType.OP:LoadOp MemArg)  => #load(ITYPE, OP, #getOffset(MemArg))
-    rule #t2aInstr<_>(FTYPE:FValType.OP:LoadOp)         => #load(FTYPE, OP, 0)
+    rule #t2aInstr<_>(FTYPE:FValType.OP:LoadOp)         => #load(FTYPE, OP, 0p32)
     rule #t2aInstr<_>(FTYPE:FValType.OP:LoadOp MemArg)  => #load(FTYPE, OP, #getOffset(MemArg))
     rule #t2aInstr<_>(memory.size)                => memory.size
     rule #t2aInstr<_>(memory.grow)                => memory.grow
     rule #t2aInstr<_>(memory.fill)                => memory.fill
     rule #t2aInstr<_>(memory.copy)                => memory.copy
 
-    syntax Int ::= #getOffset ( MemArg ) [function, total]
+    syntax MInt{32} ::= #getOffset ( MemArg ) [function, total]
  // -----------------------------------------------------------
-    rule #getOffset(           _:AlignArg) => 0
-    rule #getOffset(offset= OS           ) => OS
-    rule #getOffset(offset= OS _:AlignArg) => OS
+    rule #getOffset(           _:AlignArg) => 0p32
+    rule #getOffset(offset= OS           ) => roundMInt(OS)
+    rule #getOffset(offset= OS _:AlignArg) => roundMInt(OS)
 ```
 
 #### Numeric Instructions
