@@ -8,16 +8,16 @@ all this text
 should be ignored
 ;)
 
-#assertTopStack < i32 > 15 "dummy test 1"
+#assertTopStack < i32 > i2i32(15) "dummy test 1"
 
 (i32.const -3)
 (i32.const 6)     (; comment at end of line ;)
 (i32.add)
-#assertTopStack < i32 > 3 "dummy test 2"
+#assertTopStack < i32 > i2i32(3) "dummy test 2"
 
 (i32.const -3)
 (i32.(;comment in the middle;)const 6)
 (i32.add)
-#assertTopStack < i32 > 3 "dummy test 2"
+#assertTopStack < i32 > i2i32(3) "dummy test 2"
 
 #clearConfig

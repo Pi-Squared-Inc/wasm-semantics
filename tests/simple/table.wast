@@ -56,11 +56,11 @@
 
 (invoke "call-8")
 
-#assertTopStack < i32> 65 "call_indirect_result1"
+#assertTopStack < i32 > i2i32(65) "call_indirect_result1"
 
 (invoke "call-9")
 
-#assertTopStack < i32> 66 "call_indirect_result2"
+#assertTopStack < i32 > i2i32(66) "call_indirect_result2"
 
 #assertFunction 0 [ ] -> [ i32 ] [ ] "call function 1 exists"
 #assertFunction 1 [ ] -> [ i32 ] [ ] "call function 2 exists"

@@ -6,7 +6,7 @@
 
 (memory.size)
 
-#assertTopStack < i32 > 1 "size of stack"
+#assertTopStack < i32 > i2i32(1) "size of stack"
 #assertMemoryData (0, 87) "text to ascii W"
 #assertMemoryData (1, 65) "text to ascii A"
 #assertMemoryData (2, 83) "text to ascii S"

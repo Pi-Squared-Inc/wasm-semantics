@@ -2,34 +2,34 @@
 ;; --------
 
 (i32.const 3)
-#assertTopStack < i32 > 3 "i32 1"
+#assertTopStack < i32 > i2i32(3) "i32 1"
 
 (i32.const 5)
-#assertTopStack < i32 > 5 "i32 parens"
+#assertTopStack < i32 > i2i32(5) "i32 parens"
 
 (i64.const 71)
-#assertTopStack < i64 > 71 "i64"
-
-(i32.const #unsigned(i32, -5))
-#assertTopStack < i32 > 4294967291 "i32 manual unsigned" ;; #pow(i32) -Int 5
-
-(i32.sub (i32.const #pow(i32)) (i32.const 5))
-#assertTopStack < i32 > -5 "i32 manual unsigned"
+#assertTopStack < i64 > i2i64(71) "i64"
 
 (i32.const -5)
-#assertTopStack < i32 > #unsigned(i32, -5) "i32 signed constant"
+#assertTopStack < i32 > i2i32(4294967291) "i32 manual unsigned" ;; #pow(i32) -Int 5
 
-(i32.const #unsigned(i32, -5))
-#assertTopStack < i32 > -5 "i32 signed assert"
+(i32.sub (i32.const 4294967296) (i32.const 5))
+#assertTopStack < i32 > i2i32(-5) "i32 manual unsigned"
 
-(i32.add (i32.const #pow(i32)) (i32.const 1))
-#assertTopStack < i32 > 1 "i32 overflow"
+(i32.const -5)
+#assertTopStack < i32 > i2i32(-5) "i32 signed constant"
+
+(i32.const 4294967291)
+#assertTopStack < i32 > i2i32(-5) "i32 signed assert"
+
+(i32.add (i32.const 4294967296) (i32.const 1))
+#assertTopStack < i32 > i2i32(1) "i32 overflow"
 
 (i32.const -1)
-#assertTopStackExactly < i32 > 4294967295 "i32 overflow"
+#assertTopStackExactly < i32 > i2i32(4294967295) "i32 overflow"
 
 (i64.const -1)
-#assertTopStackExactly < i64 > 18446744073709551615 "i62 overflow" ;; #pow(i64) -Int 1
+#assertTopStackExactly < i64 > i2i64(18446744073709551615) "i62 overflow" ;; #pow(i64) -Int 1
 
 ;; Floating point
 ;; --------------
@@ -57,16 +57,16 @@
 ;; Helper conversions
 ;; ------------------
 
-(i32.const #unsigned(i32, #signed(i32, 0)))
-#assertTopStack < i32 > 0 "#unsigned . #signed 1"
+(i32.const 0)
+#assertTopStack < i32 > i2i32(0) "#unsigned . #signed 1"
 
-(i32.const #unsigned(i32, #signed(i32, #pow1(i32))))
-#assertTopStack < i32 > #pow1(i32) "#unsigned . #signed 2"
+(i32.const 2147483648)
+#assertTopStack < i32 > i2i32(-2147483648) "#unsigned . #signed 2"
 
-(i64.const #unsigned(i64, #signed(i64, 0)))
-#assertTopStack < i64 > 0 "#unsigned . #signed 4"
+(i64.const 0)
+#assertTopStack < i64 > i2i64(0) "#unsigned . #signed 4"
 
-(i64.const #unsigned(i64, #signed(i64, #pow1(i64))))
-#assertTopStack < i64 > #pow1(i64) "#unsigned . #signed 5"
+(i64.const 9223372036854775808)
+#assertTopStack < i64 > i2i64(-9223372036854775808) "#unsigned . #signed 5"
 
 #clearConfig
