@@ -65,7 +65,7 @@
 (i32.const 0)
 (call_indirect (type $a-cool-type))
 
-#assertTopStack < i32 > 15 "call function 0 no return"
+#assertTopStack < i32 > i2i32(15) "call function 0 no return"
 (drop)
 #assertFunction 2 [ i32 i32 ] -> [ i32 ] [ ] "call function 0 exists no return"
 

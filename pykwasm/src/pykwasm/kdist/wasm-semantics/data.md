@@ -258,6 +258,16 @@ The sort `OptionalInt` provides this potentially "undefined" `Int`.
 
 ```
 
+### Integer conversion
+
+```k
+    syntax MInt{32} ::= i2i32(Int) [function]
+    syntax MInt{64} ::= i2i64(Int) [function]
+ // -----------------------------------------
+    rule i2i32(I) => Int2MInt(I)
+    rule i2i64(I) => Int2MInt(I)
+```
+
 ```k
 endmodule
 ```

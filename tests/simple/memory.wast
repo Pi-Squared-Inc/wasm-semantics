@@ -20,7 +20,7 @@
 
 ( memory $mem 0 10 )
 (memory.size)
-#assertTopStack <i32> 0 "memory.size 1"
+#assertTopStack < i32 > i2i32(0) "memory.size 1"
 #assertMemory $mem 0 10 "memory ungrown"
 
 #clearConfig
@@ -28,28 +28,28 @@
 ( memory $mem 0 10 )
 (memory.grow (i32.const 10))
 (memory.size)
-#assertStack <i32> 10 : < i32 > 0 : .ValStack "memory grow"
+#assertStack < i32 > i2i32(10) : < i32 > i2i32(0) : .ValStack "memory grow"
 (memory.grow (i32.const 1))
-#assertTopStack <i32> -1 "memory grow"
+#assertTopStack < i32 > i2i32(-1) "memory grow"
 #assertMemory $mem 10 10 "memory grown"
 
 #clearConfig
 
-( memory #maxMemorySize())
+( memory 65536)
 (memory.grow (i32.const 1))
-#assertTopStack <i32> -1 "memory grow max too large"
-#assertMemory 0 #maxMemorySize() .Int "memory grow max too large"
+#assertTopStack < i32 > i2i32(-1) "memory grow max too large"
+#assertMemory 0 65536 .Int "memory grow max too large"
 
 #clearConfig
 
 ( memory 0 )
-(memory.grow (i32.const #maxMemorySize()))
+(memory.grow (i32.const 65536))
 (memory.size)
-#assertStack <i32> #maxMemorySize() : < i32 > 0 : .ValStack "memory grow unbounded"
+#assertStack < i32 > i2i32(65536) : < i32 > i2i32(0) : .ValStack "memory grow unbounded"
 (memory.grow (i32.const 1))
 (memory.size)
-#assertStack <i32> #maxMemorySize() : < i32 > -1 : .ValStack "memory grow unbounded"
-#assertMemory 0 #maxMemorySize() .Int "memory grown unbounded"
+#assertStack < i32 > i2i32(65536) : < i32 > i2i32(-1) : .ValStack "memory grow unbounded"
+#assertMemory 0 65536 .Int "memory grown unbounded"
 
 ;; Store and load
 
@@ -69,7 +69,7 @@
 (i64.store16 offset=2)
 #assertMemoryData (3, 1) "store16"
 (i32.const 1)
-(i64.add (i64.const #pow(i32)) (i64.const 1))
+(i64.add (i64.const 4294967296) (i64.const 1))
 (i64.store16 offset=2)
 #assertMemoryData (3, 1) "store32"
 #assertMemory 0 1 .Int ""
@@ -100,32 +100,32 @@
 
 (memory 1)
 (i32.const 15)
-(i64.sub (i64.const #pow(i32)) (i64.const 1))
+(i64.sub (i64.const 4294967296) (i64.const 1))
 (i64.store)
 (i32.const 15)
 (i32.load8_u)
-#assertTopStack <i32> 255 "load8 unsigned"
+#assertTopStack < i32 > i2i32(255) "load8 unsigned"
 (i32.const 15)
 (i32.load8_s )
-#assertTopStack <i32> -1 "load8 signed"
+#assertTopStack < i32 > i2i32(-1) "load8 signed"
 (i32.const 16)
 (i32.load16_u )
-#assertTopStack <i32> 65535 "load16 unsigned"
+#assertTopStack < i32 > i2i32(65535) "load16 unsigned"
 (i32.const 16)
 (i32.load16_s )
-#assertTopStack <i32> -1 "load16 signed"
+#assertTopStack < i32 > i2i32(-1) "load16 signed"
 (i32.const 15)
 (i64.load32_u )
-#assertTopStack <i64> 4294967295 "load32 unsigned1" ;; #pow(i32) -Int 1
+#assertTopStack < i64 > i2i64(4294967295) "load32 unsigned1" ;; #pow(i32) -Int 1
 (i32.const 15)
 (i64.load32_s )
-#assertTopStack <i64> -1 "load32 signed1"
+#assertTopStack < i64 > i2i64(-1) "load32 signed1"
 (i32.const 17)
 (i64.load32_u )
-#assertTopStack <i64> 65535 "load32 unsigned2"
+#assertTopStack < i64 > i2i64(65535) "load32 unsigned2"
 (i32.const 17)
 (i64.load32_u )
-#assertTopStack <i64> 65535 "load32 signed2"
+#assertTopStack < i64 > i2i64(65535) "load32 signed2"
 #assertMemoryData (15, 255) ""
 #assertMemoryData (16, 255) ""
 #assertMemoryData (17, 255) ""
@@ -138,7 +138,7 @@
 
 (memory 1)
 (i32.const 1)
-(i64.sub (i64.const #pow(i64)) (i64.const 1))
+(i64.sub (i64.const 18446744073709551616) (i64.const 1))
 (i64.store)
 (i32.const 5) (i32.const 0)
 (i32.store   )
@@ -153,7 +153,7 @@
 #clearConfig
 
 (memory 1)
-(i32.const 1) (i64.sub (i64.const #pow(i64)) (i64.const 1))
+(i32.const 1) (i64.sub (i64.const 18446744073709551616) (i64.const 1))
 (i64.store )
 (i32.const 2) (i32.const 0)
 (i32.store8 )
