@@ -235,6 +235,7 @@ module WASM
         </moduleInstances>
         <nextModuleIdx> 0 </nextModuleIdx>
         <mainStore>
+          <labels> .List </labels>
           <funcs>
             <funcDef multiplicity="*" type="Map">
               <fAddr>    0              </fAddr>
@@ -331,7 +332,7 @@ Thus, a `trap` "bubbles up" (more correctly, to "consumes the continuation") unt
 ```k
     syntax Instr ::= "trap"
  // -----------------------
-    rule <instrs> trap ~> (_L:Label => .K) ... </instrs>
+    rule <instrs> trap ~> label _ {_} _ KCELL ~> _ => (trap ~> KCELL) </instrs>
     rule <instrs> trap ~> (_F:Frame => .K) ... </instrs>
     rule <instrs> trap ~> (_I:Instr => .K) ... </instrs>
     rule <instrs> trap ~> (_D:Defn  => .K) ... </instrs>
@@ -475,18 +476,20 @@ A block is the simplest way to create targets for break instructions (ie. jump d
 It simply executes the block then records a label with an empty continuation.
 
 ```k
-    syntax Label ::= "label" VecType "{" Instrs "}" ValStack
+    syntax Label ::= "label" VecType "{" Instrs "}" ValStack K
  // --------------------------------------------------------
-    rule <instrs> label [ TYPES ] { _ } VALSTACK' => .K ... </instrs>
+    rule <instrs> label [ TYPES ] { IS } VALSTACK' KCELL => KCELL </instrs>
          <valstack> VALSTACK => #take(lengthValTypes(TYPES), VALSTACK) ++ VALSTACK' </valstack>
+         <labels> ListItem(label [ TYPES ] { IS } VALSTACK' KCELL) LABELS => LABELS </labels>
 
     syntax BlockMetaData ::= OptionalInt
  // ------------------------------------
 
     syntax Instr ::= #block(VecType, Instrs, BlockMetaData) [symbol(aBlock)]
  // --------------------------------------------------------------------------------
-    rule <instrs> #block(VECTYP, IS, _) => sequenceInstrs(IS) ~> label VECTYP { .Instrs } VALSTACK ... </instrs>
+    rule <instrs> #block(VECTYP, IS, _) ~> KCELL => sequenceInstrs(IS) ~> label VECTYP { .Instrs } VALSTACK KCELL </instrs>
          <valstack> VALSTACK => .ValStack </valstack>
+         <labels> LABELS => pushList(label VECTYP { .Instrs } VALSTACK KCELL, LABELS) </labels>
 ```
 
 The `br*` instructions search through the instruction stack (the `<instrs>` cell) for the correct label index.
@@ -497,10 +500,12 @@ Note that, unlike in the WebAssembly specification document, we do not need the 
 ```k
     syntax Instr ::= #br( Int ) [symbol(aBr)]
  // -------------------------------------------------
-    rule <instrs> #br(_IDX) ~> (_S:Stmt => .K) ... </instrs>
-    rule <instrs> #br(0   ) ~> label [ TYPES ] { IS } VALSTACK' => sequenceInstrs(IS) ... </instrs>
+    rule <instrs> #br(0   ) ~> _ => sequenceInstrs(IS) ~> KCELL' </instrs>
          <valstack> VALSTACK => #take(lengthValTypes(TYPES), VALSTACK) ++ VALSTACK' </valstack>
-    rule <instrs> #br(N:Int) ~> _L:Label => #br(N -Int 1) ... </instrs>
+         <labels> ListItem(label [ TYPES ] { IS } VALSTACK' KCELL') LABELS => LABELS </labels>
+
+    rule <instrs> #br(N:Int) => #br(0) ... </instrs>
+      <labels> LABELS => range(LABELS, N, 0) </labels>
       requires N >Int 0
 
     syntax Instr ::= "#br_if" "(" Int ")" [symbol(aBr_if)]
@@ -529,18 +534,21 @@ Finally, we have the conditional and loop instructions.
 ```k
     syntax Instr ::= #if( VecType, then : Instrs, else : Instrs, blockInfo: BlockMetaData) [symbol(aIf)]
  // ------------------------------------------------------------------------------------------------------------
-    rule <instrs> #if(VECTYP, IS, _, _)  => sequenceInstrs(IS) ~> label VECTYP { .Instrs } VALSTACK ... </instrs>
+    rule <instrs> #if(VECTYP, IS, _, _) ~> KCELL => sequenceInstrs(IS) ~> label VECTYP { .Instrs } VALSTACK KCELL </instrs>
          <valstack> < i32 > VAL : VALSTACK => VALSTACK </valstack>
+         <labels> LABELS => pushList(label VECTYP { .Instrs } VALSTACK KCELL, LABELS) </labels>
       requires VAL =/=Int 0
 
-    rule <instrs> #if(VECTYP, _, IS, _) => sequenceInstrs(IS) ~> label VECTYP { .Instrs } VALSTACK ... </instrs>
+    rule <instrs> #if(VECTYP, _, IS, _) ~> KCELL => sequenceInstrs(IS) ~> label VECTYP { .Instrs } VALSTACK KCELL </instrs>
          <valstack> < i32 > VAL : VALSTACK => VALSTACK </valstack>
+         <labels> LABELS => pushList(label VECTYP { .Instrs } VALSTACK KCELL, LABELS) </labels>
       requires VAL ==Int 0
 
     syntax Instr ::= #loop(VecType, Instrs, BlockMetaData) [symbol(aLoop)]
  // ------------------------------------------------------------------------------
-    rule <instrs> #loop(VECTYP, IS, BLOCKMETA) => sequenceInstrs(IS) ~> label VECTYP { #loop(VECTYP, IS, BLOCKMETA) } VALSTACK ... </instrs>
+    rule <instrs> #loop(VECTYP, IS, BLOCKMETA) ~> KCELL => sequenceInstrs(IS) ~> label VECTYP { #loop(VECTYP, IS, BLOCKMETA) } VALSTACK KCELL </instrs>
          <valstack> VALSTACK => .ValStack </valstack>
+         <labels> LABELS => pushList(label VECTYP { #loop(VECTYP, IS, BLOCKMETA) } VALSTACK KCELL, LABELS) </labels>
 ```
 
 Variable Operators
@@ -1199,8 +1207,9 @@ The `#take` function will return the parameter stack in the reversed order, then
          </funcDef>
 
     rule <instrs> return ~> (_S:Stmt  => .K)  ... </instrs>
-    rule <instrs> return ~> (_L:Label => .K)  ... </instrs>
-    rule <instrs> (return => .K) ~> _FR:Frame ... </instrs>
+    rule <instrs> return ~> (label [_] {_} _ KCELL ~> _) => (return ~> KCELL) </instrs>
+    rule <instrs> return ~> _FR:Frame ~> (label [_] {_} _ KCELL) ~> _ => (return ~> KCELL) </instrs>
+    rule <instrs> (return => .K) ~> _FR:Frame ... </instrs> [owise]
 ```
 
 ### Function Call
