@@ -39,7 +39,7 @@ ULM_CXX=$(shell [ $(origin CXX) != default ] && echo $(CXX) )
 ULM_KF_INCLUDE_DIR=$(shell dirname "`which llvm-kompile`")/../include
 
 ULM_WASM_DIR=$(ULM_BUILD_DIR)/wasm
-ULM_WASM_MAIN=pykwasm/src/pykwasm/kdist/wasm-semantics/wasm.md
+ULM_WASM_MAIN=pykwasm/src/pykwasm/kdist/wasm-semantics/ulm-wasm.md
 ULM_WASM_LIB=libkwasm.so
 ULM_WASM_TARGET=$(ULM_LIB_DIR)/$(ULM_WASM_LIB)
 
