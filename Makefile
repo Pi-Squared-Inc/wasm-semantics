@@ -62,7 +62,7 @@ ULM_HOOKS_TARGET=$(ULM_LIB_DIR)/$(ULM_HOOKS_LIB)
 $(ULM_KRYPTO_DIR)/.git:
 	@mkdir -p $(ULM_DEP_DIR)
 	cd $(ULM_DEP_DIR); \
-	  git clone https://github.com/runtimeverification/blockchain-k-plugin plugin; \
+	  git clone --depth 1 https://github.com/runtimeverification/blockchain-k-plugin plugin; \
 	  cd plugin; \
 	  git submodule update --init --recursive
 
@@ -79,7 +79,7 @@ ulm-krypto-build: $(ULM_KRYPTO_TARGET)
 $(ULM_HOOKS_CLONE_DIR)/.git:
 	@mkdir -p $(ULM_DEP_DIR)
 	cd $(ULM_DEP_DIR); \
-	  git clone https://github.com/pi-squared-inc/ulm
+	  git clone --depth 1 https://github.com/pi-squared-inc/ulm
 
 $(ULM_HOOKS_TARGET): | $(ULM_HOOKS_CLONE_DIR)/.git
 	@mkdir -p $(ULM_LIB_DIR)
