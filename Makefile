@@ -84,9 +84,9 @@ $(ULM_HOOKS_CLONE_DIR)/.git:
 $(ULM_HOOKS_TARGET): | $(ULM_HOOKS_CLONE_DIR)/.git
 	@mkdir -p $(ULM_LIB_DIR)
 	cd $(ULM_HOOKS_DIR); \
-	  $(CXX) -shared -o "$(ULM_HOOKS_LIB_NAME)" $(ULM_HOOKS_SRC) -I "$(ULM_KF_INCLUDE_DIR)" -I "$(ULM_KF_INCLUDE_DIR)/kllvm" \
+	  $(CXX) -shared -o "$(ULM_HOOKS_LIB)" $(ULM_HOOKS_SRC) -I "$(ULM_KF_INCLUDE_DIR)" -I "$(ULM_KF_INCLUDE_DIR)/kllvm" \
 	    -fPIC -lcryptopp -lgmp -std=c++20 -Wall -Werror -g -fno-omit-frame-pointer -Wno-return-type-c-linkage $(CPPFLAGS)
-	cp "$(ULM_HOOKS_DIR)/$(ULM_HOOKS_LIB_NAME)" "$(ULM_LIB_DIR)"
+	cp "$(ULM_HOOKS_DIR)/$(ULM_HOOKS_LIB)" "$(ULM_LIB_DIR)"
 
 .PHONY: ulm-hooks-build
 ulm-hooks-build: $(ULM_HOOKS_TARGET)
