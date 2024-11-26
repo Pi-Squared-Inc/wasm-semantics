@@ -1,5 +1,5 @@
 ```k
-requires "wasm.md"
+requires "wasm-text.md"
 requires "ulm.k"
 ```
 
@@ -11,7 +11,11 @@ endmodule
 
 ```k
 module ULM-WASM
-  imports WASM
+  imports WASM-TEXT
   imports ULM
+
+  configuration <ulm-wasm>
+                  <wasm/>
+                </ulm-wasm>
 endmodule
 ```
