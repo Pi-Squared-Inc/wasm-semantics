@@ -47,9 +47,9 @@ ULM_WASM_SRC=$(wildcard $(ULM_WASM_SRC_DIR)/*.md $(ULM_WASM_SRC_DIR)/data/*.k)
 
 ULM_WASM_COMPILER_TARGET=$(ULM_BUILD_DIR)/ulm-contract-compiler
 
-ULM_PLUGIN_DIR=$(ULM_DEP_DIR)/plugin
-ULM_PLUGIN_LIB=krypto.a
-ULM_PLUGIN_TARGET=$(ULM_LIB_DIR)/$(ULM_PLUGIN_LIB)
+ULM_KRYPTO_DIR=$(ULM_DEP_DIR)/plugin
+ULM_KRYPTO_LIB=krypto.a
+ULM_KRYPTO_TARGET=$(ULM_LIB_DIR)/$(ULM_KRYPTO_LIB)
 
 ULM_HOOKS_CLONE_DIR=$(ULM_DEP_DIR)/ulm
 ULM_HOOKS_DIR=$(ULM_HOOKS_CLONE_DIR)/kllvm
@@ -57,23 +57,22 @@ ULM_HOOKS_SRC=ulm_kllvm.cpp ulm_hooks.cpp ulm_kllvm_c.cpp
 ULM_HOOKS_LIB=libulmkllvm.so
 ULM_HOOKS_TARGET=$(ULM_LIB_DIR)/$(ULM_HOOKS_LIB)
 
-### ULM Plugin
+### ULM Crypto Plugin
 
-$(ULM_PLUGIN_DIR)/.git:
+$(ULM_KRYPTO_DIR)/.git:
 	@mkdir -p $(ULM_DEP_DIR)
 	cd $(ULM_DEP_DIR); \
 	  git clone https://github.com/runtimeverification/blockchain-k-plugin plugin; \
 	  cd plugin; \
 	  git submodule update --init --recursive
 
-$(ULM_PLUGIN_TARGET): | $(ULM_PLUGIN_DIR)/.git
+$(ULM_KRYPTO_TARGET): | $(ULM_KRYPTO_DIR)/.git
 	@mkdir -p $(ULM_LIB_DIR)
-	cd $(ULM_PLUGIN_DIR); \
-	  $(if $(ULM_CXX), CXX=$(ULM_CXX)) make build
-	cp "$(ULM_PLUGIN_DIR)/build/krypto/lib/krypto.a" "$(ULM_LIB_DIR)"
+	$(if $(ULM_CXX), CXX=$(ULM_CXX)) make -C "$(ULM_KRYPTO_DIR)" build
+	cp "$(ULM_KRYPTO_DIR)/build/krypto/lib/krypto.a" "$(ULM_LIB_DIR)"
 
-.PHONY: ulm-plugin-build
-ulm-plugin-build: $(ULM_PLUGIN_TARGET)
+.PHONY: ulm-krypto-build
+ulm-krypto-build: $(ULM_KRYPTO_TARGET)
 
 ### ULM Hooks
 
@@ -94,7 +93,7 @@ ulm-hooks-build: $(ULM_HOOKS_TARGET)
 
 ### ULM Wasm
 
-$(ULM_WASM_TARGET): $(ULM_PLUGIN_TARGET) $(ULM_HOOKS_TARGET) $(ULM_WASM_SRC)
+$(ULM_WASM_TARGET): $(ULM_KRYPTO_TARGET) $(ULM_HOOKS_TARGET) $(ULM_WASM_SRC)
 	kompile \
 	  --hook-namespaces 'KRYPTO ULM' \
 	  -O2 \
@@ -103,7 +102,7 @@ $(ULM_WASM_TARGET): $(ULM_PLUGIN_TARGET) $(ULM_HOOKS_TARGET) $(ULM_WASM_SRC)
 	  -ccopt -lcrypto \
 	  -ccopt -lsecp256k1 \
 	  -ccopt -lssl \
-	  -ccopt "$(ULM_PLUGIN_TARGET)" \
+	  -ccopt "$(ULM_KRYPTO_TARGET)" \
 	  -ccopt -L"$(ULM_LIB_DIR)" \
 	  -ccopt -lulmkllvm \
 	  -ccopt "$(ULM_HOOKS_DIR)/lang/ulm_language_entry.cpp" \
@@ -115,7 +114,7 @@ $(ULM_WASM_TARGET): $(ULM_PLUGIN_TARGET) $(ULM_HOOKS_TARGET) $(ULM_WASM_SRC)
 	  --llvm-kompile-type library \
 	  --llvm-kompile-output "$(ULM_WASM_LIB)" \
 	  -I "$(ULM_HOOKS_DIR)" \
-	  -I "$(ULM_PLUGIN_DIR)/plugin" \
+	  -I "$(ULM_KRYPTO_DIR)/plugin" \
 	  -v \
 	  $(ULM_WASM_MAIN) \
 	  -o $(ULM_WASM_DIR)
