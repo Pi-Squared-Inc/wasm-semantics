@@ -39,9 +39,11 @@ ULM_CXX=$(shell [ $(origin CXX) != default ] && echo $(CXX) )
 ULM_KF_INCLUDE_DIR=$(shell dirname "`which llvm-kompile`")/../include
 
 ULM_WASM_DIR=$(ULM_BUILD_DIR)/wasm
-ULM_WASM_MAIN=pykwasm/src/pykwasm/kdist/wasm-semantics/ulm-wasm.md
+ULM_WASM_SRC_DIR=pykwasm/src/pykwasm/kdist/wasm-semantics
 ULM_WASM_LIB=libkwasm.so
 ULM_WASM_TARGET=$(ULM_LIB_DIR)/$(ULM_WASM_LIB)
+ULM_WASM_MAIN=$(ULM_WASM_SRC_DIR)/ulm-wasm.md
+ULM_WASM_SRC=$(wildcard $(ULM_WASM_SRC_DIR)/*.md $(ULM_WASM_SRC_DIR)/data/*.k)
 
 ULM_WASM_COMPILER_TARGET=$(ULM_BUILD_DIR)/ulm-contract-compiler
 
@@ -92,7 +94,7 @@ ulm-hooks-build: $(ULM_HOOKS_TARGET)
 
 ### ULM Wasm
 
-$(ULM_WASM_TARGET): $(ULM_PLUGIN_TARGET) $(ULM_HOOKS_TARGET)
+$(ULM_WASM_TARGET): $(ULM_PLUGIN_TARGET) $(ULM_HOOKS_TARGET) $(ULM_WASM_SRC)
 	kompile \
 	  --hook-namespaces 'KRYPTO ULM' \
 	  -O2 \
