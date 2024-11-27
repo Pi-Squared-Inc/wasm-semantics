@@ -93,6 +93,8 @@ ulm-hooks-build: $(ULM_HOOKS_TARGET)
 
 ### ULM Wasm
 
+# TODO: finish making WASM target conditional on ulm test variable so we can build the interpreter as well
+
 $(ULM_WASM_TARGET): $(ULM_KRYPTO_TARGET) $(ULM_HOOKS_TARGET) $(ULM_WASM_SRC)
 	kompile \
 	  --hook-namespaces 'KRYPTO ULM' \
@@ -111,14 +113,14 @@ $(ULM_WASM_TARGET): $(ULM_KRYPTO_TARGET) $(ULM_HOOKS_TARGET) $(ULM_WASM_SRC)
 	  -ccopt -shared \
 	  -ccopt -fPIC \
 	  --llvm-hidden-visibility \
-	  --llvm-kompile-type library \
-	  --llvm-kompile-output "$(ULM_WASM_LIB)" \
+	  --llvm-kompile-type $(ULM_WASM_TYPE) \
+	  --llvm-kompile-output "$(ULM_WASM_OUT)" \
 	  -I "$(ULM_HOOKS_DIR)" \
 	  -I "$(ULM_KRYPTO_DIR)/plugin" \
 	  -v \
 	  $(ULM_WASM_MAIN) \
 	  -o $(ULM_WASM_DIR)
-	cp "$(ULM_WASM_DIR)/$(ULM_WASM_LIB)" "$(ULM_LIB_DIR)"
+	$(shell [ -z "$(ULM_TEST)" ] && cp "$(ULM_WASM_DIR)/$(ULM_WASM_OUT)" "$(ULM_LIB_DIR)")
 
 .PHONY: ulm-wasm
 ulm-wasm: $(ULM_WASM_TARGET)
