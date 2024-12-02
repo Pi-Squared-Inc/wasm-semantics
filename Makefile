@@ -41,6 +41,7 @@ ULM_KF_INCLUDE_DIR=$(shell dirname "`which llvm-kompile`")/../include
 ULM_WASM_DIR=$(ULM_BUILD_DIR)/wasm
 ULM_WASM_SRC_DIR=pykwasm/src/pykwasm/kdist/wasm-semantics
 ULM_WASM_LIB=libkwasm.so
+ULM_WASM_BIN=kwasm
 ULM_WASM_TARGET=$(ULM_LIB_DIR)/$(ULM_WASM_LIB)
 ULM_WASM_MAIN=$(ULM_WASM_SRC_DIR)/ulm-wasm.md
 ULM_WASM_SRC=$(wildcard $(ULM_WASM_SRC_DIR)/*.md $(ULM_WASM_SRC_DIR)/data/*.k)
@@ -93,7 +94,8 @@ ulm-hooks-build: $(ULM_HOOKS_TARGET)
 
 ### ULM Wasm
 
-# TODO: finish making WASM target conditional on ulm test variable so we can build the interpreter as well
+ULM_WASM_TYPE = $(if $(ULM_TEST),main,library)
+ULM_WASM_OUT  = $(if $(ULM_TEST),$(ULM_WASM_BIN),$(ULM_WASM_LIB))
 
 $(ULM_WASM_TARGET): $(ULM_KRYPTO_TARGET) $(ULM_HOOKS_TARGET) $(ULM_WASM_SRC)
 	kompile \
@@ -120,7 +122,7 @@ $(ULM_WASM_TARGET): $(ULM_KRYPTO_TARGET) $(ULM_HOOKS_TARGET) $(ULM_WASM_SRC)
 	  -v \
 	  $(ULM_WASM_MAIN) \
 	  -o $(ULM_WASM_DIR)
-	$(shell [ -z "$(ULM_TEST)" ] && cp "$(ULM_WASM_DIR)/$(ULM_WASM_OUT)" "$(ULM_LIB_DIR)")
+	[ -z "$(ULM_TEST)" ] && cp "$(ULM_WASM_DIR)/$(ULM_WASM_OUT)" "$(ULM_LIB_DIR)"
 
 .PHONY: ulm-wasm
 ulm-wasm: $(ULM_WASM_TARGET)
