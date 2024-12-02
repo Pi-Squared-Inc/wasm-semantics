@@ -122,7 +122,7 @@ $(ULM_WASM_TARGET): $(ULM_KRYPTO_TARGET) $(ULM_HOOKS_TARGET) $(ULM_WASM_SRC)
 	  -v \
 	  $(ULM_WASM_MAIN) \
 	  -o $(ULM_WASM_DIR)
-	[ -z "$(ULM_TEST)" ] && cp "$(ULM_WASM_DIR)/$(ULM_WASM_OUT)" "$(ULM_LIB_DIR)"
+	$(if "$(ULM_TEST)",,cp "$(ULM_WASM_DIR)/$(ULM_WASM_OUT)" "$(ULM_LIB_DIR)")
 
 .PHONY: ulm-wasm
 ulm-wasm: $(ULM_WASM_TARGET)
