@@ -116,7 +116,7 @@ $(ULM_WASM_TARGET): $(ULM_KRYPTO_TARGET) $(ULM_HOOKS_TARGET) $(ULM_WASM_SRC)
 	  --llvm-hidden-visibility \
 	  --llvm-kompile-type $(ULM_WASM_TYPE) \
 	  --llvm-kompile-output "$(ULM_WASM_OUT)" \
-	  -02 \
+	  -O2 \
 	  -I "$(ULM_HOOKS_DIR)" \
 	  -I "$(ULM_KRYPTO_DIR)/plugin" \
 	  -v \
