@@ -96,6 +96,7 @@ ulm-hooks-build: $(ULM_HOOKS_TARGET)
 
 ULM_WASM_TYPE = $(if $(ULM_TEST),main,library)
 ULM_WASM_OUT  = $(if $(ULM_TEST),$(ULM_WASM_BIN),$(ULM_WASM_LIB))
+ULM_WASM_SEL  = $(if $(ULM_TEST),k|local,k|remote)
 
 $(ULM_WASM_TARGET): $(ULM_KRYPTO_TARGET) $(ULM_HOOKS_TARGET) $(ULM_WASM_SRC)
 	kompile \
@@ -121,11 +122,13 @@ $(ULM_WASM_TARGET): $(ULM_KRYPTO_TARGET) $(ULM_HOOKS_TARGET) $(ULM_WASM_SRC)
 	  -I "$(ULM_KRYPTO_DIR)/plugin" \
 	  -v \
 	  $(ULM_WASM_MAIN) \
+	  --md-selector "$(ULM_WASM_SEL)" \
 	  --main-module ULM-WASM \
 	  --syntax-module ULM-WASM-SYNTAX \
 	  --gen-glr-bison-parser \
+	  $(if $(DEBUG),--debug) \
 	  -o $(ULM_WASM_DIR)
-	$(if "$(ULM_TEST)",,cp "$(ULM_WASM_DIR)/$(ULM_WASM_OUT)" "$(ULM_LIB_DIR)")
+	$(if $(ULM_TEST),,cp "$(ULM_WASM_DIR)/$(ULM_WASM_OUT)" "$(ULM_LIB_DIR)")
 
 .PHONY: ulm-wasm
 ulm-wasm: $(ULM_WASM_TARGET)
