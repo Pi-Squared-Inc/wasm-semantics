@@ -68,6 +68,10 @@ The WASM VM must decode the input program:
 Configuration
 -------------
 
+Here we define the initial configuration.
+Note that the default status code indicates an internal error; this is used defensively, since if we ever get stuck, an error will always be indicated.
+Similarly, we define a default null output which may indicate internal errors.
+
 ```k
     syntax OutputData ::= "NO_OUTPUT"
                         | Bytes
