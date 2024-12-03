@@ -6,6 +6,8 @@ requires "ulm.k"
 ```k
 module ULM-WASM-COMMON-SYNTAX
    imports WASM-TEXT-COMMON-SYNTAX
+   imports BOOL-SYNTAX
+   imports INT-SYNTAX
 ```
 
 Program Encoding
@@ -74,8 +76,8 @@ Configuration
       <ulmWasm>
         <k> $PGM:PgmEncoding </k>
         <wasm/>
-        <createMode> $CREATE:Bool </createMode>
-        <wasmGas> $GAS:Int </wasmGas>
+        <createMode parser="CREATE, ULM-WASM-SYNTAX"> $CREATE:Bool </createMode>
+        <wasmGas parser="GAS, ULM-WASM-SYNTAX"> $GAS:Int </wasmGas>
         <wasmStatus> EVMC_INTERNAL_ERROR </wasmStatus>
         <wasmOutput> NO_OUTPUT </wasmOutput>
       </ulmWasm>
