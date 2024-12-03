@@ -2,14 +2,15 @@
 set -eu
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 WASM_DIR="$SCRIPT_DIR/../build/wasm"
-[ $# -ne 3 ] && { echo "usage $0: <input-pgm> <create> <gas>"; exit 1; }
+[ $# -ne 3 ] && { echo 'usage: [NOMACRO=1] [DEBUG=1] '"$(basename "$0")"' <input-pgm> <create> <gas>'; exit 1; }
 PGM_FILE=$1
 CREATE=$2
 GAS=$3
+FLAGS=""
+[ -n "${DEBUG+x}"   ] && FLAGS+=" --debugger"
+[ -n "${NOMACRO+x}" ] && FLAGS+=" --no-expand-macros"
+set -x
 set +u
 export LD_LIBRARY_PATH="$SCRIPT_DIR/../build/lib:$LD_LIBRARY_PATH"
-DEBUG_FLAG=""
-[ -n "$DEBUG" ] && DEBUG_FLAG="--debugger"
 set -u
-set -x
-krun $DEBUG_FLAG -d "$WASM_DIR" -cPGM="$PGM_FILE" -pPGM="$SCRIPT_DIR/fparser_PGM" -cGAS="$GAS" -cCREATE="$CREATE"
+krun $FLAGS -d "$WASM_DIR" -cPGM="$PGM_FILE" -pPGM="$SCRIPT_DIR/fparser_PGM" -cGAS="$GAS" -cCREATE="$CREATE"
