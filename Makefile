@@ -206,7 +206,10 @@ proof_tests:=$(wildcard tests/proofs/*-spec.k)
 
 test-prove: $(proof_tests:=.prove)
 
-### Erc-20 Rust tests
+### Rust tests
+
+rust-tests: erc20-rust-tests
+.PHONY: rust-tests
 
 erc20-rust-tests: tests/ulm/erc20/rust/src/*.rs tests/ulm/erc20/rust/Cargo.*
 	cd tests/ulm/erc20/rust && RUST_BACKTRACE=1 cargo test
