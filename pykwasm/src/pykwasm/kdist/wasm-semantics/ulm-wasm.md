@@ -4,16 +4,64 @@ requires "ulm.k"
 ```
 
 ```k
+module ULM-WASM-COMMON-SYNTAX
+   imports WASM-TEXT-COMMON-SYNTAX
+```
+
+Program Encoding
+----------------
+
+The ULM-integrated WASM VM has two possible program encodings:
+
+1.  In the local test VM case, a direct encoding is used.
+
+    ```local
+    syntax PgmEncoding ::= Stmts
+    ```
+
+2.  In the remote ULM-integrated VM case, a byte encoding is used.
+
+    ```remote
+    imports BYTES-SYNTAX
+    syntax PgmEncoding ::= Bytes
+    ```
+
+```k
+endmodule
+```
+
+```k
 module ULM-WASM-SYNTAX
+    imports ULM-WASM-COMMON-SYNTAX
     imports WASM-TEXT-SYNTAX
 endmodule
 ```
 
 ```k
 module ULM-WASM
+    imports ULM-WASM-COMMON-SYNTAX
     imports WASM-TEXT
     imports ULM
 ```
+
+Program Decoding
+----------------
+
+The WASM VM must decode the input program:
+
+1.  In local test VM case, the decoding function is just identity.
+
+    ```local
+    syntax Stmts ::= decodePgm(Stmts) [function, total]
+    // ------------------------------------------------
+    rule decodePgm(Stmts) => Stmts
+    ```
+
+2.  In the remote ULM-integrated VM case, a specialized, hooked byte decoder is used.
+
+    ```remote
+    syntax ModuleDecl ::= decodePgm(Bytes) [function, hook(ULM.decode)]
+    ```
 
 Configuration
 -------------
@@ -24,7 +72,7 @@ Configuration
 
     configuration
       <ulmWasm>
-        <k> $PGM:Bytes </k>
+        <k> $PGM:PgmEncoding </k>
         <wasm/>
         <createMode> $CREATE:Bool </createMode>
         <wasmGas> $GAS:Int </wasmGas>
@@ -39,12 +87,11 @@ Passing Control
 The test embedder sets up the built-in module and passes control to the execution cell in Wasm.
 
 ```k
-    syntax ModuleDecl ::= decodeModule(Bytes) [function, hook(ULM.decode)]
 
-    rule <k> PGM:Bytes => .K </k>
+    rule <k> PGM:PgmEncoding => .K </k>
          <instrs> .K
                => #emptyModule()
-               ~> sequenceStmts(text2abstract(decodeModule(PGM)))
+               ~> sequenceStmts(text2abstract(decodePgm(PGM)))
          </instrs>
 ```
 
