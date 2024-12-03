@@ -93,7 +93,6 @@ Passing Control
 The test embedder sets up the built-in module and passes control to the execution cell in Wasm.
 
 ```k
-
     rule <k> PGM:PgmEncoding => .K </k>
          <instrs> .K
                => #emptyModule()
