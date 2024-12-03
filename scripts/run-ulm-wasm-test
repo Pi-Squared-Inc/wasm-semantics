@@ -9,6 +9,7 @@ GAS=$3
 FLAGS=""
 [ -n "${DEBUG+x}"   ] && FLAGS+=" --debugger"
 [ -n "${NOMACRO+x}" ] && FLAGS+=" --no-expand-macros"
+[ -n "${VERBOSE+x}" ] && FLAGS+=" --verbose --save-temps"
 set +u
 export LD_LIBRARY_PATH="$SCRIPT_DIR/../build/lib:$LD_LIBRARY_PATH"
 set -u
