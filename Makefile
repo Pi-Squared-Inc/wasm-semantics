@@ -121,6 +121,9 @@ $(ULM_WASM_TARGET): $(ULM_KRYPTO_TARGET) $(ULM_HOOKS_TARGET) $(ULM_WASM_SRC)
 	  -I "$(ULM_KRYPTO_DIR)/plugin" \
 	  -v \
 	  $(ULM_WASM_MAIN) \
+	  --main-module ULM-WASM \
+	  --syntax-module ULM-WASM-SYNTAX \
+	  --gen-glr-bison-parser \
 	  -o $(ULM_WASM_DIR)
 	$(if "$(ULM_TEST)",,cp "$(ULM_WASM_DIR)/$(ULM_WASM_OUT)" "$(ULM_LIB_DIR)")
 
