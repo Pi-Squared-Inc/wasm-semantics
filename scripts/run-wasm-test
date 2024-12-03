@@ -1,4 +1,9 @@
 #!/bin/bash
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-
-LD_LIBRARY_PATH="$SCRIPT_DIR/../build/lib:$LD_LIBRARY_PATH" "$SCRIPT_DIR/../build/wasm/kwasm"
+WASM_DIR="$SCRIPT_DIR/../build/wasm"
+[ $# -ne 3 ] && { echo "usage $0: <input-pgm> <create> <gas>"; exit 1; }
+PGM_FILE=$1
+CREATE=$2
+GAS=$3
+LD_LIBRARY_PATH="$SCRIPT_DIR/../build/lib:$LD_LIBRARY_PATH" \
+krun -d "$WASM_DIR" -cPGM="$PGM_FILE" -pPGM="$SCRIPT_DIR/fparser_PGM" -cGAS="$GAS" -cCREATE="$CREATE"
