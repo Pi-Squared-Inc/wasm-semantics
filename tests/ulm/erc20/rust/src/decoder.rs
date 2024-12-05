@@ -89,17 +89,15 @@ impl<'a, S, T> Decoder<'a, (S, T)>
                 EncodingType::FixedSize => head,
                 EncodingType::VariableSize => {
                     let value_start_u256 = U256::decode(head);
-                    let value_start_u64: u64 = value_start_u256.into();
-                    let value_start: usize = match value_start_u64.try_into() {
+                    let value_start: usize = match value_start_u256.try_into() {
                         Ok(v) => v,
-                        Err(_) => fail("Cannot cast value start to usize."),
+                        Err(s) => fail(s),
                     };
                     require!(value_start + 32 <= self.buffer.len(), "Value index out of range");
                     let value_length_u256 = U256::decode(self.buffer.slice(value_start .. value_start + 32));
-                    let value_length_u64: u64 = value_length_u256.into();
-                    let value_length: usize = match value_length_u64.try_into() {
+                    let value_length: usize = match value_length_u256.try_into() {
                         Ok(v) => v,
-                        Err(_) => fail("Cannot cast value length to usize."),
+                        Err(s) => fail(s),
                     };
                     require!(value_start + 32 + value_length < self.buffer.len(), "Value end out of range");
                     self.buffer.slice(value_start + 32 .. value_start + 32 + value_length)

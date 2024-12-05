@@ -76,11 +76,13 @@ impl<const N: usize> Unsigned<N> {
         }
     }
 
-    pub fn to_u64(&self) -> u64 {
+    pub fn try_to_u64(&self) -> Result<u64, &'static str> {
         let useful_length =
             if 8 < N {
                 for i in 8 .. N {
-                    require!(self.chunks[i] == 0, "Overflow when converting to u64");
+                    if self.chunks[i] != 0 {
+                        return Err("Overflow when converting to u64");
+                    }
                 }
                 8
             } else {
@@ -91,18 +93,36 @@ impl<const N: usize> Unsigned<N> {
             value = value << 8;
             value += self.chunks[i] as u64;
         }
-        value
+        Ok(value)
     }
 }
 
-impl<const N: usize> From<&Unsigned<N>> for u64 {
-    fn from(value: &Unsigned<N>) -> u64 {
-        value.to_u64()
+impl<const N: usize> TryFrom<&Unsigned<N>> for u64 {
+    type Error = &'static str;
+    fn try_from(value: &Unsigned<N>) -> Result<Self, Self::Error> {
+        value.try_to_u64()
     }
 }
-impl<const N: usize> From<Unsigned<N>> for u64 {
-    fn from(value: Unsigned<N>) -> u64 {
-        (&value).into()
+impl<const N: usize> TryFrom<Unsigned<N>> for u64 {
+    type Error = &'static str;
+    fn try_from(value: Unsigned<N>) -> Result<Self, Self::Error> {
+        (&value).try_into()
+    }
+}
+impl<const N: usize> TryFrom<&Unsigned<N>> for usize {
+    type Error = &'static str;
+    fn try_from(value: &Unsigned<N>) -> Result<Self, Self::Error> {
+        let value_u64: u64 = value.try_into()?;
+        match value_u64.try_into() {
+            Ok(v) => Ok(v),
+            Err(_) => Err("Error converting u64 to usize")
+        }
+    }
+}
+impl<const N: usize> TryFrom<Unsigned<N>> for usize {
+    type Error = &'static str;
+    fn try_from(value: Unsigned<N>) -> Result<Self, Self::Error> {
+        (&value).try_into()
     }
 }
 

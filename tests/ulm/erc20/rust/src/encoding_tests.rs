@@ -22,7 +22,7 @@ mod encoding_tests {
         assert_eq!(32, bytes.len());
         let decoder: Decoder<(Unsigned<1>, ())> = Decoder::from_buffer(bytes);
         let (value, decoder) = decoder.decode();
-        assert_eq!(7, value.to_u64());
+        assert_eq!(7, value.try_to_u64().unwrap());
         decoder.check_done();
     }
 
@@ -34,7 +34,7 @@ mod encoding_tests {
         assert_eq!(32, bytes.len());
         let decoder: Decoder<(U256, ())> = Decoder::from_buffer(bytes);
         let (value, decoder) = decoder.decode();
-        assert_eq!(123456789, value.to_u64());
+        assert_eq!(123456789, value.try_to_u64().unwrap());
         decoder.check_done();
     }
 
@@ -64,15 +64,15 @@ mod encoding_tests {
         let decoder: Decoder<(Unsigned::<1>, (String, (U160, (String, (U256, ())))))>
                 = Decoder::from_buffer(bytes);
         let (value_u8, decoder) = decoder.decode();
-        assert_eq!(7, value_u8.to_u64());
+        assert_eq!(7, value_u8.try_to_u64().unwrap());
         let (value_str1, decoder) = decoder.decode();
         assert_eq!("Hello", value_str1);
         let (value_u160, decoder) = decoder.decode();
-        assert_eq!(123456789, value_u160.to_u64());
+        assert_eq!(123456789, value_u160.try_to_u64().unwrap());
         let (value_str2, decoder) = decoder.decode();
         assert_eq!("world", value_str2);
         let (value_u256, decoder) = decoder.decode();
-        assert_eq!(987654321, value_u256.to_u64());
+        assert_eq!(987654321, value_u256.try_to_u64().unwrap());
         decoder.check_done();
     }
 }
