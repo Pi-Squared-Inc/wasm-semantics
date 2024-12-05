@@ -26,17 +26,17 @@ pub trait Encodable {
 
 impl Encodable for String {
     fn encode(&self) -> (EncodingType, Bytes) {
-        let mut result = BytesMut::new();
         let bytes = self.as_bytes();
+        let total_bytes_length = 32 + ((bytes.len() + 31) / 32) * 32; 
+        let mut result = BytesMut::with_capacity(total_bytes_length);
         let (_, len_bytes) = U256::from_u64(bytes.len() as u64).encode();
+
         result.put(len_bytes);
         result.put(bytes);
-        let remainder = bytes.len() % 32;
-        if remainder > 0 {
-            for _ in 0 .. 32 - remainder {
-                result.put_u8(0_u8);
-            }
+        for _ in result.len() .. total_bytes_length {
+            result.put_u8(0_u8);
         }
+
         (EncodingType::VariableSize, result.freeze())
     }
 }
