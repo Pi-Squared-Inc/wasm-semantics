@@ -72,6 +72,7 @@ pub struct SingleChunkStorageBuilder<'a, ValueType>
 {
     phantom_value: PhantomData<&'a ValueType>,
     api: &'a mut dyn ulm::Ulm,
+    hooks_api: &'a mut dyn ulm_hooks::UlmHooks,
     encoder: Encoder,
 }
 
@@ -79,16 +80,17 @@ impl<'a, ValueType> SingleChunkStorageBuilder<'a, ValueType>
     where
         ValueType: Into<U256> + TryFrom<U256, Error = &'static str>,
 {
-    pub fn new(api: &'a mut dyn ulm::Ulm, name: &String) -> Self {
+    pub fn new(api: &'a mut dyn ulm::Ulm, hooks_api: &'a mut dyn ulm_hooks::UlmHooks, name: &String) -> Self {
         let mut encoder = Encoder::new();
         encoder.add(name);
-        Self::from_encoder(api, encoder)
+        Self::from_encoder(api, hooks_api, encoder)
     }
 
-    fn from_encoder(api: &'a mut dyn ulm::Ulm, encoder: Encoder) -> Self {
+    fn from_encoder(api: &'a mut dyn ulm::Ulm, hooks_api: &'a mut dyn ulm_hooks::UlmHooks, encoder: Encoder) -> Self {
         SingleChunkStorageBuilder::<ValueType> {
             phantom_value: PhantomData,
             api,
+            hooks_api,
             encoder,
         }
     }
@@ -99,7 +101,7 @@ impl<'a, ValueType> SingleChunkStorageBuilder<'a, ValueType>
 
     pub fn build(&mut self) -> SingleChunkStorage<ValueType> {
         let bytes = self.encoder.encode();
-        let fingerprint = ulm_hooks::keccak_hash_int(&bytes);
+        let fingerprint = ulm_hooks::keccak_hash_int(self.hooks_api, &bytes);
         SingleChunkStorage::new(self.api, fingerprint)
     }
 }
