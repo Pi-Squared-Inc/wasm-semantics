@@ -80,11 +80,11 @@ Similarly, we define a default null output which may indicate internal errors.
       <ulmWasm>
         <k> $PGM:PgmEncoding </k>
         <wasm/>
-        <createMode> $CREATE:Bool </createMode>
-        <wasmEntrypoint> $WASM:String </wasmEntrypoint>
-        <wasmGas> $GAS:Int </wasmGas>
-        <wasmStatus> EVMC_INTERNAL_ERROR </wasmStatus>
-        <wasmOutput> NO_OUTPUT </wasmOutput>
+        <create> $CREATE:Bool </create>
+        <entry> $WASM:String </entry>
+        <gas> $GAS:Int </gas>
+        <status> EVMC_INTERNAL_ERROR </status>
+        <output> NO_OUTPUT </output>
       </ulmWasm>
 ```
 
@@ -95,7 +95,7 @@ The embedder loads the module to be executed and then resolves the entrypoint fu
 
 ```k
     rule <k> PGM:PgmEncoding => #resolveCurModuleFuncExport(FUNCNAME) </k>
-         <wasmEntrypoint> FUNCNAME </wasmEntrypoint>
+         <entry> FUNCNAME </entry>
          <instrs> .K
                => sequenceStmts(text2abstract(decodePgm(PGM)))
          </instrs>
@@ -107,8 +107,8 @@ This is ensured by requiring that the `<instrs>` cell is empty during resolution
 ```k
     syntax Initializer ::= #resolveCurModuleFuncExport(String)
                          | #resolveModuleFuncExport(Int, String)
-                         | #resolveFunc(Int, List)
-    // -------------------------------------------
+                         | #resolveFunc(Int, ListInt)
+    // ----------------------------------------------
     rule <k> #resolveCurModuleFuncExport(FUNCNAME) => #resolveModuleFuncExport(MODIDX, FUNCNAME) </k>
          <instrs> .K </instrs>
          <curModIdx> MODIDX:Int </curModIdx>
@@ -123,7 +123,7 @@ This is ensured by requiring that the `<instrs>` cell is empty during resolution
          </moduleInst>
 
     rule <k> #resolveFunc(FUNCIDX, FUNCADDRS) => .K </k>
-         <instrs> .K => (invoke FUNCADDRS {{ FUNCIDX }} orDefault -1 ):Instr </instr>
+         <instrs> .K => (invoke FUNCADDRS {{ FUNCIDX }} orDefault -1 ):Instr </instrs>
          requires isListIndex(FUNCIDX, FUNCADDRS)
 ```
 
@@ -155,16 +155,16 @@ These rules define various integration points between the ULM and our Wasm inter
 ```k
     syntax Int ::= #getGasLeft() [function, total]
     rule [[ #getGasLeft() => Gas ]]
-         <wasmGas> Gas:Int </wasmGas>
+         <gas> Gas:Int </gas>
 
     syntax Bytes ::= #getOutput() [function, total]
     rule [[ #getOutput() => #if OutVal ==K NO_OUTPUT #then .Bytes #else {OutVal}:>Bytes #fi ]]
-         <wasmOutput> OutVal:OutputData </wasmOutput>
+         <output> OutVal:OutputData </output>
 
     syntax Int ::= #getStatus() [function, total]
     rule [[ #getStatus() => #if OutVal ==K NO_OUTPUT #then EVMC_INTERNAL_ERROR #else Status #fi ]]
-         <wasmOutput> OutVal:OutputData </wasmOutput>
-         <wasmStatus> Status:Int </wasmStatus>
+         <output> OutVal:OutputData </output>
+         <status> Status:Int </status>
 
     rule getGasLeft(_) => #getGasLeft()
     rule getOutput(_)  => #getOutput()

@@ -78,6 +78,7 @@ def main():
         if key in config_subst:
             raise ValueError(f"redundant key found in substitution map: {prekey}")
 
+        if sort == 'String': val = f'"{val}"'
         config_subst[key] = KToken(val, sort)
 
     # parse module as binary (with fallback to textual parser)
@@ -100,9 +101,9 @@ def main():
     init_subst['K_CELL'] = KSequence(module)
 
     # check substitution keys
-    ulm_keys = set(['WASMGAS_CELL', 'WASMENTRYPOINT_CELL', 'CREATEMODE_CELL'])
+    ulm_keys = set(['GAS_CELL', 'ENTRY_CELL', 'CREATE_CELL'])
     if ulm_keys.issubset(init_subst.keys()) and not ulm_keys.issubset(config_subst.keys()):
-        raise ValueError(f"ULM Wasm detected but required substition keys are missing: {ulm_keys - config_subst.keys()}")
+        raise ValueError(f"ULM Wasm detected but required substition keys for these cells are missing: {ulm_keys - config_subst.keys()}")
 
     # update config substitution
     final_subst = init_subst | config_subst

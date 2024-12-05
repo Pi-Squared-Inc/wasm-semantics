@@ -163,6 +163,18 @@ The target `test` contains all the currently passing tests.
 make test
 ```
 
+To execute the Wasm VM locally, you can use the `run-wasm` Poetry script as follows:
+
+```sh
+poetry wasm <llvm-build-dir> <wasm-file> [-cellname:sort=cellvalue...]
+```
+
+For the local build of the ULM-integrated Wasm, it can be executed as follows:
+
+```sh
+poetry wasm <path-to-repo-root>/build/wasm <path-to-wasm-file> -gas:Int=<int> -create:Bool=<bool> -entry:String=<string>
+```
+
 Resources
 ---------
 
