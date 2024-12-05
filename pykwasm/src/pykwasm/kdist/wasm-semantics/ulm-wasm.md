@@ -81,6 +81,7 @@ Similarly, we define a default null output which may indicate internal errors.
         <k> $PGM:PgmEncoding </k>
         <wasm/>
         <createMode> $CREATE:Bool </createMode>
+        <wasmEntrypoint> $WASM:String </wasmEntrypoint>
         <wasmGas> $GAS:Int </wasmGas>
         <wasmStatus> EVMC_INTERNAL_ERROR </wasmStatus>
         <wasmOutput> NO_OUTPUT </wasmOutput>
@@ -90,14 +91,48 @@ Similarly, we define a default null output which may indicate internal errors.
 Passing Control
 ---------------
 
-The test embedder sets up the built-in module and passes control to the execution cell in Wasm.
+The embedder loads the module to be executed and then resolves the entrypoint function.
 
 ```k
-    rule <k> PGM:PgmEncoding => .K </k>
+    rule <k> PGM:PgmEncoding => #resolveCurModuleFuncExport(FUNCNAME) </k>
+         <wasmEntrypoint> FUNCNAME </wasmEntrypoint>
          <instrs> .K
-               => #emptyModule()
-               ~> sequenceStmts(text2abstract(decodePgm(PGM)))
+               => sequenceStmts(text2abstract(decodePgm(PGM)))
          </instrs>
+```
+
+Note that entrypoint resolution must occur _after_ the Wasm module has been loaded.
+This is ensured by requiring that the `<instrs>` cell is empty during resolution.
+
+```k
+    syntax Initializer ::= #resolveCurModuleFuncExport(String)
+                         | #resolveModuleFuncExport(Int, String)
+                         | #resolveFunc(Int, List)
+    // -------------------------------------------
+    rule <k> #resolveCurModuleFuncExport(FUNCNAME) => #resolveModuleFuncExport(MODIDX, FUNCNAME) </k>
+         <instrs> .K </instrs>
+         <curModIdx> MODIDX:Int </curModIdx>
+
+    rule <k> #resolveModuleFuncExport(MODIDX, FUNCNAME) => #resolveFunc(FUNCIDX, FUNCADDRS) </k>
+         <instrs> .K </instrs>
+         <moduleInst>
+           <modIdx> MODIDX </modIdx>
+           <exports> ... FUNCNAME |-> FUNCIDX ... </exports>
+           <funcAddrs> FUNCADDRS </funcAddrs>
+           ...
+         </moduleInst>
+
+    rule <k> #resolveFunc(FUNCIDX, FUNCADDRS) => .K </k>
+         <instrs> .K => (invoke FUNCADDRS {{ FUNCIDX }} orDefault -1 ):Instr </instr>
+         requires isListIndex(FUNCIDX, FUNCADDRS)
+```
+
+Here we handle the case when entrypoint resolution fails.
+
+**TODO:** Decide how to handle failure case.
+
+```k
+    // rule <k> Init:Initializer => . </k> [owise]
 ```
 
 Instruction sugar
