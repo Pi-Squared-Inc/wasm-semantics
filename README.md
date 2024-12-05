@@ -137,6 +137,14 @@ make build
 
 To only build a specific backend, you can do `make build-llvm` or `make build-haskell`.
 
+#### ULM-Integrated Wasm Building
+
+To locally build the ULM-integrated version of the semantics, run:
+
+```sh
+make ULM_TEST=1 ulm-wasm
+```
+
 ### Media and documents
 
 The `media/` directory contains presentations and reports about about KWasm.
@@ -163,16 +171,16 @@ The target `test` contains all the currently passing tests.
 make test
 ```
 
-To execute the Wasm VM locally, you can use the `run-wasm` Poetry script as follows:
+To execute the Wasm VM locally, you can use the `wasm` Poetry script from the repo root as follows:
 
 ```sh
-poetry wasm <llvm-build-dir> <wasm-file> [-cellname:sort=cellvalue...]
+poetry -C pykwasm run wasm <llvm-build-dir> <wasm-file> [-cellname:sort=cellvalue...]
 ```
 
-For the local build of the ULM-integrated Wasm, it can be executed as follows:
+For example, after locally building the ULM-integrated Wasm, the local build of the ULM-integrated Wasm can be executed as follows:
 
 ```sh
-poetry wasm <path-to-repo-root>/build/wasm <path-to-wasm-file> -gas:Int=<int> -create:Bool=<bool> -entry:String=<string>
+poetry -C pykwasm run wasm ./build/wasm pykwasm/src/pykwasm/tests/integration/binary/basic-features.wat -gas:Int=0 -create:Bool=false -entry:String=init
 ```
 
 Resources
