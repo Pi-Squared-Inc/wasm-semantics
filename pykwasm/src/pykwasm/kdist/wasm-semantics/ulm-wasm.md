@@ -80,8 +80,8 @@ Similarly, we define a default null output which may indicate internal errors.
       <ulmWasm>
         <k> $PGM:PgmEncoding </k>
         <wasm/>
-        <createMode parser="CREATE, ULM-WASM-SYNTAX"> $CREATE:Bool </createMode>
-        <wasmGas parser="GAS, ULM-WASM-SYNTAX"> $GAS:Int </wasmGas>
+        <createMode> $CREATE:Bool </createMode>
+        <wasmGas> $GAS:Int </wasmGas>
         <wasmStatus> EVMC_INTERNAL_ERROR </wasmStatus>
         <wasmOutput> NO_OUTPUT </wasmOutput>
       </ulmWasm>
