@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from io import BytesIO
 from pathlib import Path
+import subprocess
 import sys
 from typing import TYPE_CHECKING
 
@@ -47,46 +48,73 @@ if TYPE_CHECKING:
 
 
 def main():
-    # parse args
-    if len(sys.argv) < 2 or len(sys.argv) > 3:
-        print("usage: run_wasm <llvm_dir> [wasm_file]")
+    # check arg count
+    if len(sys.argv) < 3:
+        print("usage: run_wasm <llvm_dir> <wasm_file> [-cellname:sort=cellvalue...]")
         sys.exit(1)
+    args = sys.argv[1:]
 
-    llvm_dir = Path(sys.argv[1])
+    # parse fixed args
+    llvm_dir = Path(args[0])
+    wasm_file = args[1]
     try:
-        if len(sys.argv) < 3:
-            infile = BytesIO(sys.stdin.buffer.read())
-        else:
-            fpath = sys.argv[2]
-            infile = open(fpath, 'rb')
+        infile = open(wasm_file, 'rb')
     except:
         sys.exit(1)
 
+    def build_subst_key(key_name):
+        return key_name.upper() + '_CELL'
+
+    # parse extra args
+    config_subst = dict()
+    extra_args = args[2:]
+    for arg in extra_args:
+        prekey_sort, val = arg[1:].split('=')
+        prekey, sort = prekey_sort.split(':')
+        key = build_subst_key(prekey)
+
+        if key == 'k':
+            raise ValueError(f"substitution may not contain a 'k' key")
+        if key in config_subst:
+            raise ValueError(f"redundant key found in substitution map: {prekey}")
+
+        config_subst[key] = KToken(val, sort)
+
+    # parse module as binary (with fallback to textual parser)
     try:
-        # parse module
         module = wasm2kast(infile)
-
-        # get runner
-        runner = KRun(llvm_dir)
-
-        # embed parsed_module to <k>
-        top_sort = KSort('GeneratedTopCell')
-        config_kast = runner.definition.init_config(top_sort)
-        symbolic_config, init_subst = split_config_from(config_kast)
-        print(init_subst)
-        init_subst['K_CELL'] = KSequence(module)
-        init_subst['WASMGAS_CELL'] = KToken('0','Int')
-        init_subst['CREATEMODE_CELL'] = KToken('true','Bool')
-        config_with_module = Subst(init_subst)(symbolic_config)
-
-        # convert the config to kore
-        config_kore = runner.kast_to_kore(config_with_module, top_sort)
-
-        # run the config
-        result = runner.run_pattern(config_kore)
-    except Exception as e:
+    except:
+        proc_res = subprocess.run(['wat2wasm', wasm_file, '--output=/dev/stdout'], check=True, capture_output=True)
         infile.close()
-        raise e
+        infile = BytesIO(proc_res.stdout)
+        module = wasm2kast(infile)
+        infile.close()
+
+    # get runner
+    runner = KRun(llvm_dir)
+
+    # embed parsed_module to <k>
+    top_sort = KSort('GeneratedTopCell')
+    config_kast = runner.definition.init_config(top_sort)
+    symbolic_config, init_subst = split_config_from(config_kast)
+    init_subst['K_CELL'] = KSequence(module)
+
+    # check substitution keys
+    ulm_keys = set(['WASMGAS_CELL', 'WASMENTRYPOINT_CELL', 'CREATEMODE_CELL'])
+    if ulm_keys.issubset(init_subst.keys()) and not ulm_keys.issubset(config_subst.keys()):
+        raise ValueError(f"ULM Wasm detected but required substition keys are missing: {ulm_keys - config_subst.keys()}")
+
+    # update config substitution
+    final_subst = init_subst | config_subst
+
+    # apply substitution to config
+    config_with_module = Subst(final_subst)(symbolic_config)
+
+    # convert the config to kore
+    config_kore = runner.kast_to_kore(config_with_module, top_sort)
+
+    # run the config
+    result = runner.run_pattern(config_kore)
 
     return result
 
