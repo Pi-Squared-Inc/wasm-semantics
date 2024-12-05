@@ -1,7 +1,0 @@
-#!/bin/bash
-set -eu
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-parser=$(basename $0) # use parser binary with same name as this script
-[ $# -ne 1 ] && { echo "usage: $parser <input-file>"; exit 1; }
-file=$1
-"$SCRIPT_DIR/../build/wasm/$parser" /dev/stdin < "$file"
