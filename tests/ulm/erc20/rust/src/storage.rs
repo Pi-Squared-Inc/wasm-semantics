@@ -25,8 +25,10 @@
 // let my_value = storage.get();
 
 use core::marker::PhantomData;
+use std::cell::RefCell;
 use std::convert::TryFrom;
 use std::convert::Into;
+use std::rc::Rc;
 
 use crate::assertions::fail;
 use crate::encoder::Encodable;
@@ -40,28 +42,28 @@ pub struct SingleChunkStorage<'a, ValueType>
         ValueType: Into<U256> + TryFrom<U256>,
 {
     phantom_value: PhantomData<&'a ValueType>,
-    api: &'a mut dyn ulm::Ulm,
+    api: Rc<RefCell<dyn ulm::Ulm>>,
     fingerprint: U256,
 }
 
 impl<'a, ValueType> SingleChunkStorage<'a, ValueType>
     where
-        ValueType: Into<U256> + TryFrom<U256, Error = &'static str>,
+        ValueType: Into<U256> + TryFrom<U256>,
 {
-    pub fn new(api: &'a mut dyn ulm::Ulm, fingerprint: U256) -> Self {
+    pub fn new(api: Rc<RefCell<dyn ulm::Ulm>>, fingerprint: U256) -> Self {
         SingleChunkStorage::<ValueType> { phantom_value: PhantomData, api, fingerprint }
     }
 
     pub fn set(&mut self, value: ValueType) {
         let converted: U256 = value.into();
-        ulm::set_account_storage(self.api, &self.fingerprint, &converted);
+        ulm::set_account_storage(&mut *self.api.borrow_mut(), &self.fingerprint, &converted);
     }
 
     pub fn get(&self) -> ValueType {
-        let u256 = ulm::get_account_storage(self.api, &self.fingerprint);
+        let u256 = ulm::get_account_storage(&*self.api.borrow(), &self.fingerprint);
         match u256.try_into() {
             Ok(v) => v,
-            Err(reason) => fail(reason),
+            Err(_) => fail("Conversion from U256 failed for storage"),
         }
     }
 }
@@ -71,22 +73,22 @@ pub struct SingleChunkStorageBuilder<'a, ValueType>
         ValueType: Into<U256> + TryFrom<U256>,
 {
     phantom_value: PhantomData<&'a ValueType>,
-    api: &'a mut dyn ulm::Ulm,
-    hooks_api: &'a mut dyn ulm_hooks::UlmHooks,
+    api: Rc<RefCell<dyn ulm::Ulm>>,
+    hooks_api: Rc<RefCell<dyn ulm_hooks::UlmHooks>>,
     encoder: Encoder,
 }
 
 impl<'a, ValueType> SingleChunkStorageBuilder<'a, ValueType>
     where
-        ValueType: Into<U256> + TryFrom<U256, Error = &'static str>,
+        ValueType: Into<U256> + TryFrom<U256>,
 {
-    pub fn new(api: &'a mut dyn ulm::Ulm, hooks_api: &'a mut dyn ulm_hooks::UlmHooks, name: &String) -> Self {
+    pub fn new(api: Rc<RefCell<dyn ulm::Ulm>>, hooks_api: Rc<RefCell<dyn ulm_hooks::UlmHooks>>, name: &String) -> Self {
         let mut encoder = Encoder::new();
         encoder.add(name);
         Self::from_encoder(api, hooks_api, encoder)
     }
 
-    fn from_encoder(api: &'a mut dyn ulm::Ulm, hooks_api: &'a mut dyn ulm_hooks::UlmHooks, encoder: Encoder) -> Self {
+    fn from_encoder(api: Rc<RefCell<dyn ulm::Ulm>>, hooks_api: Rc<RefCell<dyn ulm_hooks::UlmHooks>>, encoder: Encoder) -> Self {
         SingleChunkStorageBuilder::<ValueType> {
             phantom_value: PhantomData,
             api,
@@ -101,7 +103,7 @@ impl<'a, ValueType> SingleChunkStorageBuilder<'a, ValueType>
 
     pub fn build(&mut self) -> SingleChunkStorage<ValueType> {
         let bytes = self.encoder.encode();
-        let fingerprint = ulm_hooks::keccak_hash_int(self.hooks_api, &bytes);
-        SingleChunkStorage::new(self.api, fingerprint)
+        let fingerprint = ulm_hooks::keccak_hash_int(&*self.hooks_api.borrow(), &bytes);
+        SingleChunkStorage::new(self.api.clone(), fingerprint)
     }
 }

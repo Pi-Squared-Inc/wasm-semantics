@@ -1,5 +1,6 @@
 use crate::unsigned::U256;
 
+#[cfg(not(test))]
 extern "C" {
     // key and value must have a length of exactly 32.
     #[allow(non_snake_case)]
@@ -30,9 +31,11 @@ impl Ulm for UlmImpl {
 }
 
 #[cfg(test)]
-mod ulm_mock {
+pub mod mock {
     use bytes::{Bytes, Buf};
+    use std::cell::RefCell;
     use std::collections::HashMap;
+    use std::rc::Rc;
 
     use crate::assertions::fail;
     use crate::require;
@@ -43,8 +46,8 @@ mod ulm_mock {
     }
 
     impl UlmMock {
-        pub fn new() -> UlmMock {
-            UlmMock { storage: HashMap::new() }
+        pub fn new() -> Rc<RefCell<Self>> {
+            Rc::new(RefCell::new(UlmMock { storage: HashMap::new() }))
         }
     }
 
@@ -57,7 +60,11 @@ mod ulm_mock {
                     require!(bytes_value.len() == 32, "unexpected value length in storage");
                     value.copy_from_slice(bytes_value);
                 },
-                None => fail("Key not found in storage"),
+                None => {
+                    for i in 0 .. value.len() {
+                        value[i] = 0;
+                    }
+                },
             }
         }
 

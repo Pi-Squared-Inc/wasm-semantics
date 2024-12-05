@@ -2,6 +2,7 @@ use bytes::{Bytes, Buf};
 
 use crate::unsigned::U256;
 
+#[cfg(not(test))]
 extern "C" {
     #[allow(dead_code)]
     pub fn fail(msg: *const u8, msg_len: usize) -> !;
@@ -35,28 +36,35 @@ pub trait UlmHooks {
     fn keccak_hash(&self, value: &[u8], result: &mut [u8; 32]);
 }
 
+#[cfg(not(test))]
 struct UlmHooksImpl {
 }
 
+#[cfg(not(test))]
 impl UlmHooksImpl {
     pub fn new() -> Self {
         UlmHooksImpl {}
     }
 }
 
+#[cfg(not(test))]
 impl UlmHooks for UlmHooksImpl {
     fn keccak_hash(&self, value: &[u8], result: &mut [u8; 32]) {
         unsafe { keccakHash(value.as_ptr(), value.len(), result.as_mut_ptr()); }
     }
 }
 
-mod mock {
+#[cfg(test)]
+pub mod mock {
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
     use crate::ulm_hooks::UlmHooks;
 
-    struct UlmHooksMock {}
+    pub struct UlmHooksMock {}
     impl UlmHooksMock {
-        pub fn new() -> Self {
-            UlmHooksMock {}
+        pub fn new() -> Rc<RefCell<Self>> {
+            Rc::new(RefCell::new(UlmHooksMock {}))
         }
     }
     impl UlmHooks for UlmHooksMock {
