@@ -9,12 +9,12 @@
 //
 // Then you can build the storage object like this:
 //
-// let mut builder = SingleChunkStorageBuilder::<MyValueType>::new(&("Storage name".to_string()))
+// let mut builder = SingleChunkStorageBuilder::<MyValueType>::new(api, hooks_api, &("Storage name".to_string()))
 // builder.add_arg(K1);
 // builder.add_arg(K2);
 // ...
 // builder.add_arg(Kn);
-// let storage = builder.build();
+// let mut storage = builder.build();
 //
 // In order to set the storage value, do this:
 //
