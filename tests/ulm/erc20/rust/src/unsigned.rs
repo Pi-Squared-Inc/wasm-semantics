@@ -61,6 +61,10 @@ impl<const N: usize> Unsigned<N> {
         Unsigned { chunks }
     }
 
+    pub fn from_array_le(chunks: [u8; N]) -> Unsigned<N> {
+        Unsigned { chunks }
+    }
+
     pub fn from_u64(value: u64) -> Unsigned<N> {
         if 8 <= N {
             let mut chunks = [0_u8; N];
@@ -74,6 +78,10 @@ impl<const N: usize> Unsigned<N> {
         } else {
             Unsigned::from_unsigned(&Unsigned::<8>::from_u64(value))
         }
+    }
+
+    pub fn copy_to_array_le(&self, chunks: &mut [u8; N]) {
+        chunks.copy_from_slice(&self.chunks);
     }
 
     pub fn try_to_u64(&self) -> Result<u64, &'static str> {
