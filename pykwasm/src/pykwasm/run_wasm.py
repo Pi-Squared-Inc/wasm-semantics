@@ -145,11 +145,11 @@ def pattern_write(pat: Pattern, output: IO[str], pretty=True) -> None:
     def push(*items):
         for item in reversed(items):
             if isinstance(item, tuple):
-                if len(item) > 2:
+                if len(item) > 1:
                     for subitem in reversed(item[1:]):
                         stack.append(subitem)
                         stack.append(',')
-                if len(item) > 1:
+                if len(item) > 0:
                     stack.append(item[0])
             elif isinstance(item, (str, DepthChange)):
                 stack.append(item)
@@ -178,7 +178,6 @@ def pattern_write(pat: Pattern, output: IO[str], pretty=True) -> None:
                 print_spacer = True
         else:
             pat.write(output)
-        print([debug(item) for item in reversed(stack)])
 
 class PatternWriter:
     def __init__(self, pat: Pattern):
@@ -193,6 +192,8 @@ class PatternWriter:
 def debug(pat) -> str:
         if isinstance(pat, str):
             return pat
+        elif isinstance(pat, tuple):
+            return [debug(item) for item in pat]
         elif isinstance(pat, syntax.App):
             return pat.symbol
         elif isinstance(pat, syntax.Assoc):
