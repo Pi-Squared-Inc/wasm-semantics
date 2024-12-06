@@ -6,7 +6,9 @@ This library provides a translation from the Wasm binary format to Kast.
 
 from __future__ import annotations
 
-from io import BytesIO
+from collections import deque
+from enum import Enum
+from io import BytesIO, StringIO
 from pathlib import Path
 import subprocess
 import sys
@@ -19,9 +21,10 @@ from wasm.opcodes import BinaryOpcode
 from wasm.parsers import parse_module
 
 from pykwasm import kwasm_ast as a
-from pyk.ktool.krun import KRun
 from pyk.kast.manip import split_config_from
 from pyk.kast.inner import KSequence, KSort, KToken, Subst
+from pyk.kore import syntax
+from pyk.ktool.krun import KRun
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -57,10 +60,7 @@ def main():
     # parse fixed args
     llvm_dir = Path(args[0])
     wasm_file = args[1]
-    try:
-        infile = open(wasm_file, 'rb')
-    except:
-        sys.exit(1)
+    infile = open(wasm_file, 'rb')
 
     def build_subst_key(key_name):
         return key_name.upper() + '_CELL'
@@ -114,11 +114,74 @@ def main():
     # convert the config to kore
     config_kore = runner.kast_to_kore(config_with_module, top_sort)
 
+    # monkey patch kore
+    patched_config_kore = PatternWriter(config_kore)
+
+    # log input kore
+    with open('log.txt','w') as f:
+        patched_config_kore.write(f)
+
     # run the config
-    result = runner.run_pattern(config_kore)
+    print(runner.run_process(patched_config_kore, term=True, expand_macros=False))
 
-    return result
+def pattern_write(pat: Pattern, output: IO[str], pretty=True) -> None:
+    """Serialize pattern to kore; used for monkey patch on Pattern object because default write function will blow the stack"""
 
+    class DepthChange(Enum):
+        UP = 1
+        DOWN = -1
+        PRINT = 0
+
+    if pretty:
+        UP, DOWN, PRINT = DepthChange.UP, DepthChange.DOWN, DepthChange.PRINT
+    else:
+        UP, DOWN, PRINT = ['']*3
+    not_first_term = False
+    print_depth = False
+    depth = 0
+    work_items = deque([pat])
+
+    # TODO: fix bug with workitems order
+
+    def push(*vals):
+        for val in vals:
+            work_items.appendleft(val)
+
+    while len(work_items) > 0:
+        pat = work_items.pop()
+        if isinstance(pat, str):
+            if print_depth:
+                if not_first_term: output.write('\n' + depth*' ')
+                not_first_term = True
+                print_depth = False
+            output.write(pat)
+        elif isinstance(pat, tuple):
+            if len(tuple) > 1:
+                
+        elif isinstance(pat, syntax.App):
+            push(PRINT, pat.symbol, '{', pat.sorts, '}(', UP, pat.args, DOWN, ')')
+        elif isinstance(pat, syntax.Assoc):
+            push(PRINT, pat.kore_symbol(), '{}(', UP, self.app, DOWN, ')')
+        elif isinstance(pat, syntax.MLPattern):
+            push(PRINT, pat.symbol(), '{',  pat.sorts, '}(', pat.ctor_patterns, ')')
+        elif isinstance(pat, syntax.SortApp):
+            push(pat.name, '{', pat.sorts, '}')
+        elif isinstance(pat, DepthChange):
+            depth += pat.value
+            if pat == PRINT:
+                print_depth = True
+        else:
+            pat.write(output)
+
+class PatternWriter:
+    def __init__(self, pat: Pattern):
+        self.pat = pat
+
+    def write(self, output: IO[str]):
+        if isinstance(self.pat, (syntax.App, syntax.SortApp, syntax.Assoc, syntax.MLPattern)):
+            pattern_write(self.pat, output)
+        else:
+            self.pat.write(output)
 
 def wasm2kast(wasm_bytes: IO[bytes], filename=None) -> KInner:
     """Returns a dictionary representing the Kast JSON."""
