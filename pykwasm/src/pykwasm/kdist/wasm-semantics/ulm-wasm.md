@@ -1,11 +1,11 @@
 ```k
-requires "wasm-text.md"
+requires "wasm.md"
 requires "ulm.k"
 ```
 
 ```k
 module ULM-WASM-COMMON-SYNTAX
-   imports WASM-TEXT-COMMON-SYNTAX
+   imports WASM-COMMON-SYNTAX
    imports BOOL-SYNTAX
    imports INT-SYNTAX
 ```
@@ -35,14 +35,14 @@ endmodule
 ```k
 module ULM-WASM-SYNTAX
     imports ULM-WASM-COMMON-SYNTAX
-    imports WASM-TEXT-SYNTAX
+    imports WASM-SYNTAX
 endmodule
 ```
 
 ```k
 module ULM-WASM
     imports ULM-WASM-COMMON-SYNTAX
-    imports WASM-TEXT
+    imports WASM
     imports ULM
 ```
 
@@ -133,15 +133,6 @@ Here we handle the case when entrypoint resolution fails.
 
 ```k
     // rule <k> Init:Initializer => . </k> [owise]
-```
-
-Instruction sugar
------------------
-
-We allow writing instructions at the top level in the test embedder.
-
-```k
-    rule <instrs> FI:FoldedInstr => sequenceInstrs(unfoldInstrs(FI .Instrs)) ... </instrs>
 ```
 
 ULM Hook Behavior
