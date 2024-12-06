@@ -180,7 +180,7 @@ poetry -C pykwasm run wasm <llvm-build-dir> <wasm-file> [-cellname:sort=cellvalu
 For example, after locally building the ULM-integrated Wasm, the local build of the ULM-integrated Wasm can be executed as follows:
 
 ```sh
-poetry -C pykwasm run wasm ./build/wasm pykwasm/src/pykwasm/tests/integration/binary/basic-features.wat -gas:Int=0 -create:Bool=false -entry:String=init
+poetry -C pykwasm run wasm ./build/wasm pykwasm/src/tests/integration/binary/basic-features.wat -gas:Int=0 -create:Bool=false -entry:String=init
 ```
 
 Resources
