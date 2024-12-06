@@ -121,7 +121,12 @@ def main():
         patched_config_kore.write(f)
 
     # run the config
-    # print(runner.run_process(patched_config_kore, term=True, expand_macros=False))
+    proc_data = runner.run_process(patched_config_kore, term=True, expand_macros=False)
+    if proc_data.returncode != 0:
+        print(proc_data.stdout)
+        print(proc_data.stderr, file=sys.stderr)
+        raise RuntimeError(f"krun process failed with returncode {proc_data.returncode}")
+    print(proc_data.stdout)
 
 class DepthChange(Enum):
     UP = 1
