@@ -6,7 +6,6 @@ This library provides a translation from the Wasm binary format to Kast.
 
 from __future__ import annotations
 
-from collections import deque
 from enum import Enum
 from io import BytesIO, StringIO
 from pathlib import Path
@@ -122,42 +121,49 @@ def main():
         patched_config_kore.write(f)
 
     # run the config
-    print(runner.run_process(patched_config_kore, term=True, expand_macros=False))
+    # print(runner.run_process(patched_config_kore, term=True, expand_macros=False))
+
+class DepthChange(Enum):
+    UP = 1
+    DOWN = -1
+    PRINT = 0
 
 def pattern_write(pat: Pattern, output: IO[str], pretty=True) -> None:
     """Serialize pattern to kore; used for monkey patch on Pattern object because default write function will blow the stack"""
-
-    class DepthChange(Enum):
-        UP = 1
-        DOWN = -1
-        PRINT = 0
 
     if pretty:
         UP, DOWN, PRINT = DepthChange.UP, DepthChange.DOWN, DepthChange.PRINT
     else:
         UP, DOWN, PRINT = ['']*3
     not_first_term = False
-    print_depth = False
+    print_spacer = False
     depth = 0
-    work_items = deque([pat])
+    stack = [pat]
 
     # TODO: fix bug with workitems order
 
-    def push(*vals):
-        for val in vals:
-            work_items.appendleft(val)
+    def push(*items):
+        for item in reversed(items):
+            if isinstance(item, tuple):
+                if len(item) > 2:
+                    for subitem in reversed(item[1:]):
+                        stack.append(subitem)
+                        stack.append(',')
+                if len(item) > 1:
+                    stack.append(item[0])
+            elif isinstance(item, (str, DepthChange)):
+                stack.append(item)
+            else:
+                raise ValueError(f"Unexpected item type: {type(item)}")
 
-    while len(work_items) > 0:
-        pat = work_items.pop()
+    while len(stack) > 0:
+        pat = stack.pop()
         if isinstance(pat, str):
-            if print_depth:
+            if print_spacer:
                 if not_first_term: output.write('\n' + depth*' ')
                 not_first_term = True
-                print_depth = False
+                print_spacer = False
             output.write(pat)
-        elif isinstance(pat, tuple):
-            if len(tuple) > 1:
-                
         elif isinstance(pat, syntax.App):
             push(PRINT, pat.symbol, '{', pat.sorts, '}(', UP, pat.args, DOWN, ')')
         elif isinstance(pat, syntax.Assoc):
@@ -169,9 +175,10 @@ def pattern_write(pat: Pattern, output: IO[str], pretty=True) -> None:
         elif isinstance(pat, DepthChange):
             depth += pat.value
             if pat == PRINT:
-                print_depth = True
+                print_spacer = True
         else:
             pat.write(output)
+        print([debug(item) for item in reversed(stack)])
 
 class PatternWriter:
     def __init__(self, pat: Pattern):
@@ -182,6 +189,22 @@ class PatternWriter:
             pattern_write(self.pat, output)
         else:
             self.pat.write(output)
+
+def debug(pat) -> str:
+        if isinstance(pat, str):
+            return pat
+        elif isinstance(pat, syntax.App):
+            return pat.symbol
+        elif isinstance(pat, syntax.Assoc):
+            return pat.kore_symbol()
+        elif isinstance(pat, syntax.MLPattern):
+            return pat.symbol()
+        elif isinstance(pat, syntax.SortApp):
+            return pat.name
+        elif isinstance(pat, DepthChange):
+            return pat.name
+        else:
+            return repr(pat)
 
 def wasm2kast(wasm_bytes: IO[bytes], filename=None) -> KInner:
     """Returns a dictionary representing the Kast JSON."""
