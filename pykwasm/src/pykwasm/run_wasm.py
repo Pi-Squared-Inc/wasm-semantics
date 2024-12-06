@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from enum import Enum
 from io import BytesIO, StringIO
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -50,15 +51,18 @@ if TYPE_CHECKING:
 
 
 def main():
+    # read env vars
+    DEBUG = 'DEBUG' in os.environ
+
     # check arg count
     if len(sys.argv) < 3:
-        print("usage: run_wasm <llvm_dir> <wasm_file> [-cellname:sort=cellvalue...]")
+        print("usage: [DEBUG=1] run_wasm <llvm_dir> <wasm_file> [-cellname:sort=cellvalue...]")
         sys.exit(1)
     args = sys.argv[1:]
 
     # parse fixed args
     llvm_dir = Path(args[0])
-    wasm_file = args[1]
+    wasm_file = Path(args[1])
     infile = open(wasm_file, 'rb')
 
     def build_subst_key(key_name):
@@ -117,16 +121,18 @@ def main():
     patched_config_kore = PatternWriter(config_kore)
 
     # log input kore
-    with open('log.txt','w') as f:
-        patched_config_kore.write(f)
+    if DEBUG:
+        with open(wasm_file.name + '.input.kore','w') as f:
+            patched_config_kore.write(f)
 
     # run the config
     proc_data = runner.run_process(patched_config_kore, term=True, expand_macros=False)
-    if proc_data.returncode != 0:
-        print(proc_data.stdout)
-        print(proc_data.stderr, file=sys.stderr)
-        raise RuntimeError(f"krun process failed with returncode {proc_data.returncode}")
+
+    # print the result
     print(proc_data.stdout)
+    if proc_data.returncode != 0 or DEBUG:
+        print(proc_data.stderr, file=sys.stderr)
+    proc_data.check_returncode()
 
 class DepthChange(Enum):
     UP = 1
@@ -185,12 +191,13 @@ def pattern_write(pat: Pattern, output: IO[str], pretty=True) -> None:
             pat.write(output)
 
 class PatternWriter:
-    def __init__(self, pat: Pattern):
+    def __init__(self, pat: Pattern, pretty=False):
         self.pat = pat
+        self.pretty = pretty
 
     def write(self, output: IO[str]):
         if isinstance(self.pat, (syntax.App, syntax.SortApp, syntax.Assoc, syntax.MLPattern)):
-            pattern_write(self.pat, output)
+            pattern_write(self.pat, output, self.pretty)
         else:
             self.pat.write(output)
 
