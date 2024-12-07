@@ -97,7 +97,7 @@ ulm-hooks-build: $(ULM_HOOKS_TARGET)
 ULM_WASM_TYPE = $(if $(ULM_TEST),main,library)
 ULM_WASM_OUT  = $(if $(ULM_TEST),$(ULM_WASM_BIN),$(ULM_WASM_LIB))
 ULM_WASM_SEL  = $(if $(ULM_TEST),k|local,k|remote)
-ULM_LIB_FLAGS = $(if $(ULM_TEST),,-ccopt -L"$(ULM_LIB_DIR)" -ccopt -lulmkllvm -ccopt shared -ccopt fPIC -ccopt "$(ULM_HOOKS_DIR)/lang/ulm_language_entry.cpp")
+ULM_LIB_FLAGS = $(if $(ULM_TEST),,-ccopt -L"$(ULM_LIB_DIR)" -ccopt -lulmkllvm -ccopt -shared -ccopt -fPIC -ccopt "$(ULM_HOOKS_DIR)/lang/ulm_language_entry.cpp")
 ULM_HOOK_NMSP = $(if $(ULM_TEST),,ULM)
 
 $(ULM_WASM_TARGET): $(ULM_KRYPTO_TARGET) $(ULM_HOOKS_TARGET) $(ULM_WASM_SRC)
