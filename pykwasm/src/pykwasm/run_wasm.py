@@ -7,7 +7,7 @@ This library provides a translation from the Wasm binary format to Kast.
 from __future__ import annotations
 
 from enum import Enum
-from io import BytesIO, StringIO
+from io import BytesIO
 import os
 from pathlib import Path
 import subprocess
@@ -23,7 +23,7 @@ from wasm.parsers import parse_module
 from pykwasm import kwasm_ast as a
 from pyk.kast.manip import split_config_from
 from pyk.kast.inner import KSequence, KSort, KToken, Subst
-from pyk.kore import syntax
+from pyk.kore.syntax import App, Assoc, MLPattern, Pattern, SortApp
 from pyk.ktool.krun import KRun
 
 if TYPE_CHECKING:
@@ -52,11 +52,11 @@ if TYPE_CHECKING:
 
 def main():
     # read env vars
-    DEBUG = 'DEBUG' in os.environ
+    debug = 'DEBUG' in os.environ
 
     # check arg count
     if len(sys.argv) < 3:
-        print("usage: [DEBUG=1] run_wasm <llvm_dir> <wasm_file> [-cellname:sort=cellvalue...]")
+        print('usage: [DEBUG=1] run_wasm <llvm_dir> <wasm_file> [-cellname:sort=cellvalue...]')
         sys.exit(1)
     args = sys.argv[1:]
 
@@ -69,17 +69,19 @@ def main():
         return key_name.upper() + '_CELL'
 
     # parse extra args
-    config_subst = dict()
+    config_subst = {}
     extra_args = args[2:]
     for arg in extra_args:
+        if arg[0] != '-':
+            raise ValueError(f"substitution argument was ill-formed: '{arg}'")
         prekey_sort, val = arg[1:].split('=')
         prekey, sort = prekey_sort.split(':')
         key = build_subst_key(prekey)
 
         if key == 'k':
-            raise ValueError(f"substitution may not contain a 'k' key")
+            raise ValueError("substitution may not contain a 'k' key")
         if key in config_subst:
-            raise ValueError(f"redundant key found in substitution map: {prekey}")
+            raise ValueError(f'redundant key found in substitution map: {prekey}')
 
         if sort == 'String': val = f'"{val}"'
         config_subst[key] = KToken(val, sort)
@@ -87,7 +89,7 @@ def main():
     # parse module as binary (with fallback to textual parser)
     try:
         module = wasm2kast(infile)
-    except:
+    except Exception:
         proc_res = subprocess.run(['wat2wasm', wasm_file, '--output=/dev/stdout'], check=True, capture_output=True)
         infile.close()
         infile = BytesIO(proc_res.stdout)
@@ -104,9 +106,9 @@ def main():
     init_subst['K_CELL'] = KSequence(module)
 
     # check substitution keys
-    ulm_keys = set(['GAS_CELL', 'ENTRY_CELL', 'CREATE_CELL'])
+    ulm_keys = {'GAS_CELL', 'ENTRY_CELL', 'CREATE_CELL'}
     if ulm_keys.issubset(init_subst.keys()) and not ulm_keys.issubset(config_subst.keys()):
-        raise ValueError(f"ULM Wasm detected but required substition keys for these cells are missing: {ulm_keys - config_subst.keys()}")
+        raise ValueError(f'ULM Wasm detected but required substition keys for these cells are missing: {ulm_keys - config_subst.keys()}')
 
     # update config substitution
     final_subst = init_subst | config_subst
@@ -121,7 +123,7 @@ def main():
     patched_config_kore = PatternWriter(config_kore)
 
     # log input kore
-    if DEBUG:
+    if debug:
         with open(wasm_file.name + '.input.kore','w') as f:
             patched_config_kore.write(f)
 
@@ -130,7 +132,7 @@ def main():
 
     # print the result
     print(proc_data.stdout)
-    if proc_data.returncode != 0 or DEBUG:
+    if proc_data.returncode != 0 or debug:
         print(proc_data.stderr, file=sys.stderr)
     proc_data.check_returncode()
 
@@ -143,9 +145,9 @@ def pattern_write(pat: Pattern, output: IO[str], pretty=True) -> None:
     """Serialize pattern to kore; used for monkey patch on Pattern object because default write function will blow the stack"""
 
     if pretty:
-        UP, DOWN, PRINT = DepthChange.UP, DepthChange.DOWN, DepthChange.PRINT
+        _up, _down, _print = DepthChange.UP, DepthChange.DOWN, DepthChange.PRINT
     else:
-        UP, DOWN, PRINT = ['']*3
+        _up, _down, _print = ['']*3
     not_first_term = False
     print_spacer = False
     depth = 0
@@ -165,7 +167,7 @@ def pattern_write(pat: Pattern, output: IO[str], pretty=True) -> None:
             elif isinstance(item, (str, DepthChange)):
                 stack.append(item)
             else:
-                raise ValueError(f"Unexpected item type: {type(item)}")
+                raise ValueError(f'Unexpected item type: {type(item)}')
 
     while len(stack) > 0:
         pat = stack.pop()
@@ -175,13 +177,13 @@ def pattern_write(pat: Pattern, output: IO[str], pretty=True) -> None:
                 not_first_term = True
                 print_spacer = False
             output.write(pat)
-        elif isinstance(pat, syntax.App):
-            push(PRINT, pat.symbol, '{', pat.sorts, '}(', UP, pat.args, DOWN, ')')
-        elif isinstance(pat, syntax.Assoc):
-            push(PRINT, pat.kore_symbol(), '{}(', UP, self.app, DOWN, ')')
-        elif isinstance(pat, syntax.MLPattern):
-            push(PRINT, pat.symbol(), '{',  pat.sorts, '}(', pat.ctor_patterns, ')')
-        elif isinstance(pat, syntax.SortApp):
+        elif isinstance(pat, App):
+            push(_print, pat.symbol, '{', pat.sorts, '}(', _up, pat.args, _down, ')')
+        elif isinstance(pat, Assoc):
+            push(_print, pat.kore_symbol(), '{}(', _up, pat.app, _down, ')')
+        elif isinstance(pat, MLPattern):
+            push(_print, pat.symbol(), '{',  pat.sorts, '}(', pat.ctor_patterns, ')')
+        elif isinstance(pat, SortApp):
             push(pat.name, '{', pat.sorts, '}')
         elif isinstance(pat, DepthChange):
             depth += pat.value
@@ -196,28 +198,28 @@ class PatternWriter:
         self.pretty = pretty
 
     def write(self, output: IO[str]):
-        if isinstance(self.pat, (syntax.App, syntax.SortApp, syntax.Assoc, syntax.MLPattern)):
+        if isinstance(self.pat, (App, SortApp, Assoc, MLPattern)):
             pattern_write(self.pat, output, self.pretty)
         else:
             self.pat.write(output)
 
 def debug(pat) -> str:
-        if isinstance(pat, str):
-            return pat
-        elif isinstance(pat, tuple):
-            return [debug(item) for item in pat]
-        elif isinstance(pat, syntax.App):
-            return pat.symbol
-        elif isinstance(pat, syntax.Assoc):
-            return pat.kore_symbol()
-        elif isinstance(pat, syntax.MLPattern):
-            return pat.symbol()
-        elif isinstance(pat, syntax.SortApp):
-            return pat.name
-        elif isinstance(pat, DepthChange):
-            return pat.name
-        else:
-            return repr(pat)
+    if isinstance(pat, str):
+        return pat
+    elif isinstance(pat, tuple):
+        return [debug(item) for item in pat]
+    elif isinstance(pat, App):
+        return pat.symbol
+    elif isinstance(pat, Assoc):
+        return pat.kore_symbol()
+    elif isinstance(pat, MLPattern):
+        return pat.symbol()
+    elif isinstance(pat, SortApp):
+        return pat.name
+    elif isinstance(pat, DepthChange):
+        return pat.name
+    else:
+        return repr(pat)
 
 def wasm2kast(wasm_bytes: IO[bytes], filename=None) -> KInner:
     """Returns a dictionary representing the Kast JSON."""
@@ -377,113 +379,113 @@ def instrs(iis):
 
 
 def instr(i):
-    B = BinaryOpcode
+    b = BinaryOpcode
     global block_id
     # TODO rewrite 'i.opcode == _' conditions as isinstance for better type-checking
-    if i.opcode == B.BLOCK:
+    if i.opcode == b.BLOCK:
         cur_block_id = block_id
         block_id += 1
         iis = instrs(i.instructions)
         res = vec_type(i.result_type)
         return a.BLOCK(res, iis, a.KInt(cur_block_id))
-    if i.opcode == B.BR:
+    if i.opcode == b.BR:
         return a.BR(i.label_idx)
-    if i.opcode == B.BR_IF:
+    if i.opcode == b.BR_IF:
         return a.BR_IF(i.label_idx)
-    if i.opcode == B.BR_TABLE:
+    if i.opcode == b.BR_TABLE:
         return a.BR_TABLE(i.label_indices, i.default_idx)
-    if i.opcode == B.CALL:
+    if i.opcode == b.CALL:
         return a.CALL(i.function_idx)
-    if i.opcode == B.CALL_INDIRECT:
+    if i.opcode == b.CALL_INDIRECT:
         return a.CALL_INDIRECT(i.type_idx)
-    if i.opcode == B.ELSE:
+    if i.opcode == b.ELSE:
         raise (ValueError('ELSE opcode: should have been filtered out.'))
-    if i.opcode == B.END:
+    if i.opcode == b.END:
         raise (ValueError('End opcode: should have been filtered out.'))
-    if i.opcode == B.F32_CONST:
+    if i.opcode == b.F32_CONST:
         return a.F32_CONST(i.value)
-    if i.opcode == B.F64_CONST:
+    if i.opcode == b.F64_CONST:
         return a.F64_CONST(i.value)
-    if i.opcode == B.F32_REINTERPRET_I32:
+    if i.opcode == b.F32_REINTERPRET_I32:
         raise (ValueError('Reinterpret instructions not implemented.'))
-    if i.opcode == B.F64_REINTERPRET_I64:
+    if i.opcode == b.F64_REINTERPRET_I64:
         raise (ValueError('Reinterpret instructions not implemented.'))
-    if i.opcode == B.GET_GLOBAL:
+    if i.opcode == b.GET_GLOBAL:
         return a.GET_GLOBAL(i.global_idx)
-    if i.opcode == B.GET_LOCAL:
+    if i.opcode == b.GET_LOCAL:
         return a.GET_LOCAL(i.local_idx)
-    if i.opcode == B.I32_CONST:
+    if i.opcode == b.I32_CONST:
         return a.I32_CONST(i.value)
-    if i.opcode == B.I64_CONST:
+    if i.opcode == b.I64_CONST:
         return a.I64_CONST(i.value)
-    if i.opcode == B.I32_REINTERPRET_F32:
+    if i.opcode == b.I32_REINTERPRET_F32:
         raise (ValueError('Reinterpret instructions not implemented.'))
-    if i.opcode == B.I64_REINTERPRET_F64:
+    if i.opcode == b.I64_REINTERPRET_F64:
         raise (ValueError('Reinterpret instructions not implemented.'))
-    if i.opcode == B.IF:
+    if i.opcode == b.IF:
         cur_block_id = block_id
         block_id += 1
         thens = instrs(i.instructions)
         els = instrs(i.else_instructions)
         res = vec_type(i.result_type)
         return a.IF(res, thens, els, a.KInt(cur_block_id))
-    if i.opcode == B.F32_STORE:
+    if i.opcode == b.F32_STORE:
         return a.F32_STORE(i.memarg.offset)
-    if i.opcode == B.F64_STORE:
+    if i.opcode == b.F64_STORE:
         return a.F64_STORE(i.memarg.offset)
-    if i.opcode == B.I32_STORE:
+    if i.opcode == b.I32_STORE:
         return a.I32_STORE(i.memarg.offset)
-    if i.opcode == B.I64_STORE:
+    if i.opcode == b.I64_STORE:
         return a.I64_STORE(i.memarg.offset)
-    if i.opcode == B.I32_STORE16:
+    if i.opcode == b.I32_STORE16:
         return a.I32_STORE16(i.memarg.offset)
-    if i.opcode == B.I64_STORE16:
+    if i.opcode == b.I64_STORE16:
         return a.I64_STORE16(i.memarg.offset)
-    if i.opcode == B.I32_STORE8:
+    if i.opcode == b.I32_STORE8:
         return a.I32_STORE8(i.memarg.offset)
-    if i.opcode == B.I64_STORE8:
+    if i.opcode == b.I64_STORE8:
         return a.I64_STORE8(i.memarg.offset)
-    if i.opcode == B.I64_STORE32:
+    if i.opcode == b.I64_STORE32:
         return a.I64_STORE32(i.memarg.offset)
-    if i.opcode == B.F32_LOAD:
+    if i.opcode == b.F32_LOAD:
         return a.F32_LOAD(i.memarg.offset)
-    if i.opcode == B.F64_LOAD:
+    if i.opcode == b.F64_LOAD:
         return a.F64_LOAD(i.memarg.offset)
-    if i.opcode == B.I32_LOAD:
+    if i.opcode == b.I32_LOAD:
         return a.I32_LOAD(i.memarg.offset)
-    if i.opcode == B.I64_LOAD:
+    if i.opcode == b.I64_LOAD:
         return a.I64_LOAD(i.memarg.offset)
-    if i.opcode == B.I32_LOAD16_S:
+    if i.opcode == b.I32_LOAD16_S:
         return a.I32_LOAD16_S(i.memarg.offset)
-    if i.opcode == B.I32_LOAD16_U:
+    if i.opcode == b.I32_LOAD16_U:
         return a.I32_LOAD16_U(i.memarg.offset)
-    if i.opcode == B.I64_LOAD16_S:
+    if i.opcode == b.I64_LOAD16_S:
         return a.I64_LOAD16_S(i.memarg.offset)
-    if i.opcode == B.I64_LOAD16_U:
+    if i.opcode == b.I64_LOAD16_U:
         return a.I64_LOAD16_U(i.memarg.offset)
-    if i.opcode == B.I32_LOAD8_S:
+    if i.opcode == b.I32_LOAD8_S:
         return a.I32_LOAD8_S(i.memarg.offset)
-    if i.opcode == B.I32_LOAD8_U:
+    if i.opcode == b.I32_LOAD8_U:
         return a.I32_LOAD8_U(i.memarg.offset)
-    if i.opcode == B.I64_LOAD8_S:
+    if i.opcode == b.I64_LOAD8_S:
         return a.I64_LOAD8_S(i.memarg.offset)
-    if i.opcode == B.I64_LOAD8_U:
+    if i.opcode == b.I64_LOAD8_U:
         return a.I64_LOAD8_U(i.memarg.offset)
-    if i.opcode == B.I64_LOAD32_S:
+    if i.opcode == b.I64_LOAD32_S:
         return a.I64_LOAD32_S(i.memarg.offset)
-    if i.opcode == B.I64_LOAD32_U:
+    if i.opcode == b.I64_LOAD32_U:
         return a.I64_LOAD32_U(i.memarg.offset)
-    if i.opcode == B.LOOP:
+    if i.opcode == b.LOOP:
         cur_block_id = block_id
         block_id += 1
         iis = instrs(i.instructions)
         res = vec_type(i.result_type)
         return a.LOOP(res, iis, a.KInt(cur_block_id))
-    if i.opcode == B.SET_GLOBAL:
+    if i.opcode == b.SET_GLOBAL:
         return a.SET_GLOBAL(i.global_idx)
-    if i.opcode == B.SET_LOCAL:
+    if i.opcode == b.SET_LOCAL:
         return a.SET_LOCAL(i.local_idx)
-    if i.opcode == B.TEE_LOCAL:
+    if i.opcode == b.TEE_LOCAL:
         return a.TEE_LOCAL(i.local_idx)
     if isinstance(i, instructions.RefFunc):
         return a.REF_FUNC(i.funcidx)
