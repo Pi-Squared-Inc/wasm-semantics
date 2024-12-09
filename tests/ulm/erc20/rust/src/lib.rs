@@ -3,6 +3,7 @@ mod assertions;
 mod balance;
 mod decoder;
 mod encoder;
+mod erc20;
 mod predicate;
 mod storage;
 mod unsigned;
