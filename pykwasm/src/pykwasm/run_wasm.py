@@ -6,14 +6,18 @@ This library provides a translation from the Wasm binary format to Kast.
 
 from __future__ import annotations
 
-from enum import Enum
-from io import BytesIO
 import os
-from pathlib import Path
 import subprocess
 import sys
+from enum import Enum
+from io import BytesIO
+from pathlib import Path
 from typing import TYPE_CHECKING
 
+from pyk.kast.inner import KSequence, KSort, KToken, Subst
+from pyk.kast.manip import split_config_from
+from pyk.kore.syntax import App, Assoc, MLPattern, SortApp
+from pyk.ktool.krun import KRun
 from wasm import instructions
 from wasm.datatypes import GlobalType, MemoryType, Mutability, TableType, TypeIdx, ValType, addresses
 from wasm.datatypes.element_segment import ElemModeActive, ElemModeDeclarative, ElemModePassive
@@ -21,16 +25,13 @@ from wasm.opcodes import BinaryOpcode
 from wasm.parsers import parse_module
 
 from pykwasm import kwasm_ast as a
-from pyk.kast.manip import split_config_from
-from pyk.kast.inner import KSequence, KSort, KToken, Subst
-from pyk.kore.syntax import App, Assoc, MLPattern, SortApp
-from pyk.ktool.krun import KRun
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from typing import IO
 
     from pyk.kast import KInner
+    from pyk.kore.syntax import Pattern
     from wasm.datatypes import (
         DataSegment,
         ElementSegment,
@@ -46,7 +47,6 @@ if TYPE_CHECKING:
         StartFunction,
         Table,
     )
-    from pyk.kore.syntax import Pattern
     from wasm.datatypes.element_segment import ElemMode
     from wasm.instructions import BaseInstruction
 
