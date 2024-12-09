@@ -74,7 +74,7 @@ def main():
     extra_args = args[2:]
     for arg in extra_args:
         if arg[0] != '-':
-            raise ValueError(f"substitution argument was ill-formed: {arg!r}")
+            raise ValueError(f'substitution argument was ill-formed: {arg!r}')
         prekey_sort, val = arg[1:].split('=')
         prekey, sort = prekey_sort.split(':')
         key = build_subst_key(prekey)
