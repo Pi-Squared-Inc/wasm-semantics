@@ -1,5 +1,6 @@
 use bytes::{Bytes, Buf};
 
+use crate::address::Address;
 use crate::unsigned::{U160, U256};
 
 #[cfg(not(test))]
@@ -208,11 +209,10 @@ pub fn log3(api: &dyn Ulm, signature: &str, data2: &U256, data3: &U256, bytes: B
     api.log3(&data1_bytes, &data2_bytes, &data3_bytes, &bytes_bytes);
 }
 
-// TODO: This should return an Address.
-pub fn caller(api: &dyn Ulm) -> U160 {
+pub fn caller(api: &dyn Ulm) -> Address {
     let mut result = [0_u8; 20];
     api.caller(&mut result);
-    U160::from_array_le(result)
+    U160::from_array_le(result).into()
 }
 
 pub fn call_data(api: &dyn Ulm) -> Bytes {
