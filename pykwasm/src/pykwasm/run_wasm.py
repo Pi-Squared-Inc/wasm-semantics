@@ -84,7 +84,8 @@ def main():
         if key in config_subst:
             raise ValueError(f'redundant key found in substitution map: {prekey}')
 
-        if sort == 'String': val = '"' + f'{val}' + '"'
+        if sort == 'String':
+            val = '"' + f'{val}' + '"'
         config_subst[key] = KToken(val, sort)
 
     # parse module as binary (with fallback to textual parser)
@@ -109,7 +110,9 @@ def main():
     # check substitution keys
     ulm_keys = {'GAS_CELL', 'ENTRY_CELL', 'CREATE_CELL'}
     if ulm_keys.issubset(init_subst.keys()) and not ulm_keys.issubset(config_subst.keys()):
-        raise ValueError(f'ULM Wasm detected but required substition keys for these cells are missing: {ulm_keys - config_subst.keys()}')
+        raise ValueError(
+            f'ULM Wasm detected but required substition keys for these cells are missing: {ulm_keys - config_subst.keys()}'
+        )
 
     # update config substitution
     final_subst = init_subst | config_subst
@@ -125,7 +128,7 @@ def main():
 
     # log input kore
     if debug:
-        with open(wasm_file.name + '.input.kore','w') as f:
+        with open(wasm_file.name + '.input.kore', 'w') as f:
             patched_config_kore.write(f)
 
     # run the config
@@ -137,10 +140,12 @@ def main():
         print(proc_data.stderr, file=sys.stderr)
     proc_data.check_returncode()
 
+
 class DepthChange(Enum):
     UP = 1
     DOWN = -1
     PRINT = 0
+
 
 def pattern_write(pat: Pattern, output: IO[str], pretty=True) -> None:
     """Serialize pattern to kore; used for monkey patch on Pattern object because default write function will blow the stack"""
@@ -148,7 +153,7 @@ def pattern_write(pat: Pattern, output: IO[str], pretty=True) -> None:
     if pretty:
         _up, _down, _print = DepthChange.UP, DepthChange.DOWN, DepthChange.PRINT
     else:
-        _up, _down, _print = ['']*3
+        _up, _down, _print = [''] * 3
     not_first_term = False
     print_spacer = False
     depth = 0
@@ -174,7 +179,8 @@ def pattern_write(pat: Pattern, output: IO[str], pretty=True) -> None:
         pat = stack.pop()
         if isinstance(pat, str):
             if print_spacer:
-                if not_first_term: output.write('\n' + depth*' ')
+                if not_first_term:
+                    output.write('\n' + depth * ' ')
                 not_first_term = True
                 print_spacer = False
             output.write(pat)
@@ -183,7 +189,7 @@ def pattern_write(pat: Pattern, output: IO[str], pretty=True) -> None:
         elif isinstance(pat, Assoc):
             push(_print, pat.kore_symbol(), '{}(', _up, pat.app, _down, ')')
         elif isinstance(pat, MLPattern):
-            push(_print, pat.symbol(), '{',  pat.sorts, '}(', pat.ctor_patterns, ')')
+            push(_print, pat.symbol(), '{', pat.sorts, '}(', pat.ctor_patterns, ')')
         elif isinstance(pat, SortApp):
             push(pat.name, '{', pat.sorts, '}')
         elif isinstance(pat, DepthChange):
@@ -192,6 +198,7 @@ def pattern_write(pat: Pattern, output: IO[str], pretty=True) -> None:
                 print_spacer = True
         else:
             pat.write(output)
+
 
 class PatternWriter:
     def __init__(self, pat: Pattern, pretty=False):
@@ -203,6 +210,7 @@ class PatternWriter:
             pattern_write(self.pat, output, self.pretty)
         else:
             self.pat.write(output)
+
 
 def debug(pat) -> str:
     if isinstance(pat, str):
@@ -221,6 +229,7 @@ def debug(pat) -> str:
         return pat.name
     else:
         return repr(pat)
+
 
 def wasm2kast(wasm_bytes: IO[bytes], filename=None) -> KInner:
     """Returns a dictionary representing the Kast JSON."""
