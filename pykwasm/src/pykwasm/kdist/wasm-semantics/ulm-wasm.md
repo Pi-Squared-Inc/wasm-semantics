@@ -41,17 +41,27 @@ Program Decoding
 The WASM VM must decode the input program:
 
 1.  In local test VM case, the decoding function is just identity.
+    A special cell is added to aid with function selection.
 
     ```local
     syntax ModuleDecl ::= decodePgm(ModuleDecl) [function, total]
     // ----------------------------------------------------------
     rule decodePgm(Mod) => Mod
+
+    configuration
+      <localState>
+        <entry> $ENTRY:String </entry>
+      </localState>
     ```
 
 2.  In the remote ULM-integrated VM case, a specialized, hooked byte decoder is used.
 
     ```remote
     syntax ModuleDecl ::= decodePgm(Bytes) [function, hook(ULM.decode)]
+
+    configuration
+      <localState>
+      </localState>
     ```
 
 Configuration
@@ -70,8 +80,8 @@ Similarly, we define a default null output which may indicate internal errors.
         <k> $PGM:PgmEncoding </k>
         <wasm/>
         <create> $CREATE:Bool </create>
-        <entry> $WASM:String </entry>
         <gas> $GAS:Int </gas>
+        <localState/>
         <status> EVMC_INTERNAL_ERROR </status>
         <output> NO_OUTPUT </output>
       </ulmWasm>
@@ -84,7 +94,6 @@ The embedder loads the module to be executed and then resolves the entrypoint fu
 
 ```k
     rule <k> PGM:PgmEncoding => . </k>
-         <entry> FUNCNAME </entry>
          <instrs> .K => decodePgm(PGM) </instrs>
 ```
 
