@@ -1,3 +1,4 @@
+mod address;
 mod assertions;
 mod decoder;
 mod encoder;
