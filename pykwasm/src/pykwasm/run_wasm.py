@@ -23,7 +23,7 @@ from wasm.parsers import parse_module
 from pykwasm import kwasm_ast as a
 from pyk.kast.manip import split_config_from
 from pyk.kast.inner import KSequence, KSort, KToken, Subst
-from pyk.kore.syntax import App, Assoc, MLPattern, Pattern, SortApp
+from pyk.kore.syntax import App, Assoc, MLPattern, SortApp
 from pyk.ktool.krun import KRun
 
 if TYPE_CHECKING:
@@ -46,6 +46,7 @@ if TYPE_CHECKING:
         StartFunction,
         Table,
     )
+    from pyk.kore.syntax import Pattern
     from wasm.datatypes.element_segment import ElemMode
     from wasm.instructions import BaseInstruction
 
@@ -73,7 +74,7 @@ def main():
     extra_args = args[2:]
     for arg in extra_args:
         if arg[0] != '-':
-            raise ValueError(f"substitution argument was ill-formed: '{arg}'")
+            raise ValueError(f"substitution argument was ill-formed: {arg!r}")
         prekey_sort, val = arg[1:].split('=')
         prekey, sort = prekey_sort.split(':')
         key = build_subst_key(prekey)
@@ -83,7 +84,7 @@ def main():
         if key in config_subst:
             raise ValueError(f'redundant key found in substitution map: {prekey}')
 
-        if sort == 'String': val = f'"{val}"'
+        if sort == 'String': val = '"' + f'{val}' + '"'
         config_subst[key] = KToken(val, sort)
 
     # parse module as binary (with fallback to textual parser)
@@ -187,7 +188,7 @@ def pattern_write(pat: Pattern, output: IO[str], pretty=True) -> None:
             push(pat.name, '{', pat.sorts, '}')
         elif isinstance(pat, DepthChange):
             depth += pat.value
-            if pat == PRINT:
+            if pat == _print:
                 print_spacer = True
         else:
             pat.write(output)
