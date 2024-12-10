@@ -1,5 +1,6 @@
 mod address;
 mod assertions;
+mod balance;
 mod decoder;
 mod encoder;
 mod predicate;
