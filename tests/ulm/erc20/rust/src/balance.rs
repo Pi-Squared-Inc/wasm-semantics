@@ -6,6 +6,7 @@ use crate::decoder::Decodable;
 use crate::encoder::{Encodable, EncodingType};
 use crate::unsigned::U256;
 
+#[derive(Debug)]
 pub struct Balance {
     value: U256
 }

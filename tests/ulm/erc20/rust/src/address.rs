@@ -5,6 +5,7 @@ use crate::decoder::Decodable;
 use crate::encoder::{Encodable, EncodingType};
 use crate::unsigned::{U160, U256};
 
+#[derive(Debug)]
 pub struct Address {
     value: U160,
 }
@@ -22,6 +23,9 @@ impl Address {
         self.value == U160::from_u64(0)
     }
 
+    pub fn into_u160(self) -> U160 {
+      self.value
+    }
     pub fn into_u256(self) -> U256 {
         self.value.into()
     }
@@ -38,6 +42,12 @@ impl TryFrom<U256> for Address
     type Error = &'static str;
     fn try_from(value: U256) -> Result<Self, Self::Error> {
         Ok(Address::new(value.try_into()?))
+    }
+}
+impl From<Address> for U160
+{
+    fn from(value: Address) -> Self {
+        value.into_u160()
     }
 }
 impl From<Address> for U256

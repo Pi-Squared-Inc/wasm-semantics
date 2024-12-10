@@ -11,5 +11,6 @@ mod unsigned;
 mod ulm;
 
 mod encoding_tests;
+mod erc20_tests;
 mod storage_tests;
 mod unsigned_tests;

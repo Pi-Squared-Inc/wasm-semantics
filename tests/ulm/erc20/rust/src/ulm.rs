@@ -42,35 +42,35 @@ pub mod impl_ {
         // data1, data2 and data3 must have a length of exactly 32.
         #[allow(non_snake_case)]
         pub fn Log3(data1: *const u8, data2: *const u8, data3: *const u8, bytes: *const u8, bytes_length: usize);
-    
+
         // result must have a length of exactly 20.
         #[allow(non_snake_case)]
         pub fn Caller(result: *mut u8);
-    
+
         #[allow(non_snake_case)]
         pub fn CallDataLength() -> u32;
         // result must have a length of at least CallDataLength()
         #[allow(non_snake_case)]
         pub fn CallData(result: *mut u8);
-    
+
         // key and value must have a length of exactly 32.
         #[allow(non_snake_case)]
         pub fn GetAccountStorage(key: *const u8, value: *mut u8);
-    
+
         // key and value must have a length of exactly 32.
         #[allow(non_snake_case)]
         pub fn SetAccountStorage(key: *const u8, value: *const u8);
-    
-    
+
+
         #[allow(non_snake_case)]
         pub fn setOutput(bytes: *const u8, bytes_length: usize);
-    
+
         #[allow(dead_code)]
         pub fn fail(msg: *const u8, msg_len: usize) -> !;
-    
+
         // result must have a length of exactly 32.
         pub fn keccakHash(msg: *const u8, msg_len: usize, result: *mut u8);
-    
+
     }
 
     #[allow(non_snake_case)]
@@ -131,9 +131,11 @@ pub mod mock {
     use std::collections::HashMap;
     use std::rc::Rc;
 
+    use crate::address::Address;
     use crate::assertions::fail;
     use crate::require;
     use crate::ulm::Ulm;
+    use crate::unsigned::U160;
 
     #[allow(non_snake_case)]
     pub fn failWrapper(msg: &str) -> ! {
@@ -154,10 +156,15 @@ pub mod mock {
                 call_data: Bytes::new(),
             }))
         }
+        pub fn set_caller(&mut self, caller: Address) {
+            let caller_nr: U160 = caller.into();
+            caller_nr.copy_to_array_le(&mut self.caller);
+        }
     }
 
     impl Ulm for UlmMock {
         fn log3(&self, _data1: &[u8; 32], _data2: &[u8; 32], _data3: &[u8; 32], _bytes: &[u8]) {}
+
         fn caller(&self, result: &mut [u8; 20]) {
             *result = self.caller;
         }
@@ -202,8 +209,11 @@ pub mod mock {
             for i in 1 .. result.len() {
                 result[i] = 0;
             }
-            for i in 1 .. value.len() {
-                result[i % 32] ^= value[i];
+            let mut assimetry: u16 = 1;
+            for i in 0 .. value.len() {
+                let assimetric_value: u16 = (value[i] as u16) * assimetry;
+                result[i % 32] ^= assimetric_value as u8;
+                assimetry = (assimetry * 3) & 0xff;
             }
         }
     }
