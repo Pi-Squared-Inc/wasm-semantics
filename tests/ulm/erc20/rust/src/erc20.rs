@@ -3,8 +3,9 @@ use std::rc::Rc;
 
 use crate::address::Address;
 use crate::balance::Balance;
+use crate::encoder::Encoder;
 use crate::storage::{SingleChunkStorage, SingleChunkStorageBuilder};
-use crate::ulm::Ulm;
+use crate::ulm::{log3, Ulm};
 
 fn s_total_supply<'a>(api: Rc<RefCell<dyn Ulm>>) -> SingleChunkStorage<'a, Balance> {
     SingleChunkStorageBuilder::new(api, &("total_supply".to_string())).build()
@@ -21,4 +22,28 @@ fn s_allowances<'a>(api: Rc<RefCell<dyn Ulm>>, account: &Address, spender: &Addr
     builder.add_arg(account);
     builder.add_arg(spender);
     builder.build()
+}
+
+// ---------------------------
+
+fn transfer_event(api: &dyn Ulm, from: Address, to: Address, value: &Balance) {
+    let mut encoder = Encoder::new();
+    encoder.add(value);
+    log3(
+        api,
+        "Transfer(address,address,u256)",
+        &from.into(), &to.into(),
+        encoder.encode()
+    )
+}
+
+fn approval_event(api: &dyn Ulm, owner: Address, spender: Address, value: &Balance) {
+    let mut encoder = Encoder::new();
+    encoder.add(value);
+    log3(
+        api,
+        "Approval(address,address,u256)",
+        &owner.into(), &spender.into(),
+        encoder.encode()
+    )
 }
