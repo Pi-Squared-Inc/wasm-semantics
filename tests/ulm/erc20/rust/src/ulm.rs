@@ -3,42 +3,6 @@ use bytes::{Bytes, Buf};
 use crate::address::Address;
 use crate::unsigned::{U160, U256};
 
-#[cfg(not(test))]
-extern "C" {
-    // data1, data2 and data3 must have a length of exactly 32.
-    #[allow(non_snake_case)]
-    pub fn Log3(data1: *const u8, data2: *const u8, data3: *const u8, bytes: *const u8, bytes_length: usize);
-
-    // result must have a length of exactly 20.
-    #[allow(non_snake_case)]
-    pub fn Caller(result: *mut u8);
-
-    #[allow(non_snake_case)]
-    pub fn CallDataLength() -> u32;
-    // result must have a length of at least CallDataLength()
-    #[allow(non_snake_case)]
-    pub fn CallData(result: *mut u8);
-
-    // key and value must have a length of exactly 32.
-    #[allow(non_snake_case)]
-    pub fn GetAccountStorage(key: *const u8, value: *mut u8);
-
-    // key and value must have a length of exactly 32.
-    #[allow(non_snake_case)]
-    pub fn SetAccountStorage(key: *const u8, value: *const u8);
-
-
-    #[allow(non_snake_case)]
-    pub fn setOutput(bytes: *const u8, bytes_length: usize);
-
-    #[allow(dead_code)]
-    pub fn fail(msg: *const u8, msg_len: usize) -> !;
-
-    // result must have a length of exactly 32.
-    pub fn keccakHash(msg: *const u8, msg_len: usize, result: *mut u8);
-
-}
-
 #[cfg(test)]
 pub mod overrides {
     #[no_mangle]
@@ -48,17 +12,9 @@ pub mod overrides {
 }
 
 #[cfg(test)]
-#[allow(non_snake_case)]
-pub fn failWrapper(msg: &str) -> ! {
-    panic!("{}", msg);
-}
-
+pub use mock::failWrapper;
 #[cfg(not(test))]
-#[allow(non_snake_case)]
-pub fn failWrapper(msg: &str) -> ! {
-    let msg_bytes = msg.as_bytes();
-    unsafe { fail(msg_bytes.as_ptr(), msg_bytes.len()); }
-}
+pub use impl_::failWrapper;
 
 pub trait Ulm {
     fn log3(&self, data1: &[u8; 32], data2: &[u8; 32], data3: &[u8; 32], bytes: &[u8]);
@@ -76,42 +32,95 @@ pub trait Ulm {
 }
 
 #[cfg(not(test))]
-struct UlmImpl {}
+pub mod impl_ {
+    use core::cell::RefCell;
+    use std::rc::Rc;
 
-#[cfg(not(test))]
-impl Ulm for UlmImpl {
-    fn log3(&self, data1: &[u8; 32], data2: &[u8; 32], data3: &[u8; 32], bytes: &[u8]) {
-        unsafe { Log3(data1.as_ptr(), data2.as_ptr(), data3.as_ptr(), bytes.as_ptr(), bytes.len()); }
-    }
-    fn caller(&self, result: &mut [u8; 20]) {
-        unsafe { Caller(result.as_mut_ptr()); }
+    use crate::ulm::Ulm;
+
+    extern "C" {
+        // data1, data2 and data3 must have a length of exactly 32.
+        #[allow(non_snake_case)]
+        pub fn Log3(data1: *const u8, data2: *const u8, data3: *const u8, bytes: *const u8, bytes_length: usize);
+    
+        // result must have a length of exactly 20.
+        #[allow(non_snake_case)]
+        pub fn Caller(result: *mut u8);
+    
+        #[allow(non_snake_case)]
+        pub fn CallDataLength() -> u32;
+        // result must have a length of at least CallDataLength()
+        #[allow(non_snake_case)]
+        pub fn CallData(result: *mut u8);
+    
+        // key and value must have a length of exactly 32.
+        #[allow(non_snake_case)]
+        pub fn GetAccountStorage(key: *const u8, value: *mut u8);
+    
+        // key and value must have a length of exactly 32.
+        #[allow(non_snake_case)]
+        pub fn SetAccountStorage(key: *const u8, value: *const u8);
+    
+    
+        #[allow(non_snake_case)]
+        pub fn setOutput(bytes: *const u8, bytes_length: usize);
+    
+        #[allow(dead_code)]
+        pub fn fail(msg: *const u8, msg_len: usize) -> !;
+    
+        // result must have a length of exactly 32.
+        pub fn keccakHash(msg: *const u8, msg_len: usize, result: *mut u8);
+    
     }
 
-    fn call_data_length(&self) -> u32 {
-        unsafe { CallDataLength() }
+    #[allow(non_snake_case)]
+    pub fn failWrapper(msg: &str) -> ! {
+        let msg_bytes = msg.as_bytes();
+        unsafe { fail(msg_bytes.as_ptr(), msg_bytes.len()); }
     }
-    fn call_data(&self, result: &mut [u8]) {
-        let required_len = self.call_data_length();
-        if result.len() < required_len.try_into().unwrap() {
-            failWrapper("call_data: buffer too small.");
+
+    pub struct UlmImpl {}
+
+    impl UlmImpl {
+      pub fn new() -> Rc<RefCell<Self>> {
+          Rc::new(RefCell::new(UlmImpl {}))
+      }
+    }
+
+    impl Ulm for UlmImpl {
+        fn log3(&self, data1: &[u8; 32], data2: &[u8; 32], data3: &[u8; 32], bytes: &[u8]) {
+            unsafe { Log3(data1.as_ptr(), data2.as_ptr(), data3.as_ptr(), bytes.as_ptr(), bytes.len()); }
         }
-        unsafe { CallData(result.as_mut_ptr()); }
-    }
+        fn caller(&self, result: &mut [u8; 20]) {
+            unsafe { Caller(result.as_mut_ptr()); }
+        }
 
-    fn get_account_storage(&self, key: &[u8; 32], value: &mut [u8; 32]) {
-        unsafe { GetAccountStorage(key.as_ptr(), value.as_mut_ptr()); }
-    }
+        fn call_data_length(&self) -> u32 {
+            unsafe { CallDataLength() }
+        }
+        fn call_data(&self, result: &mut [u8]) {
+            let required_len = self.call_data_length();
+            if result.len() < required_len.try_into().unwrap() {
+                failWrapper("call_data: buffer too small.");
+            }
+            unsafe { CallData(result.as_mut_ptr()); }
+        }
 
-    fn set_account_storage(&mut self, key: &[u8; 32], value: &[u8; 32]) {
-        unsafe { SetAccountStorage(key.as_ptr(), value.as_ptr()); }
-    }
+        fn get_account_storage(&self, key: &[u8; 32], value: &mut [u8; 32]) {
+            unsafe { GetAccountStorage(key.as_ptr(), value.as_mut_ptr()); }
+        }
 
-    fn set_output(&mut self, bytes: &[u8]) {
-        unsafe { setOutput(bytes.as_ptr(), bytes.len()); }
-    }
+        fn set_account_storage(&mut self, key: &[u8; 32], value: &[u8; 32]) {
+            unsafe { SetAccountStorage(key.as_ptr(), value.as_ptr()); }
+        }
 
-    fn keccak_hash(&self, value: &[u8], result: &mut [u8; 32]) {
-        unsafe { keccakHash(value.as_ptr(), value.len(), result.as_mut_ptr()); }
+        fn set_output(&mut self, bytes: &[u8]) {
+            unsafe { setOutput(bytes.as_ptr(), bytes.len()); }
+        }
+
+        fn keccak_hash(&self, value: &[u8], result: &mut [u8; 32]) {
+            unsafe { keccakHash(value.as_ptr(), value.len(), result.as_mut_ptr()); }
+        }
     }
 }
 
@@ -125,6 +134,11 @@ pub mod mock {
     use crate::assertions::fail;
     use crate::require;
     use crate::ulm::Ulm;
+
+    #[allow(non_snake_case)]
+    pub fn failWrapper(msg: &str) -> ! {
+        panic!("{}", msg);
+    }
 
     pub struct UlmMock {
         storage: HashMap<Bytes, Bytes>,
@@ -255,4 +269,9 @@ pub fn keccak_hash(api: &dyn Ulm, value: &Bytes) -> [u8; 32] {
 pub fn keccak_hash_int(api: &dyn Ulm, value: &Bytes) -> U256 {
     let fingerprint = keccak_hash(api, value);
     U256::from_array_le(fingerprint)
+}
+
+pub fn endpoint_fingerprint(api: &dyn Ulm, value: &str) -> [u8; 4] {
+    let fingerprint = keccak_hash(api, &Bytes::copy_from_slice(value.as_bytes()));
+    [fingerprint[0], fingerprint[1], fingerprint[2], fingerprint[3], ]
 }

@@ -4,6 +4,7 @@ mod balance;
 mod decoder;
 mod encoder;
 mod erc20;
+mod erc20_dispatcher;
 mod predicate;
 mod storage;
 mod unsigned;

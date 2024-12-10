@@ -10,7 +10,7 @@ use crate::storage::{SingleChunkStorage, SingleChunkStorageBuilder};
 use crate::ulm::{log3, Ulm};
 use crate::ulm;
 
-struct Erc20 {
+pub struct Erc20 {
   api: Rc<RefCell<dyn Ulm>>
 }
 
