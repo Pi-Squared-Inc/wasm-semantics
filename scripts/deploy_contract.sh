@@ -1,6 +1,8 @@
 #!/bin/bash
 # Example usage: ./deploy_contract.sh --contract-hex-path ./misc/registry.hex --private-key-path ./misc/private_key.txt --http-provider-url http://localhost:8545
 
+set -x
+
 # Function to display usage
 usage() {
     echo "Usage: $0 --contract-hex-path <path_to_contract_hex> --private-key-path <path_to_private_key> [--http-provider-url <http_provider_url>]"
