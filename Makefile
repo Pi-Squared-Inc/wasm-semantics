@@ -66,7 +66,8 @@ ULM_HOOKS_SRC=ulm_kllvm.cpp ulm_hooks.cpp ulm_kllvm_c.cpp
 ULM_HOOKS_LIB=libulmkllvm.so
 ULM_HOOKS_TARGET=$(ULM_LIB_DIR)/$(ULM_HOOKS_LIB)
 
-ULM_SRC=$(wildcard $(ULM_CLONE_DIR)/**/*.cpp) $(wildcard $(ULM_CLONE_DIR)/**/*.h) $(wildcard $(ULM_CLONE_DIR)/**/*.go)
+ULM_SRC_GETH=$(shell find "$(ULM_CLONE_DIR)/op-geth" -type f -a '(' -name '*.cpp' -or -name '*.h' -or -name '*.go' ')')
+ULM_SRC_HOOKS=$(shell find "$(ULM_CLONE_DIR)/kllvm" -type f -a '(' -name '*.cpp' -or -name '*.h' -or -name '*.k' ')')
 
 ULM_GETH_TARGET=$(ULM_BUILD_DIR)/geth
 
@@ -94,7 +95,7 @@ $(ULM_CLONE_DIR)/.git:
 	cd $(ULM_DEP_DIR); \
 	  git clone --depth 1 https://github.com/pi-squared-inc/ulm
 
-$(ULM_HOOKS_TARGET): $(ULM_SRC) | $(ULM_CLONE_DIR)/.git
+$(ULM_HOOKS_TARGET): $(ULM_SRC_HOOKS) | $(ULM_CLONE_DIR)/.git
 	@mkdir -p $(ULM_LIB_DIR)
 	cd $(ULM_HOOKS_DIR); \
 	  $(CXX) -shared -o "$(ULM_HOOKS_LIB)" $(ULM_HOOKS_SRC) -I "$(ULM_KF_INCLUDE_DIR)" -I "$(ULM_KF_INCLUDE_DIR)/kllvm" \
@@ -151,7 +152,7 @@ kevm-build: $(ULM_KEVM_TARGET)
 
 ### ULM
 
-$(ULM_GETH_TARGET): $(ULM_KEVM_TARGET) $(ULM_SRC) | $(ULM_CLONE_DIR)/.git
+$(ULM_GETH_TARGET): $(ULM_KEVM_TARGET) $(ULM_SRC_HOOKS) $(ULM_SRC_GETH) | $(ULM_CLONE_DIR)/.git
 	cd $(ULM_CLONE_DIR)/op-geth && $(MAKE)
 	cp $(ULM_CLONE_DIR)/op-geth/build/bin/geth $(ULM_BUILD_DIR)
 
