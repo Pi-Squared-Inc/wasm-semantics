@@ -1,12 +1,21 @@
+from __future__ import annotations
+from enum import Enum
 import subprocess
 import sys
 from io import BytesIO
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from pyk.kast.inner import KSort
+from pyk.kore.syntax import App, Assoc, MLPattern, SortApp
 from pyk.ktool.krun import KRun
 
 from .wasm2kast import wasm2kast
+
+if TYPE_CHECKING:
+    from typing import IO
+    # from pyk.kore.syntax import Sort
+    from pyk.kore.syntax import Pattern
 
 def main() -> None:
     # check arg count
@@ -23,12 +32,12 @@ def main() -> None:
 
     # parse module as binary (with fallback to textual parser)
     try:
-        module = wasm2kast.wasm2kast(infile)
+        module = wasm2kast(infile)
     except Exception:
         proc_res = subprocess.run(['wat2wasm', wasm_file, '--output=/dev/stdout'], check=True, capture_output=True)
         infile.close()
         infile1 = BytesIO(proc_res.stdout)
-        module = wasm2kast.wasm2kast(infile1)
+        module = wasm2kast(infile1)
         infile1.close()
 
     # get runner
@@ -39,11 +48,11 @@ def main() -> None:
     module_kore = runner.kast_to_kore(module, top_sort)
 
     # monkey patch kore writer
-    module_kore = PatternWriter(module_kore)
+    module_kore_patched = PatternWriter(module_kore)
 
     # write kore to file
     with open(kore_file, 'w') as f:
-        module_kore.write(f)
+        module_kore_patched.write(f)
 
 
 class DepthChange(Enum):
@@ -52,21 +61,22 @@ class DepthChange(Enum):
     PRINT = 0
 
 
-def pattern_write(pat: Pattern, output: IO[str], pretty=True) -> None:
+def pattern_write(pat: Pattern, output: IO[str], pretty:bool=True) -> None:
     """Serialize pattern to kore; used for monkey patch on Pattern object because default write function will blow the stack"""
 
+    _up: str | DepthChange = ''
+    _down: str | DepthChange = ''
+    _print: str | DepthChange = ''
     if pretty:
         _up, _down, _print = DepthChange.UP, DepthChange.DOWN, DepthChange.PRINT
-    else:
-        _up, _down, _print = [''] * 3
     not_first_term = False
     print_spacer = False
     depth = 0
-    stack = [pat]
+    stack: list[str | Pattern | DepthChange] = [pat]
 
     # TODO: fix bug with workitems order
 
-    def push(*items):
+    def push(*items: str | Pattern | DepthChange) -> None:
         for item in reversed(items):
             if isinstance(item, tuple):
                 if len(item) > 1:
@@ -106,22 +116,22 @@ def pattern_write(pat: Pattern, output: IO[str], pretty=True) -> None:
 
 
 class PatternWriter:
-    def __init__(self, pat: Pattern, pretty=False):
+    def __init__(self, pat: Pattern, pretty:bool = False):
         self.pat = pat
         self.pretty = pretty
 
-    def write(self, output: IO[str]):
+    def write(self, output: IO[str]) -> None:
         if isinstance(self.pat, (App, SortApp, Assoc, MLPattern)):
             pattern_write(self.pat, output, self.pretty)
         else:
             self.pat.write(output)
 
 
-def debug(pat) -> str:
+def debug(pat: Pattern) -> str:
     if isinstance(pat, str):
         return pat
     elif isinstance(pat, tuple):
-        return [debug(item) for item in pat]
+        return ' '.join(debug(item) for item in pat)
     elif isinstance(pat, App):
         return pat.symbol
     elif isinstance(pat, Assoc):
