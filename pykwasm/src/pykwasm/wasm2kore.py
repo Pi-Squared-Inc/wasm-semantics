@@ -6,9 +6,7 @@ from pathlib import Path
 from pyk.kast.inner import KSort
 from pyk.ktool.krun import KRun
 
-from . import wasm2kast
-
-sys.setrecursionlimit(10**6)
+from .wasm2kast import wasm2kast
 
 def main() -> None:
     # check arg count
@@ -36,15 +34,106 @@ def main() -> None:
     # get runner
     runner = KRun(llvm_dir)
 
+    # produce kore
     top_sort = KSort('ModuleDecl')
-    config_kore = runner.kast_to_kore(module, top_sort)
+    module_kore = runner.kast_to_kore(module, top_sort)
 
-    print(f"Writing to {kore_file}")
-    kore_file.write_text(config_kore.text)
-    # # monkey patch kore
-    # patched_config_kore = PatternWriter(config_kore)
-    # with open(wasm_file.name + '.input.kore', e'w') as f:
-    #     patched_config_kore.write(f)
+    # monkey patch kore writer
+    module_kore = PatternWriter(module_kore)
+
+    # write kore to file
+    with open(kore_file, 'w') as f:
+        module_kore.write(f)
+
+
+class DepthChange(Enum):
+    UP = 1
+    DOWN = -1
+    PRINT = 0
+
+
+def pattern_write(pat: Pattern, output: IO[str], pretty=True) -> None:
+    """Serialize pattern to kore; used for monkey patch on Pattern object because default write function will blow the stack"""
+
+    if pretty:
+        _up, _down, _print = DepthChange.UP, DepthChange.DOWN, DepthChange.PRINT
+    else:
+        _up, _down, _print = [''] * 3
+    not_first_term = False
+    print_spacer = False
+    depth = 0
+    stack = [pat]
+
+    # TODO: fix bug with workitems order
+
+    def push(*items):
+        for item in reversed(items):
+            if isinstance(item, tuple):
+                if len(item) > 1:
+                    for subitem in reversed(item[1:]):
+                        stack.append(subitem)
+                        stack.append(',')
+                if len(item) > 0:
+                    stack.append(item[0])
+            elif isinstance(item, (str, DepthChange)):
+                stack.append(item)
+            else:
+                raise ValueError(f'Unexpected item type: {type(item)}')
+
+    while len(stack) > 0:
+        pat = stack.pop()
+        if isinstance(pat, str):
+            if print_spacer:
+                if not_first_term:
+                    output.write('\n' + depth * ' ')
+                not_first_term = True
+                print_spacer = False
+            output.write(pat)
+        elif isinstance(pat, App):
+            push(_print, pat.symbol, '{', pat.sorts, '}(', _up, pat.args, _down, ')')
+        elif isinstance(pat, Assoc):
+            push(_print, pat.kore_symbol(), '{}(', _up, pat.app, _down, ')')
+        elif isinstance(pat, MLPattern):
+            push(_print, pat.symbol(), '{', pat.sorts, '}(', pat.ctor_patterns, ')')
+        elif isinstance(pat, SortApp):
+            push(pat.name, '{', pat.sorts, '}')
+        elif isinstance(pat, DepthChange):
+            depth += pat.value
+            if pat == _print:
+                print_spacer = True
+        else:
+            pat.write(output)
+
+
+class PatternWriter:
+    def __init__(self, pat: Pattern, pretty=False):
+        self.pat = pat
+        self.pretty = pretty
+
+    def write(self, output: IO[str]):
+        if isinstance(self.pat, (App, SortApp, Assoc, MLPattern)):
+            pattern_write(self.pat, output, self.pretty)
+        else:
+            self.pat.write(output)
+
+
+def debug(pat) -> str:
+    if isinstance(pat, str):
+        return pat
+    elif isinstance(pat, tuple):
+        return [debug(item) for item in pat]
+    elif isinstance(pat, App):
+        return pat.symbol
+    elif isinstance(pat, Assoc):
+        return pat.kore_symbol()
+    elif isinstance(pat, MLPattern):
+        return pat.symbol()
+    elif isinstance(pat, SortApp):
+        return pat.name
+    elif isinstance(pat, DepthChange):
+        return pat.name
+    else:
+        return repr(pat)
 
 if __name__ == '__main__':
     main()
