@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     # from pyk.kore.syntax import Sort
     from pyk.kore.syntax import Pattern
 
+
 def main() -> None:
     # check arg count
     if len(sys.argv) < 3:
@@ -63,7 +64,7 @@ class DepthChange(Enum):
     PRINT = 0
 
 
-def pattern_write(pat: Pattern, output: IO[str], pretty:bool=True) -> None:
+def pattern_write(pat: Pattern, output: IO[str], pretty: bool = True) -> None:
     """Serialize pattern to kore; used for monkey patch on Pattern object because default write function will blow the stack"""
 
     _up: str | DepthChange = ''
@@ -118,7 +119,7 @@ def pattern_write(pat: Pattern, output: IO[str], pretty:bool=True) -> None:
 
 
 class PatternWriter:
-    def __init__(self, pat: Pattern, pretty:bool = False):
+    def __init__(self, pat: Pattern, pretty: bool = False):
         self.pat = pat
         self.pretty = pretty
 
@@ -146,6 +147,7 @@ def debug(pat: Pattern) -> str:
         return pat.name
     else:
         return repr(pat)
+
 
 if __name__ == '__main__':
     main()
