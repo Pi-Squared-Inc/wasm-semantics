@@ -16,7 +16,8 @@ from pyk.kast.inner import KSequence, KSort, KToken, Subst
 from pyk.kast.manip import split_config_from
 from pyk.ktool.krun import KRun
 
-from .wasm2kore import wasm2kast, PatternWriter
+from .wasm2kore import PatternWriter, wasm2kast
+
 
 def main():
     # read env vars
