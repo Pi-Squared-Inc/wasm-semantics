@@ -71,6 +71,9 @@ ULM_SRC_HOOKS=$(shell find "$(ULM_CLONE_DIR)/kllvm" -type f -a '(' -name '*.cpp'
 
 ULM_GETH_TARGET=$(ULM_BUILD_DIR)/geth
 
+ULM_SRC=$(wildcard $(ULM_CLONE_DIR)/**/*.cpp $(ULM_CLONE_DIR)/**/*.go $(ULM_CLONE_DIR)/**/*.h)
+# $(shell find rust-semantics/ -type f -a '(' -name '*.md' -or -name '*.k' ')')
+
 ### ULM Crypto Plugin
 
 $(ULM_KRYPTO_DIR)/.git:
@@ -93,7 +96,7 @@ ulm-krypto-build: $(ULM_KRYPTO_TARGET)
 $(ULM_CLONE_DIR)/.git:
 	@mkdir -p $(ULM_DEP_DIR)
 	cd $(ULM_DEP_DIR); \
-	  git clone --depth 1 https://github.com/pi-squared-inc/ulm
+	  git clone --depth 1 --branch contract-size-limits https://github.com/pi-squared-inc/ulm
 
 $(ULM_HOOKS_TARGET): $(ULM_SRC_HOOKS) | $(ULM_CLONE_DIR)/.git
 	@mkdir -p $(ULM_LIB_DIR)
