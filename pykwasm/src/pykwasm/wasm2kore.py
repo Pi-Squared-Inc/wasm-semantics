@@ -1,7 +1,8 @@
 from __future__ import annotations
-from enum import Enum
+
 import subprocess
 import sys
+from enum import Enum
 from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -14,6 +15,7 @@ from .wasm2kast import wasm2kast
 
 if TYPE_CHECKING:
     from typing import IO
+
     # from pyk.kore.syntax import Sort
     from pyk.kore.syntax import Pattern
 
