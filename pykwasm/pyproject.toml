@@ -11,6 +11,7 @@ authors = [
 ]
 
 [tool.poetry.scripts]
+deploy = "pykwasm.deploy_contract:main"
 wasm = "pykwasm.run_wasm:main"
 wasm2kore = "pykwasm.wasm2kore:main"
 wasm2kast = "pykwasm.wasm2kast:main"

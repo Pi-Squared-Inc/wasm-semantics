@@ -1,32 +1,45 @@
 #!/usr/bin/python3
+from pathlib import Path
+import sys
 from web3 import Web3
 from web3.middleware import SignAndSendRawMiddlewareBuilder
 
-rust_token_hex = open('/mnt/data/pi-squared/wasm-semantics/tests/ulm/erc20/erc20.bin').read().rstrip()
+def deploy_contract(node_url, sender, contract_hex):
+    w3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
+    if sender is None:
+        sender = w3.eth.account.create()
+    # fund sender acct
+    fund_tx_hash = w3.eth.send_transaction({'from': w3.eth.accounts[0], 'to': sender.address, 'value': 1000000000000000000})
+    fund_tx_receipt = w3.eth.wait_for_transaction_receipt(fund_tx_hash)
+    w3.middleware_onion.inject(SignAndSendRawMiddlewareBuilder.build(sender), layer=0)
+    # deploy txn
+    deploy_token_tx = {
+        'from': sender.address,
+        'data': contract_hex,
+        'to': '',
+        'value': 0,
+        'gas': 11000000,
+        'maxFeePerGas': 2000000000,
+        'maxPriorityFeePerGas': 1000000000,
+    }
+    deploy_tx_hash = w3.eth.send_transaction(deploy_token_tx)
+    deploy_tx_receipt = w3.eth.wait_for_transaction_receipt(deploy_tx_hash)
+    return fund_tx_receipt, deploy_tx_receipt
 
-w3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
-sender = w3.eth.account.create()
-pk = w3.to_hex(sender.key)
-print(sender.address)
+USAGE="deploy_contract.py <contract_file> [node_url] [sender]"
 
-tx_hash = w3.eth.send_transaction({'from': w3.eth.accounts[0], 'to': sender.address, 'value': 1000000000000000000})
-print('transfer eth tx hash:', tx_hash)
-w3.eth.wait_for_transaction_receipt(tx_hash)
+def main():
+    args = sys.argv[1:]
+    if len(args) < 1:
+        print(USAGE)
+        sys.exit(1)
+    contract_hex = Path(args[0]).read_text()
+    node_url = 'http://localhost:8545'
+    sender = None
+    if len(args) > 2: node_url = args[1]
+    fund_receipt, deploy_receipt = deploy_contract(node_url, sender, contract_hex)
+    print(fund_receipt)
+    print(deploy_receipt)
 
-w3.middleware_onion.inject(SignAndSendRawMiddlewareBuilder.build(sender), layer=0)
-
-deploy_token_tx = {
-    'from': sender.address,
-    'data': rust_token_hex,
-    'to': '',
-    'value': 0,
-    'gas': 11000000,
-    'maxFeePerGas': 2000000000,
-    'maxPriorityFeePerGas': 1000000000,
-}
-
-tx_hash = w3.eth.send_transaction(deploy_token_tx)
-print('deploy tx hash:', tx_hash)
-receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
-print('deploy receipt:', receipt)
-token_address = receipt['contractAddress']
+if __name__ == "__main__":
+    main()
