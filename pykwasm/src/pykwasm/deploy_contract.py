@@ -33,7 +33,7 @@ def main():
     if len(args) < 1:
         print(USAGE)
         sys.exit(1)
-    contract_hex = Path(args[0]).read_text()
+    contract_hex = Path(args[0]).read_text().strip()
     node_url = 'http://localhost:8545'
     sender = None
     if len(args) > 2: node_url = args[1]
