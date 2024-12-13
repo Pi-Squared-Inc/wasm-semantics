@@ -234,6 +234,10 @@ As an example, to deploy a Wasm contract, you can do the following:
     poetry -C pykwasm run deploy tests/ulm/erc20/erc20.bin
     ```
 
+To invoke a deployed Wasm contract, do the following:
+
+**TODO:** add instructions.
+
 Resources
 ---------
 
