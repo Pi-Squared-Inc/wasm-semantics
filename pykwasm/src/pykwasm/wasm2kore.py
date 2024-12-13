@@ -22,10 +22,10 @@ if TYPE_CHECKING:
 
 def main() -> None:
     # check arg count
-    if len(sys.argv) < 3:
-        print('usage: wasm2kore <wasm_file> <output_kore_file>')
-        sys.exit(1)
     args = sys.argv[1:]
+    if len(args) < 3:
+        print('usage: wasm2kore <llvm_dir> <wasm_file> <output_kore_file>')
+        sys.exit(1)
 
     # parse fixed args
     llvm_dir = Path(args[0])

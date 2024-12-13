@@ -1,8 +1,10 @@
 #!/usr/bin/python3
-from pathlib import Path
 import sys
+from pathlib import Path
+
 from web3 import Web3
 from web3.middleware import SignAndSendRawMiddlewareBuilder
+
 
 def deploy_contract(node_url, sender, contract_hex):
     w3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
@@ -26,7 +28,7 @@ def deploy_contract(node_url, sender, contract_hex):
     deploy_tx_receipt = w3.eth.wait_for_transaction_receipt(deploy_tx_hash)
     return fund_tx_receipt, deploy_tx_receipt
 
-USAGE="deploy_contract.py <contract_file> [node_url] [sender]"
+USAGE='deploy_contract.py <contract_file> [node_url] [sender]'
 
 def main():
     args = sys.argv[1:]
@@ -41,5 +43,5 @@ def main():
     print(fund_receipt)
     print(deploy_receipt)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
