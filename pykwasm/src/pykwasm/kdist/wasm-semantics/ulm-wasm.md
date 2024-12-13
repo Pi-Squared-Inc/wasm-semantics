@@ -104,7 +104,7 @@ Currently, only the local Wasm VM initialization is supported.
 ```
 ```remote
     rule
-        <k> PGM:PgmEncoding => #resolveCurModuleFuncExport("dispatchCaller") </k>
+        <k> PGM:PgmEncoding => #resolveCurModuleFuncExport("ulmDispatchCaller") </k>
         <instrs> .K => decodePgm(PGM) </instrs>
 ```
 
