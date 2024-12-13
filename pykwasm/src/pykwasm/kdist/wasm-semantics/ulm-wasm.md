@@ -91,8 +91,8 @@ A special configuration cell is added in the local case to support VM initializa
       </ulmWasm>
 ```
 
-Passing Control
----------------
+Passing Control for local execution
+-----------------------------------
 
 The embedder loads the module to be executed and then resolves the entrypoint function.
 Currently, only the local Wasm VM initialization is supported.
@@ -136,6 +136,15 @@ Here we handle the case when entrypoint resolution fails.
 ```k
     // rule <k> Init:Initializer => . </k> [owise]
 ```
+
+Passing Control for remote execution
+------------------------------------
+
+```remote
+    rule <k> PGM:PgmEncoding => .K ... </k>
+          <instrs> .K => decodePgm(PGM) </instrs>
+```
+
 
 ULM Hook Behavior
 -----------------
