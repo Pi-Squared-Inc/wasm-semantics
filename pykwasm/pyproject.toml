@@ -27,6 +27,7 @@ numpy = "^1.24.2"
 kframework = "7.1.149"
 py-wasm = { git = "https://github.com/runtimeverification/py-wasm.git", tag="0.2.1" }
 web3 = "7.6.0"
+eth-abi = "5.1.0"
 
 [tool.poetry.group.dev.dependencies]
 autoflake = "*"

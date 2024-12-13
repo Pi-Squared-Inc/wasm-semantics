@@ -15,6 +15,8 @@ w3.eth.wait_for_transaction_receipt(tx_hash)
 
 w3.middleware_onion.inject(SignAndSendRawMiddlewareBuilder.build(sender), layer=0)
 
+print("*** len:", len(rust_token_hex))
+
 deploy_token_tx = {
   'from': sender.address,
   'data': rust_token_hex,

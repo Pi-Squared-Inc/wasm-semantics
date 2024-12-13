@@ -224,4 +224,5 @@ class ulm_client:
         self.check_token_identity(self.weth_address, "Wrapped Ethereum", 18, "WETH")
 
 if __name__ == "__main__":
-    pass
+    a = ulm_client()
+    

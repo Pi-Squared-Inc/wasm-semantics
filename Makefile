@@ -216,6 +216,22 @@ $(ULM_WASM_COMPILER_TARGET): $(ULM_WASM_TARGET)
 .PHONY: ulm-contract-compiler
 ulm-contract-compiler: $(ULM_WASM_COMPILER_TARGET)
 
+### ULM Wasm Contract Compiler
+
+build/test-semantics: $(ULM_HOOKS_DIR)/run-lang.cpp
+	$(CXX) "$(ULM_HOOKS_DIR)/run-lang.cpp" \
+	  -I "$(ULM_KF_INCLUDE_DIR)" \
+	  -I "$(ULM_KF_INCLUDE_DIR)/kllvm" \
+	  -std=c++20 \
+	  -DULM_LANG_ID=wasm \
+	  -Wno-return-type-c-linkage \
+	  -L"$(ULM_LIB_DIR)" \
+	  -lulmkllvm \
+	  -lkwasm \
+		-lgmp \
+	  -o build/test-semantics
+
+
 # Testing
 # -------
 

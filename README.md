@@ -205,7 +205,7 @@ Then, you can start the ULM locally and load the Wasm VM into it by running:
 
 ```sh
 ./scripts/run-dev-ulm &
-./scripts/ulm-load-lang ./build/lib/libwasm.so
+./scripts/ulm-load-lang ./build/lib/libkwasm.so
 ```
 
 Compile the contract:
