@@ -71,9 +71,6 @@ ULM_SRC_HOOKS=$(shell find "$(ULM_CLONE_DIR)/kllvm" -type f -a '(' -name '*.cpp'
 
 ULM_GETH_TARGET=$(ULM_BUILD_DIR)/geth
 
-ULM_SRC=$(wildcard $(ULM_CLONE_DIR)/**/*.cpp $(ULM_CLONE_DIR)/**/*.go $(ULM_CLONE_DIR)/**/*.h)
-# $(shell find rust-semantics/ -type f -a '(' -name '*.md' -or -name '*.k' ')')
-
 ### ULM Crypto Plugin
 
 $(ULM_KRYPTO_DIR)/.git:
