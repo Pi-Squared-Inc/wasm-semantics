@@ -102,11 +102,16 @@ Currently, only the local Wasm VM initialization is supported.
          <entry> FUNCNAME </entry>
          <instrs> .K => decodePgm(PGM) </instrs>
 ```
+```remote
+    rule
+        <k> PGM:PgmEncoding => #resolveCurModuleFuncExport("dispatchCaller") </k>
+        <instrs> .K => decodePgm(PGM) </instrs>
+```
 
 Note that entrypoint resolution must occur _after_ the Wasm module has been loaded.
 This is ensured by requiring that the `<instrs>` cell is empty during resolution.
 
-```local
+```k
     syntax Initializer ::= #resolveCurModuleFuncExport(String)
                          | #resolveModuleFuncExport(Int, String)
                          | #resolveFunc(Int, ListInt)
@@ -136,15 +141,6 @@ Here we handle the case when entrypoint resolution fails.
 ```k
     // rule <k> Init:Initializer => . </k> [owise]
 ```
-
-Passing Control for remote execution
-------------------------------------
-
-```remote
-    rule <k> PGM:PgmEncoding => .K ... </k>
-          <instrs> .K => decodePgm(PGM) </instrs>
-```
-
 
 ULM Hook Behavior
 -----------------

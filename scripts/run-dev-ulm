@@ -18,4 +18,4 @@ FLAGS=(--dev --allow-insecure-unlock\
        --ws.origins '*')
 [ -n "${VERBOSE+x}" ] && set -x
 "$SCRIPT_DIR/../build/geth" "${FLAGS[@]}" "$@"
-# gdb --args "$SCRIPT_DIR/../build/geth" "${FLAGS[@]}" "$@"
+#gdb --args "$SCRIPT_DIR/../build/geth" "${FLAGS[@]}" "$@"
