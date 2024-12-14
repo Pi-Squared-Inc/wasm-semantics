@@ -12,7 +12,9 @@ def deploy_contract(node_url, sender, contract_hex):
     if sender is None:
         sender = w3.eth.account.create()
     # fund sender acct
-    fund_tx_hash = w3.eth.send_transaction({'from': w3.eth.accounts[0], 'to': sender.address, 'value': 1000000000000000000})
+    fund_tx_hash = w3.eth.send_transaction(
+        {'from': w3.eth.accounts[0], 'to': sender.address, 'value': 1000000000000000000}
+    )
     fund_tx_receipt = w3.eth.wait_for_transaction_receipt(fund_tx_hash)
     w3.middleware_onion.inject(SignAndSendRawMiddlewareBuilder.build(sender), layer=0)
     # deploy txn
@@ -29,7 +31,9 @@ def deploy_contract(node_url, sender, contract_hex):
     deploy_tx_receipt = w3.eth.wait_for_transaction_receipt(deploy_tx_hash)
     return fund_tx_receipt, deploy_tx_receipt
 
-USAGE='deploy_contract.py <contract_file> [node_url] [sender_private_key_file]'
+
+USAGE = 'deploy_contract.py <contract_file> [node_url] [sender_private_key_file]'
+
 
 def main():
     args = sys.argv[1:]
@@ -39,13 +43,15 @@ def main():
     contract_hex = Path(args[0]).read_text().strip()
     node_url = 'http://localhost:8545'
     sender = None
-    if len(args) > 1: node_url = args[1]
+    if len(args) > 1:
+        node_url = args[1]
     if len(args) > 2:
         pk = bytes.fromhex(Path(args[2]).read_text().strip().removeprefix('0x'))
         sender = Account.from_key(pk)
     fund_receipt, deploy_receipt = deploy_contract(node_url, sender, contract_hex)
     print(fund_receipt)
     print(deploy_receipt)
+
 
 if __name__ == '__main__':
     main()
