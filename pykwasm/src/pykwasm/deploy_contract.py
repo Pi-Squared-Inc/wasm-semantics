@@ -2,12 +2,13 @@
 import sys
 from pathlib import Path
 
+from eth_account import Account
 from web3 import Web3
 from web3.middleware import SignAndSendRawMiddlewareBuilder
 
 
 def deploy_contract(node_url, sender, contract_hex):
-    w3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
+    w3 = Web3(Web3.HTTPProvider(node_url))
     if sender is None:
         sender = w3.eth.account.create()
     # fund sender acct
@@ -28,7 +29,7 @@ def deploy_contract(node_url, sender, contract_hex):
     deploy_tx_receipt = w3.eth.wait_for_transaction_receipt(deploy_tx_hash)
     return fund_tx_receipt, deploy_tx_receipt
 
-USAGE='deploy_contract.py <contract_file> [node_url] [sender]'
+USAGE='deploy_contract.py <contract_file> [node_url] [sender_private_key_file]'
 
 def main():
     args = sys.argv[1:]
@@ -38,7 +39,10 @@ def main():
     contract_hex = Path(args[0]).read_text().strip()
     node_url = 'http://localhost:8545'
     sender = None
-    if len(args) > 2: node_url = args[1]
+    if len(args) > 1: node_url = args[1]
+    if len(args) > 2:
+        pk = bytes.fromhex(Path(args[2]).read_text().strip().removeprefix('0x'))
+        sender = Account.from_key(pk)
     fund_receipt, deploy_receipt = deploy_contract(node_url, sender, contract_hex)
     print(fund_receipt)
     print(deploy_receipt)
