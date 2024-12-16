@@ -315,6 +315,17 @@ These should probably be integrated into `domains.md`
     rule size(_:List) >=Int 0 => true [simplification, smt-lemma]
 ```
 
+ListInt Operations
+------------------
+
+```k
+    rule size(L1:ListInt L2:ListInt) =>
+      size(L1) +Int size(L2)
+      [simplification]
+
+    rule size(_:ListInt) >=Int 0 => true [simplification, smt-lemma]
+
+```
 
 Memory
 ------
