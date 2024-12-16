@@ -272,6 +272,18 @@ These rules define various integration points between the ULM and our Wasm inter
     )  => #if OutVal ==K NO_OUTPUT #then EVMC_INTERNAL_ERROR #else Status #fi
 ```
 
+Hooks implementation
+--------------------
+
+```remote
+    rule
+        <instrs>
+            hostCall("env", "CallDataLength", [ .ValTypes ] -> [ i32 .ValTypes ])
+            => i32.const lengthBytes(CallData())
+            ...
+        </instrs>
+```
+
 ```k
 endmodule
 ```
