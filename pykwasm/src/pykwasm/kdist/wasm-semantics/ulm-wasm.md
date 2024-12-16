@@ -98,7 +98,7 @@ In the standalone semantics, the Wasm VM obtains an entrypoint from the configur
 
 ```local
     syntax String ::= #getEntryPoint() [function, total]
-    rule #getEntryPoint => FUNCNAME
+    rule #getEntryPoint() => FUNCNAME
          [[ <entry> FUNCNAME </entry> ]]
 ```
 
@@ -106,7 +106,7 @@ In the remote semantics, the Wasm VM has a fixed entrypoint.
 
 ```remote
     syntax String ::= #getEntryPoint() [function, total]
-    rule #getEntryPoint => "ulmDispatchCaller"
+    rule #getEntryPoint() => "ulmDispatchCaller"
 ```
 
 Passing Control
