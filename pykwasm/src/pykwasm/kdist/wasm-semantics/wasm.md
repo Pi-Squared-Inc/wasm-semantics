@@ -572,6 +572,7 @@ The `*_local` instructions are defined here.
     rule <instrs> #local.get(I) => .K ... </instrs>
          <valstack> VALSTACK => {LOCALS [ I ]}:>Val : VALSTACK </valstack>
          <locals> LOCALS </locals>
+         requires isVal(LOCALS [ I ])  // requires needed to make rule valid
 
     rule <instrs> #local.set(I) => .K ... </instrs>
          <valstack> VALUE : VALSTACK => VALSTACK </valstack>
