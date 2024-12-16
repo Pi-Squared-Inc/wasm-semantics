@@ -91,6 +91,88 @@ A special configuration cell is added in the local case to support VM initializa
       </ulmWasm>
 ```
 
+Implementing all unresolved imports as hooks
+--------------------------------------------
+
+```k
+
+    syntax String ::= wasmString2StringStripped ( WasmString ) [function]
+                    | #stripQuotes ( String ) [function]
+ // ----------------------------------------------------
+    rule wasmString2StringStripped(WS) => #stripQuotes(#parseWasmString(WS))
+
+    rule #stripQuotes(S) => replaceAll(S, "\"", "")
+
+    syntax IdentifierToken ::= String2Identifier(String) [function, total, hook(STRING.string2token)]
+
+```
+
+First, we create an empty module for any import referencing a non-existing module.
+
+```k
+
+    rule
+        <instrs> #import(MOD, _, _) ... </instrs>
+        <moduleRegistry> MR:Map => MR [ MOD <- NEXT ] </moduleRegistry>
+        <nextModuleIdx> NEXT => NEXT +Int 1 </nextModuleIdx>
+        <moduleInstances> ( .Bag => <moduleInst> <modIdx> NEXT </modIdx> ... </moduleInst>) ... </moduleInstances>
+        requires notBool MOD in_keys(MR)
+
+```
+
+Next, for each import referencing a non-existing function, we add a function
+that just invokes a (non-wasm) `hostCall` instruction.
+
+```k
+
+    syntax Instr ::= hostCall(String, String, FuncType)
+ // ---------------------------------------------------
+    rule
+        <instrs>
+            (  .K
+            => allocfunc
+                ( HOSTMOD, NEXTADDR, TYPE, [ .ValTypes ]
+                , hostCall
+                    ( wasmString2StringStripped(MOD)
+                    , wasmString2StringStripped(NAME)
+                    , TYPE
+                    )
+                  .Instrs
+                , #meta
+                    (... id: String2Identifier
+                        ( "$auto-alloc:"
+                        +String #parseWasmString(MOD)
+                        +String ":"
+                        +String #parseWasmString(NAME)
+                        )
+                    , localIds: .Map
+                    )
+                )
+            )
+            ~> #import(MOD, NAME, #funcDesc(... type: TIDX))
+            ...
+        </instrs>
+        <curModIdx> CUR </curModIdx>
+        <moduleInst>
+            <modIdx> CUR </modIdx>
+            <types> ... TIDX |-> TYPE ... </types>
+            ...
+        </moduleInst>
+        <nextFuncAddr> NEXTADDR => NEXTADDR +Int 1 </nextFuncAddr>
+        <moduleRegistry> ... MOD |-> HOSTMOD ... </moduleRegistry>
+        <moduleInst>
+            <modIdx> HOSTMOD </modIdx>
+            <exports> EXPORTS => EXPORTS [NAME <- NEXTFUNC ] </exports>
+            <funcAddrs> FS => setExtend(FS, NEXTFUNC, NEXTADDR, -1) </funcAddrs>
+            <nextFuncIdx> NEXTFUNC => NEXTFUNC +Int 1 </nextFuncIdx>
+            <nextTypeIdx> NEXTTYPE => NEXTTYPE +Int 1 </nextTypeIdx>
+            <types> TYPES => TYPES [ NEXTTYPE <- TYPE ] </types>
+            ...
+        </moduleInst>
+    requires notBool NAME in_keys(EXPORTS)
+
+```
+
 Obtaining the Entrypoint
 ------------------------
 
