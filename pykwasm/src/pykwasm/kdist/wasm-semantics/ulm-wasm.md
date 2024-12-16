@@ -122,7 +122,7 @@ The embedder loads the module to be executed and then resolves the entrypoint fu
 Note that entrypoint resolution must occur _after_ the Wasm module has been loaded.
 This is ensured by requiring that the `<instrs>` cell is empty during resolution.
 
-```local
+```k
     syntax Initializer ::= #resolveCurModuleFuncExport(String)
                          | #resolveModuleFuncExport(Int, String)
                          | #resolveFunc(Int, ListInt)
