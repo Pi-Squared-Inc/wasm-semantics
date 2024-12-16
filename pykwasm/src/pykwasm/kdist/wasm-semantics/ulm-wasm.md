@@ -78,6 +78,7 @@ infer that this must be the top configuration, so it will wrap it in
         <gas> $GAS:Int </gas>
         <status> EVMC_INTERNAL_ERROR </status>
         <output> NO_OUTPUT </output>
+        <contractModIdx> -1 </contractModIdx>
 ```
 
 A special configuration cell is added in the local case to support VM initialization.
@@ -197,8 +198,12 @@ Passing Control
 The embedder loads the module to be executed and then resolves the entrypoint function.
 
 ```k
-    rule <k> PGM:PgmEncoding => #resolveCurModuleFuncExport(#getEntryPoint()) </k>
-         <instrs> .K => decodePgm(PGM) </instrs>
+    rule
+        <k> PGM:PgmEncoding
+            => setContractModIdx
+                ~> #resolveCurModuleFuncExport(#getEntryPoint())
+        </k>
+        <instrs> .K => decodePgm(PGM) </instrs>
 ```
 
 Note that entrypoint resolution must occur _after_ the Wasm module has been loaded.
@@ -208,6 +213,7 @@ This is ensured by requiring that the `<instrs>` cell is empty during resolution
     syntax Initializer ::= #resolveCurModuleFuncExport(WasmString)
                          | #resolveModuleFuncExport(Int, WasmString)
                          | #resolveFunc(Int, ListInt)
+                         | "setContractModIdx"
     // ----------------------------------------------
     rule <k> #resolveCurModuleFuncExport(FUNCNAME) => #resolveModuleFuncExport(MODIDX, FUNCNAME) </k>
          <instrs> .K </instrs>
@@ -225,6 +231,11 @@ This is ensured by requiring that the `<instrs>` cell is empty during resolution
     rule <k> #resolveFunc(FUNCIDX, FUNCADDRS) => .K </k>
          <instrs> .K => (invoke FUNCADDRS {{ FUNCIDX }} orDefault -1 ):Instr </instrs>
          requires isListIndex(FUNCIDX, FUNCADDRS)
+
+    rule
+        <k> setContractModIdx => .K ... </k>
+        <curModIdx> MODIDX:Int </curModIdx>
+        <contractModIdx> _ => MODIDX </contractModIdx>
 ```
 
 Here we handle the case when entrypoint resolution fails.
@@ -275,6 +286,130 @@ These rules define various integration points between the ULM and our Wasm inter
 Hooks implementation
 --------------------
 
+Helpers: exception handling. For now, #exception simply stops execution.
+
+```remote
+    syntax UlmInstr ::= #throwException(code: Int, reason: String)
+    syntax UlmInstr ::= #exception(reason: String)
+    rule
+        <instrs>
+            #throwException(Code:Int, Reason:String)
+            => setStatus(Code)
+                ~> #exception(Reason)
+            ...
+        </instrs>
+```
+
+Helpers: setting the status.
+
+```remote
+    syntax UlmInstr ::= setStatus(code: Int)
+    rule
+        <instrs> setStatus(Status:Int) => .K </instrs>
+        <status> _ => Status </status>
+```
+
+Helpers: storing bytes into memory. `#memStore` expects that the object
+which starts at offset (or contains it) has enough capacity to hold the bytes.
+
+```remote
+    syntax UlmInstr ::= #memStore(offset: Int, bytes: Bytes)
+ // -----------------------------------------------------------------
+
+    rule
+        <instrs>
+            #memStore(_OFFSET, _BS)
+            => #throwException(EVMC_INTERNAL_ERROR, "mem store: memory instance not found (negative)")
+            ...
+        </instrs>
+        <contractModIdx> MODIDX:Int </contractModIdx>
+        <moduleInst>
+            <modIdx> MODIDX </modIdx>
+            <memAddrs> ListItem(ADDR) </memAddrs>
+            ...
+        </moduleInst>
+      requires
+        ADDR <Int 0
+
+    rule
+        <instrs>
+            #memStore(_OFFSET, _BS)
+            => #throwException(EVMC_INTERNAL_ERROR, "mem store: memory instance not found (upper)")
+            ...
+        </instrs>
+        <contractModIdx> MODIDX:Int </contractModIdx>
+        <moduleInst>
+            <modIdx> MODIDX </modIdx>
+            <memAddrs> ListItem(ADDR) </memAddrs>
+            ...
+        </moduleInst>
+        <mems> MEMS </mems>
+      requires
+        0 <=Int ADDR andBool size(MEMS) <=Int ADDR
+
+    rule
+        <instrs>
+            #memStore(OFFSET, _)
+            => #throwException(EVMC_INVALID_MEMORY_ACCESS, "bad bounds (lower)")
+            ...
+        </instrs>
+        <contractModIdx> MODIDX:Int </contractModIdx>
+        <moduleInst>
+            <modIdx> MODIDX </modIdx>
+            <memAddrs> ListItem(ADDR) </memAddrs>
+            ...
+        </moduleInst>
+        <mems> MEMS </mems>
+      requires
+        0 <=Int ADDR andBool ADDR <Int size(MEMS)
+        andBool #signed(i32 , OFFSET) <Int 0
+
+    rule
+        <instrs> #memStore(OFFSET, BS)
+            => #throwException(EVMC_INVALID_MEMORY_ACCESS, "bad bounds (upper)") ...
+        </instrs>
+        <contractModIdx> MODIDX:Int </contractModIdx>
+        <moduleInst>
+            <modIdx> MODIDX </modIdx>
+            <memAddrs> ListItem(ADDR) </memAddrs>
+            ...
+        </moduleInst>
+        <mems> MEMS </mems>
+      requires
+        0 <=Int ADDR andBool ADDR <Int size(MEMS)
+        andBool
+            ( #let memInst(_MAX, SIZE, _DATA) = MEMS[ADDR]
+            #in (0 <=Int #signed(i32 , OFFSET)
+                andBool #signed(i32 , OFFSET) +Int lengthBytes(BS) >Int (SIZE *Int #pageSize())
+                )
+            )
+
+    rule
+        <instrs> #memStore(OFFSET, BS) => .K ... </instrs>
+        <contractModIdx> MODIDX:Int </contractModIdx>
+        <moduleInst>
+            <modIdx> MODIDX </modIdx>
+            <memAddrs> ListItem(ADDR) </memAddrs>
+            ...
+        </moduleInst>
+        <mems>
+            MEMS
+            =>  #let memInst(MAX, SIZE, DATA) = MEMS[ADDR]
+                #in MEMS [ ADDR <- memInst(MAX, SIZE, #setBytesRange(DATA, OFFSET, BS)) ]
+        </mems>
+      requires
+        0 <=Int ADDR andBool ADDR <Int size(MEMS)
+        andBool
+            ( #let memInst(MAX, SIZE, DATA) = MEMS[ADDR]
+            #in (0 <=Int #signed(i32 , OFFSET)
+                andBool #signed(i32 , OFFSET) +Int lengthBytes(BS) <=Int (SIZE *Int #pageSize())
+                )
+            )
+      [preserves-definedness] // setBytesRange total, ADDR key in range for MEMS
+```
+
+Handle the actual hook calls.
+
 ```remote
     rule
         <instrs>
@@ -282,6 +417,14 @@ Hooks implementation
             => i32.const lengthBytes(CallData())
             ...
         </instrs>
+
+    rule
+        <instrs>
+            hostCall("env", "CallData", [ i32 .ValTypes ] -> [ .ValTypes ])
+            => i32.const lengthBytes(CallData())
+            ...
+        </instrs>
+
 ```
 
 ```k
