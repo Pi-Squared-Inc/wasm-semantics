@@ -158,9 +158,6 @@ ULM Hook Behavior
 
 These rules define various integration points between the ULM and our Wasm interpreter.
 
-**Note**: the first three rules hooks below are written with helper functions
-          because parse errors were encountered when writing `<generatedTopCell>` literals.
-
 ```k
 
     rule getGasLeft(
