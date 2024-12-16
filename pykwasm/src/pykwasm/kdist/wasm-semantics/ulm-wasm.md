@@ -230,6 +230,10 @@ This is ensured by requiring that the `<instrs>` cell is empty during resolution
 
     rule <k> #resolveFunc(FUNCIDX, FUNCADDRS) => .K </k>
          <instrs> .K => (invoke FUNCADDRS {{ FUNCIDX }} orDefault -1 ):Instr </instrs>
+         <valstack>
+            .ValStack => <i32> #if CREATE #then 1 #else 0 #fi : .ValStack
+         </valstack>
+        <create> CREATE:Bool </create>
          requires isListIndex(FUNCIDX, FUNCADDRS)
 
     rule
