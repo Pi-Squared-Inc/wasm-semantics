@@ -83,7 +83,7 @@ infer that this must be the top configuration, so it will wrap it in
 A special configuration cell is added in the local case to support VM initialization.
 
 ```local
-        <entry> $ENTRY:String </entry>
+        <entry> $ENTRY:WasmString </entry>
 ```
 
 
@@ -179,7 +179,7 @@ Obtaining the Entrypoint
 In the standalone semantics, the Wasm VM obtains an entrypoint from the configuration.
 
 ```local
-    syntax String ::= #getEntryPoint() [function, total]
+    syntax WasmString ::= #getEntryPoint() [function, total]
     rule #getEntryPoint() => FUNCNAME
          [[ <entry> FUNCNAME </entry> ]]
 ```
@@ -187,8 +187,8 @@ In the standalone semantics, the Wasm VM obtains an entrypoint from the configur
 In the remote semantics, the Wasm VM has a fixed entrypoint.
 
 ```remote
-    syntax String ::= #getEntryPoint() [function, total]
-    rule #getEntryPoint() => "ulmDispatchCaller"
+    syntax WasmString ::= #getEntryPoint() [function, total]
+    rule #getEntryPoint() => #token("\"ulmDispatchCaller\"", "WasmStringToken")
 ```
 
 Passing Control
@@ -205,8 +205,8 @@ Note that entrypoint resolution must occur _after_ the Wasm module has been load
 This is ensured by requiring that the `<instrs>` cell is empty during resolution.
 
 ```k
-    syntax Initializer ::= #resolveCurModuleFuncExport(String)
-                         | #resolveModuleFuncExport(Int, String)
+    syntax Initializer ::= #resolveCurModuleFuncExport(WasmString)
+                         | #resolveModuleFuncExport(Int, WasmString)
                          | #resolveFunc(Int, ListInt)
     // ----------------------------------------------
     rule <k> #resolveCurModuleFuncExport(FUNCNAME) => #resolveModuleFuncExport(MODIDX, FUNCNAME) </k>
