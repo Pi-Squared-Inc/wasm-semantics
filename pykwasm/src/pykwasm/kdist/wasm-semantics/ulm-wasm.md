@@ -509,26 +509,6 @@ Helpers: loading bytes from memory.
                 #signed(i32 , OFFSET) +Int #signed(i32 , LENGTH) <=Int (SIZE *Int #pageSize())
             )
 
-    rule [memLoad-zero-len]:
-        <instrs> #memLoad(OFFSET, 0) => b""
-            ...
-        </instrs>
-        <contractModIdx> MODIDX:Int </contractModIdx>
-        <moduleInst>
-          <modIdx> MODIDX </modIdx>
-          <memAddrs> ListItem(ADDR) </memAddrs>
-          ...
-        </moduleInst>
-        <mems> MEMS </mems>
-      requires true
-        andBool 0 <=Int ADDR
-        andBool ADDR <Int size(MEMS)
-        andBool #signed(i32, OFFSET) >=Int 0
-        andBool
-            (#let memInst(_, SIZE, _DATA) = MEMS[ADDR] #in
-                #signed(i32 , OFFSET) <=Int (SIZE *Int #pageSize())
-            )
-
     rule [memLoad]:
         <instrs> #memLoad(OFFSET, LENGTH) => #getBytesRange(
             #let memInst(_MAX, _SIZE, DATA) = MEMS[ADDR]
@@ -546,7 +526,7 @@ Helpers: loading bytes from memory.
       requires true
         andBool 0 <=Int ADDR
         andBool ADDR <Int size(MEMS)
-        andBool #signed(i32, LENGTH) >Int 0
+        andBool #signed(i32, LENGTH) >=Int 0
         andBool #signed(i32, OFFSET) >=Int 0
         andBool
             (#let memInst(_, SIZE, _DATA) = MEMS[ADDR] #in
