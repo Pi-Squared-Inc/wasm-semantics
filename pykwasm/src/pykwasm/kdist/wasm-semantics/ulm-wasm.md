@@ -195,13 +195,14 @@ In the remote semantics, the Wasm VM has a fixed entrypoint.
 Passing Control
 ---------------
 
-The embedder loads the module to be executed and then resolves the entrypoint function.
+The embedder loads the module to be executed and then calls the entrypoint function.
 
 ```k
     rule
         <k> PGM:PgmEncoding
             => setContractModIdx
                 ~> #resolveCurModuleFuncExport(#getEntryPoint())
+                ~> setSuccessStatus
         </k>
         <instrs> .K => decodePgm(PGM) </instrs>
 ```
@@ -214,12 +215,21 @@ This is ensured by requiring that the `<instrs>` cell is empty during resolution
                          | #resolveModuleFuncExport(Int, WasmString)
                          | #resolveFunc(Int, ListInt)
                          | "setContractModIdx"
+                         | "setSuccessStatus"
     // ----------------------------------------------
-    rule <k> #resolveCurModuleFuncExport(FUNCNAME) => #resolveModuleFuncExport(MODIDX, FUNCNAME) </k>
+    rule <k>
+            #resolveCurModuleFuncExport(FUNCNAME)
+            => #resolveModuleFuncExport(MODIDX, FUNCNAME)
+            ...
+         </k>
          <instrs> .K </instrs>
          <curModIdx> MODIDX:Int </curModIdx>
 
-    rule <k> #resolveModuleFuncExport(MODIDX, FUNCNAME) => #resolveFunc(FUNCIDX, FUNCADDRS) </k>
+    rule <k>
+              #resolveModuleFuncExport(MODIDX, FUNCNAME)
+              => #resolveFunc(FUNCIDX, FUNCADDRS)
+              ...
+         </k>
          <instrs> .K </instrs>
          <moduleInst>
            <modIdx> MODIDX </modIdx>
@@ -228,7 +238,7 @@ This is ensured by requiring that the `<instrs>` cell is empty during resolution
            ...
          </moduleInst>
 
-    rule <k> #resolveFunc(FUNCIDX, FUNCADDRS) => .K </k>
+    rule <k> #resolveFunc(FUNCIDX, FUNCADDRS) => .K ... </k>
          <instrs> .K => (invoke FUNCADDRS {{ FUNCIDX }} orDefault -1 ):Instr </instrs>
          <valstack>
             .ValStack => <i32> #if CREATE #then 1 #else 0 #fi : .ValStack
@@ -248,6 +258,13 @@ in the `contractModIdx` cell.
         <instrs> .K </instrs>
         <curModIdx> MODIDX:Int </curModIdx>
         <contractModIdx> _ => MODIDX </contractModIdx>
+
+    rule
+        // setSuccessStatus should only be used after everything finished executing,
+        // so we are checking that it is the only thing left in the <k> cell.
+        <k> setSuccessStatus => .K </k>
+        <instrs> .K </instrs>
+        <status> _ => EVMC_SUCCESS </status>
 ```
 
 Here we handle the case when entrypoint resolution fails.
