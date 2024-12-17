@@ -235,9 +235,17 @@ This is ensured by requiring that the `<instrs>` cell is empty during resolution
          </valstack>
         <create> CREATE:Bool </create>
          requires isListIndex(FUNCIDX, FUNCADDRS)
+```
 
+When we call ULM hooks, the `curModIdx` cell changes to point to the ULM module.
+However, the ULM hooks need to access data from the main contract module
+(e.g. the contract's memory). In order to do that, we save the main module index
+in the `contractModIdx` cell.
+
+```k
     rule
         <k> setContractModIdx => .K ... </k>
+        <instrs> .K </instrs>
         <curModIdx> MODIDX:Int </curModIdx>
         <contractModIdx> _ => MODIDX </contractModIdx>
 ```
@@ -412,6 +420,121 @@ which starts at offset (or contains it) has enough capacity to hold the bytes.
       [preserves-definedness] // setBytesRange total, ADDR key in range for MEMS
 ```
 
+Helpers: loading bytes from memory.
+
+```remote
+
+    syntax InternalInstr ::= #memLoad ( offset: Int , length: Int )
+ // ---------------------------------------------------------------
+
+    rule [memLoad-wrong-index]:
+        <instrs>
+            (.K => #throwException(EVMC_INTERNAL_ERROR, "Invalid memory index"))
+            ~> #memLoad(_OFFSET, _LENGTH)
+            ...
+        </instrs>
+        <contractModIdx> MODIDX:Int </contractModIdx>
+        <moduleInst>
+          <modIdx> MODIDX </modIdx>
+          <memAddrs> ListItem(ADDR) </memAddrs>
+          ...
+        </moduleInst>
+        <mems> MEMS </mems>
+      requires notBool
+        ( 0 <=Int ADDR
+        andBool ADDR <Int size(MEMS)
+        )
+
+    rule [memLoad-negative]:
+        <instrs>
+            (.K => #throwException(EVMC_INVALID_MEMORY_ACCESS, "Negative length or offset."))
+            ~> #memLoad(OFFSET, LENGTH)
+            ...
+        </instrs>
+        <contractModIdx> MODIDX:Int </contractModIdx>
+        <moduleInst>
+          <modIdx> MODIDX </modIdx>
+          <memAddrs> ListItem(ADDR) </memAddrs>
+          ...
+        </moduleInst>
+        <mems> MEMS </mems>
+      requires true
+        andBool 0 <=Int ADDR
+        andBool ADDR <Int size(MEMS)
+        andBool notBool
+            ( #signed(i32, LENGTH) >=Int 0
+            andBool #signed(i32, OFFSET) >=Int 0
+            )
+
+    rule [memLoad-page-error]:
+        <instrs>
+            (.K => #throwException(EVMC_INVALID_MEMORY_ACCESS, "Out of memory page."))
+            ~> #memLoad(OFFSET, LENGTH)
+            ...
+        </instrs>
+        <contractModIdx> MODIDX:Int </contractModIdx>
+        <moduleInst>
+          <modIdx> MODIDX </modIdx>
+          <memAddrs> ListItem(ADDR) </memAddrs>
+          ...
+        </moduleInst>
+        <mems> MEMS </mems>
+      requires true
+        andBool 0 <=Int ADDR
+        andBool ADDR <Int size(MEMS)
+        andBool #signed(i32, LENGTH) >=Int 0
+        andBool #signed(i32, OFFSET) >=Int 0
+        andBool notBool
+            (#let memInst(_, SIZE, _DATA) = MEMS[ADDR] #in
+                #signed(i32 , OFFSET) +Int #signed(i32 , LENGTH) <=Int (SIZE *Int #pageSize())
+            )
+
+    rule [memLoad-zero-len]:
+        <instrs> #memLoad(OFFSET, 0) => b""
+            ...
+        </instrs>
+        <contractModIdx> MODIDX:Int </contractModIdx>
+        <moduleInst>
+          <modIdx> MODIDX </modIdx>
+          <memAddrs> ListItem(ADDR) </memAddrs>
+          ...
+        </moduleInst>
+        <mems> MEMS </mems>
+      requires true
+        andBool 0 <=Int ADDR
+        andBool ADDR <Int size(MEMS)
+        andBool #signed(i32, OFFSET) >=Int 0
+        andBool
+            (#let memInst(_, SIZE, _DATA) = MEMS[ADDR] #in
+                #signed(i32 , OFFSET) <=Int (SIZE *Int #pageSize())
+            )
+
+    rule [memLoad]:
+        <instrs> #memLoad(OFFSET, LENGTH) => #getBytesRange(
+            #let memInst(_MAX, _SIZE, DATA) = MEMS[ADDR]
+            #in DATA,
+            OFFSET, LENGTH)
+           ...
+        </instrs>
+        <contractModIdx> MODIDX:Int </contractModIdx>
+        <moduleInst>
+          <modIdx> MODIDX </modIdx>
+          <memAddrs> ListItem(ADDR) </memAddrs>
+          ...
+        </moduleInst>
+        <mems> MEMS </mems>
+      requires true
+        andBool 0 <=Int ADDR
+        andBool ADDR <Int size(MEMS)
+        andBool #signed(i32, LENGTH) >Int 0
+        andBool #signed(i32, OFFSET) >=Int 0
+        andBool
+            (#let memInst(_, SIZE, _DATA) = MEMS[ADDR] #in
+                #signed(i32 , OFFSET) +Int #signed(i32 , LENGTH) <=Int (SIZE *Int #pageSize())
+            )
+
+```
+
 Handle the actual hook calls.
 
 ```remote
@@ -425,10 +548,33 @@ Handle the actual hook calls.
     rule
         <instrs>
             hostCall("env", "CallData", [ i32 .ValTypes ] -> [ .ValTypes ])
-            => i32.const lengthBytes(CallData())
+            => #memStore(OFFSET, CallData())
             ...
         </instrs>
+        <locals>
+            ListItem(<i32> OFFSET:Int)
+        </locals>
 
+    rule
+        <instrs>
+            hostCall("env", "setOutput", [ i32 i32 .ValTypes ] -> [ .ValTypes ])
+            => #memLoad(OFFSET, LENGTH) ~> #setOutput
+            ...
+        </instrs>
+        <locals>
+            ListItem(<i32> OFFSET:Int) ListItem(<i32> LENGTH:Int)
+        </locals>
+
+    syntax InternalInstr ::= "#setOutput"
+
+    rule
+        <instrs>
+            BYTES:Bytes ~> #setOutput => .K
+            ...
+        </instrs>
+        <output>
+            _ => BYTES
+        </output>
 ```
 
 ```k
