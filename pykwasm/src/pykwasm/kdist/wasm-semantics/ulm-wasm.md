@@ -116,7 +116,10 @@ First, we create an empty module for any import referencing a non-existing modul
         <instrs> #import(MOD, _, _) ... </instrs>
         <moduleRegistry> MR:Map => MR [ MOD <- NEXT ] </moduleRegistry>
         <nextModuleIdx> NEXT => NEXT +Int 1 </nextModuleIdx>
-        <moduleInstances> ( .Bag => <moduleInst> <modIdx> NEXT </modIdx> ... </moduleInst>) ... </moduleInstances>
+        <moduleInstances>
+            .Bag => <moduleInst> <modIdx> NEXT </modIdx> ... </moduleInst>
+            ...
+        </moduleInstances>
         requires notBool MOD in_keys(MR)
 
 ```
@@ -334,7 +337,7 @@ Helpers: setting the status.
 ```remote
     syntax UlmInstr ::= setStatus(code: Int)
     rule
-        <instrs> setStatus(Status:Int) => .K </instrs>
+        <instrs> setStatus(Status:Int) => .K ... </instrs>
         <status> _ => Status </status>
 ```
 
@@ -531,7 +534,7 @@ Helpers: loading bytes from memory.
             #let memInst(_MAX, _SIZE, DATA) = MEMS[ADDR]
             #in DATA,
             OFFSET, LENGTH)
-           ...
+            ...
         </instrs>
         <contractModIdx> MODIDX:Int </contractModIdx>
         <moduleInst>
