@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+from requests.exceptions import ConnectionError
 import sys
 from pathlib import Path
 
@@ -54,10 +55,42 @@ ABI_MAP = {
 }
 
 
+def parse_arg(param_ty, arg):
+    match param_ty:
+        case 'uint256':
+            try: return int(arg)
+            except ValueError: pass
+            try: return int(arg, 16)
+            except ValueError:
+                raise ValueError(f'Failed to parse numeric argument {arg}')
+        case 'address':
+            assert Web3.is_address(arg)
+            return arg
+
+
+def parse_params(abi, method, args):
+    for elt in abi:
+        parsed_args = []
+        ty, name, inputs = elt['type'], elt['name'], elt['inputs']
+        if ty == 'function' and name == method:
+            if len(inputs) != len(args):
+                raise ValueError('call to method {method} with {inputs} has incorrect parameters {params}')
+            for param, arg in zip(inputs, args):
+                parsed_args.append(parse_arg(param['type'], arg))
+            break
+    else:
+        raise ValueError(f'method {method} not found in contract ABI')
+    return parsed_args
+
+
 def run_method(w3, contract, sender, eth, method, params):
-    func = contract.functions[method](params)
-    tx_hash = func.transact({'from': sender.address, 'value': eth})
-    call_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+    func = contract.functions[method](*params)
+    try:
+        tx_hash = func.transact({'from': sender.address, 'value': eth})
+        call_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+    except (ConnectionError, ConnectionRefusedError):
+        print('Failed to connect to node')
+        call_receipt = None
     return call_receipt
 
 
@@ -69,16 +102,21 @@ def main():
     if len(args) < 1:
         print(USAGE)
         sys.exit(1)
-    (node_url, abi, contract_addr, sender_pk_file, eth, method), params = args[:4], args[4], args[5:]
+    (node_url, abi, contract_addr, sender_pk_file, eth, method), params = args[:6], args[6:]
     # get web3 instance
     w3 = Web3(Web3.HTTPProvider(node_url))
+    # get abi
+    abi = ABI_MAP[abi]
     # get contract
-    contract = w3.eth.contract(address=contract_addr, abi=ABI_MAP[abi])
+    contract = w3.eth.contract(address=contract_addr, abi=abi)
     # get sender
     pk = bytes.fromhex(Path(sender_pk_file).read_text().strip().removeprefix('0x'))
     sender = Account.from_key(pk)
     # add signer
     w3.middleware_onion.inject(SignAndSendRawMiddlewareBuilder.build(sender), layer=0)
+    # parse params
+    params = parse_params(abi, method, params)
+    eth = int(eth)
     # run method
     run_method(w3, contract, sender, eth, method, params)
 
