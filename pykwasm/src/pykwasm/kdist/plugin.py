@@ -57,7 +57,6 @@ class KompileTarget(Target):
 
 def ulm_wasm_args(src_dir: Path, ulm_test: bool = False) -> dict[str, Any]:
     build_dir = Path(__file__).parent.parent.parent.parent.parent / 'build'
-    print(build_dir)
     ulm_lib_ccopts = []
     if not ulm_test:
         ulm_lib_ccopts = [
