@@ -11,7 +11,7 @@ authors = [
 ]
 
 [tool.poetry.scripts]
-mkaddr = "pykwasm.mkaddr:main"
+mkacct = "pykwasm.mkacct:main"
 call = "pykwasm.call:main"
 fund = "pykwasm.fund_acct:main"
 deploy = "pykwasm.deploy_contract:main"
@@ -71,7 +71,7 @@ skip-string-normalization = true
 disallow_untyped_defs = true
 # TODO fix type errors
 exclude = [
-    'src/pykwasm/mkaddr\.py',
+    'src/pykwasm/mkacct\.py',
     'src/pykwasm/wasm2kast\.py',
     'src/pykwasm/wasm2kore\.py',
     'src/pykwasm/run_wasm\.py',
