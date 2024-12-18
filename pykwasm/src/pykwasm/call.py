@@ -105,7 +105,7 @@ USAGE = 'call.py <node_url> <contract_abi> <contract_address_lit_or_file> <sende
 
 def main():
     args = sys.argv[1:]
-    if len(args) < 1:
+    if len(args) < 6:
         print(USAGE, file=sys.stderr)
         sys.exit(1)
     (node_url, abi, addr_lit_or_file, sender_pk_file, eth, method), params = args[:6], args[6:]

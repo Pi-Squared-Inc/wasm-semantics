@@ -4,6 +4,7 @@ from pathlib import Path
 
 from eth_account import Account
 from web3 import Web3
+from web3.exceptions import Web3RPCError
 from web3.middleware import SignAndSendRawMiddlewareBuilder
 
 
@@ -14,15 +15,22 @@ def deploy_contract(w3, sender, contract_hex):
         'data': contract_hex,
         'to': '',
         'value': 0,
-        # 'gas': 11000000,
-        # 'maxFeePerGas': 2000000000,
-        # 'maxPriorityFeePerGas': 1000000000,
+        # NOTE: we provide extra gas to the txn here
+        #       because, by default, the estimator does
+        #       not give us enough gas for our very
+        #       large contract files
+        'gas': 11000000,
+        'maxFeePerGas': 2000000000,
+        'maxPriorityFeePerGas': 1000000000,
     }
     try:
         deploy_tx_hash = w3.eth.send_transaction(deploy_token_tx)
         deploy_tx_receipt = w3.eth.wait_for_transaction_receipt(deploy_tx_hash)
     except (ConnectionError, ConnectionRefusedError):
         print('Failed to connect to node', file=sys.stderr)
+        sys.exit(1)
+    except Web3RPCError as e:
+        print(f'Failed to deploy contract to node: {e.message}', file=sys.stderr)
         sys.exit(1)
     return deploy_tx_receipt
 
