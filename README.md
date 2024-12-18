@@ -223,7 +223,7 @@ As an example, to deploy a Wasm contract and invoke a function on it, you can do
 3.  Generate an account for use in the test
 
     ```sh
-    poetry -C pykwasm run python3 -c "from web3 import Web3; w3 = Web3(); acc = w3.eth.account.create(); print(w3.to_hex(acc.key))" > pk_file
+    poetry -C pykwasm run mkaddr > pk_file
     ```
 
 4.  Fund the new account
