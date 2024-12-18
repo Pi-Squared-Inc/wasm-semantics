@@ -9,13 +9,14 @@ from web3.middleware import SignAndSendRawMiddlewareBuilder
 
 ABI_MAP = {
     'erc20': [
-        {'type': 'function', 'name': 'decimals', 'inputs': [], 'outputs': ['uint8']},
-        {'type': 'function', 'name': 'totalSupply', 'inputs': [], 'outputs': ['uint256']},
+        {'type': 'function', 'name': 'decimals', 'inputs': [], 'outputs': ['uint8'], 'stateMutability': 'view'},
+        {'type': 'function', 'name': 'totalSupply', 'inputs': [], 'outputs': ['uint256'], 'stateMutability': 'view'},
         {
             'type': 'function',
             'name': 'balanceOf',
             'inputs': [{'name': 'owner', 'type': 'address'}],
             'outputs': [{'name': '', 'type': 'uint256'}],
+            'stateMutability': 'view',
         },
         {
             'type': 'function',
@@ -44,6 +45,7 @@ ABI_MAP = {
             'name': 'allowance',
             'inputs': [{'name': 'owner', 'type': 'address'}, {'name': 'spender', 'type': 'address'}],
             'outputs': [{'name': '', 'type': 'uint256'}],
+            'stateMutability': 'view'
         },
         {
             'type': 'function',
@@ -85,13 +87,17 @@ def parse_params(abi, method, args):
 
 def run_method(w3, contract, sender, eth, method, params):
     func = contract.functions[method](*params)
+    viewLike = func.abi.get('stateMutability', 'nonpayable') in {'view','pure'}
     try:
-        tx_hash = func.transact({'from': sender.address, 'value': eth})
-        call_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+        if viewLike:
+            resultOrReceipt = func.call()
+        else:
+            tx_hash = func.transact({'from': sender.address, 'value': eth})
+            resultOrReceipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     except (ConnectionError, ConnectionRefusedError):
         print('Failed to connect to node', file=sys.stderr)
         sys.exit(1)
-    return call_receipt
+    return (viewLike, resultOrReceipt)
 
 
 USAGE = 'call.py <node_url> <contract_abi> <contract_address_lit_or_file> <sender_private_key_file> <eth> <method> [param...]'
@@ -122,11 +128,14 @@ def main():
     params = parse_params(abi, method, params)
     eth = int(eth)
     # run method
-    call_receipt = run_method(w3, contract, sender, eth, method, params)
-    print(call_receipt)
-    # return exit code based on status which is 1 for confirmed and 0 for reverted
-    success = bool(fund_receipt['status'])
-    sys.exit(int(not success))
+    (viewLike, resultOrReceipt) = run_method(w3, contract, sender, eth, method, params)
+    # handle result
+    if viewLike:
+        print(resultOrReceipt)
+    else:
+        # return exit code based on status which is 1 for confirmed and 0 for reverted
+        success = bool(resultOrReceipt['status'])
+        sys.exit(int(not success))
 
 
 
