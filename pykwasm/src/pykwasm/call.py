@@ -89,8 +89,8 @@ def run_method(w3, contract, sender, eth, method, params):
         tx_hash = func.transact({'from': sender.address, 'value': eth})
         call_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     except (ConnectionError, ConnectionRefusedError):
-        print('Failed to connect to node')
-        call_receipt = None
+        print('Failed to connect to node', file=sys.stderr)
+        sys.exit(1)
     return call_receipt
 
 
@@ -124,6 +124,10 @@ def main():
     # run method
     call_receipt = run_method(w3, contract, sender, eth, method, params)
     print(call_receipt)
+    # return exit code based on status which is 1 for confirmed and 0 for reverted
+    success = bool(fund_receipt['status'])
+    sys.exit(int(not success))
+
 
 
 if __name__ == '__main__':

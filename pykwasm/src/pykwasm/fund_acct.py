@@ -15,7 +15,7 @@ def fund_acct(w3, addr):
         )
         fund_tx_receipt = w3.eth.wait_for_transaction_receipt(fund_tx_hash)
     except (ConnectionError, ConnectionRefusedError):
-        print("Failed to connect to node")
+        print("Failed to connect to node", file=sys.stderr)
         sys.exit(1)
     return fund_tx_receipt
 
@@ -45,7 +45,12 @@ def main():
     w3 = Web3(Web3.HTTPProvider(node_url))
     fund_receipt = fund_acct(w3, addr)
 
+    # print output
     print(fund_receipt)
+
+    # return exit code based on status which is 1 for confirmed and 0 for reverted
+    success = bool(fund_receipt['status'])
+    sys.exit(int(not success))
 
 
 if __name__ == '__main__':
