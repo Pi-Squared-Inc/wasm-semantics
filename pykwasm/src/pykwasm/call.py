@@ -5,7 +5,7 @@ from pathlib import Path
 
 from eth_account import Account
 from web3 import Web3
-from web3.exceptions import BadFunctionCallOutput, Web3RPCError
+from web3.exceptions import BadFunctionCallOutput, Web3RPCError, ABIFunctionNotFound
 from web3.middleware import SignAndSendRawMiddlewareBuilder
 
 ABI_MAP = {
@@ -116,17 +116,23 @@ def main():
     if len(args) < 6:
         print(USAGE, file=sys.stderr)
         sys.exit(1)
-    (node_url, abi, addr_lit_or_file, sender_pk_file, eth, method), params = args[:6], args[6:]
+    (node_url, abi_name, addr_lit_or_file, sender_pk_file, eth, method), params = args[:6], args[6:]
     # get web3 instance
     w3 = Web3(Web3.HTTPProvider(node_url))
     # get abi
-    abi = ABI_MAP[abi]
+    abi = ABI_MAP[abi_name]
     # get contract
     try:
         contract_addr = Path(addr_lit_or_file).read_text().strip()
     except FileNotFoundError:
         contract_addr = addr_lit_or_file
     contract = w3.eth.contract(address=contract_addr, abi=abi)
+    # validate method
+    try:
+        contract.functions[method]
+    except BaseException:
+        print(f'Invalid method {method} for {abi_name} contract ABI', file=sys.stderr)
+        sys.exit(1)
     # get sender
     pk = bytes.fromhex(Path(sender_pk_file).read_text().strip().removeprefix('0x'))
     sender = Account.from_key(pk)
