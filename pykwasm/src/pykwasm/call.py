@@ -149,6 +149,8 @@ def main():
     else:
         # return exit code based on status which is 1 for confirmed and 0 for reverted
         success = bool(resultOrReceipt['status'])
+        if not success:
+            print(resultOrReceipt, file=sys.stderr)
         sys.exit(int(not success))
 
 
