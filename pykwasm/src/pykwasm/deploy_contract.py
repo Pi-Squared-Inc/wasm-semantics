@@ -19,7 +19,7 @@ def deploy_contract(w3, sender, contract_hex):
         #       because, by default, the estimator does
         #       not give us enough gas for our very
         #       large contract files
-        'gas': 11000000,
+        'gas': 110000000,
         'maxFeePerGas': 2000000000,
         'maxPriorityFeePerGas': 1000000000,
     }
