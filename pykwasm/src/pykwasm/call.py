@@ -94,7 +94,7 @@ def run_method(w3, contract, sender, eth, method, params):
     return call_receipt
 
 
-USAGE = 'call.py <node_url> <contract_abi> <contract_address> <sender_private_key_file> <eth> <method> [param...]'
+USAGE = 'call.py <node_url> <contract_abi> <contract_address_lit_or_file> <sender_private_key_file> <eth> <method> [param...]'
 
 
 def main():
@@ -102,12 +102,16 @@ def main():
     if len(args) < 1:
         print(USAGE)
         sys.exit(1)
-    (node_url, abi, contract_addr, sender_pk_file, eth, method), params = args[:6], args[6:]
+    (node_url, abi, addr_lit_or_file, sender_pk_file, eth, method), params = args[:6], args[6:]
     # get web3 instance
     w3 = Web3(Web3.HTTPProvider(node_url))
     # get abi
     abi = ABI_MAP[abi]
     # get contract
+    try:
+        contract_addr = Path(addr_lit_or_file).read_text().strip()
+    except FileNotFoundError:
+        contract_addr = addr_lit_or_file
     contract = w3.eth.contract(address=contract_addr, abi=abi)
     # get sender
     pk = bytes.fromhex(Path(sender_pk_file).read_text().strip().removeprefix('0x'))
