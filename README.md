@@ -235,7 +235,7 @@ As an example, to deploy a Wasm contract and invoke a function on it, you can do
 5.  Deploy the compiled Wasm contract from the funded account:
 
     ```sh
-    poetry -C pykwasm run deploy tests/ulm/erc20/erc20.bin http://localhost:8545 pk_file > contract_addr
+    poetry -C pykwasm run deploy build/erc20/erc20.bin http://localhost:8545 pk_file > contract_addr
     ```
 
 6.  Invoke a contract function from the funded account:
