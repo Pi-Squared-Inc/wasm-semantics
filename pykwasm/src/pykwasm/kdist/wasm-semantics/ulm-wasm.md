@@ -645,11 +645,11 @@ Handle the actual hook calls.
     rule
         <instrs>
             hostCall("env", "GetAccountStorage", [ i32 i32 .ValTypes ] -> [ .ValTypes ])
-            => #memLoad(IN_OFFSET, 32) ~> #getAccountStorage(OUT_OFFSET)
+            => #memLoad(IN_OFFSET, 32) ~> #getAccountStorage(RESULT_OFFSET)
             ...
         </instrs>
         <locals>
-            ListItem(<i32> IN_OFFSET:Int) ListItem(<i32> OUT_OFFSET:Int)
+            ListItem(<i32> IN_OFFSET:Int) ListItem(<i32> RESULT_OFFSET:Int)
         </locals>
 
     syntax InternalInstr ::= #getAccountStorage(Int)
