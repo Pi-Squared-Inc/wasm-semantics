@@ -5,6 +5,7 @@ from pathlib import Path
 
 from eth_account import Account
 from web3 import Web3
+from web3.exceptions import BadFunctionCallOutput, Web3RPCError
 from web3.middleware import SignAndSendRawMiddlewareBuilder
 
 ABI_MAP = {
@@ -94,9 +95,16 @@ def run_method(w3, contract, sender, eth, method, params):
         else:
             tx_hash = func.transact({'from': sender.address, 'value': eth})
             resultOrReceipt = w3.eth.wait_for_transaction_receipt(tx_hash)
-    except (ConnectionError, ConnectionRefusedError):
-        print('Failed to connect to node', file=sys.stderr)
+    except (ConnectionError, ConnectionRefusedError, BadFunctionCallOutput, Web3RPCError) as e:
+        if isinstance(e, (ConnectionError, ConnectionRefusedError)):
+            msg = f'Failed to connect to node: {e.message}'
+        elif isinstance(e, BadFunctionCallOutput):
+            msg = f'Could not interpret function output: {",".join(e.args)}'
+        else:
+            msg = f'Node RPC encountered an error: {e.message}'
+        print(msg, file=sys.stderr)
         sys.exit(1)
+
     return (viewLike, resultOrReceipt)
 
 

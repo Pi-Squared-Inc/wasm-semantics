@@ -70,6 +70,7 @@ def main():
     if success and contract_address:
         print(contract_address)
     else:
+        print(deploy_receipt, file=sys.stderr)
         sys.exit(1)
 
 

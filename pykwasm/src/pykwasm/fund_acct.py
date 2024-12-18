@@ -45,11 +45,14 @@ def main():
     w3 = Web3(Web3.HTTPProvider(node_url))
     fund_receipt = fund_acct(w3, addr)
 
-    # print output
-    print(fund_receipt)
-
     # return exit code based on status which is 1 for confirmed and 0 for reverted
     success = bool(fund_receipt['status'])
+
+    # print receipt on failure
+    if not success:
+        print(fund_receipt)
+
+    # set exit code
     sys.exit(int(not success))
 
 
