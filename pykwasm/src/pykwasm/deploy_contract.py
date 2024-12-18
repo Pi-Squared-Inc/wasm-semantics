@@ -34,7 +34,7 @@ def main():
     # check arg length
     args = sys.argv[1:]
     if len(args) < 1:
-        print(USAGE)
+        print(USAGE, file=sys.stderr)
         sys.exit(1)
 
     # parse args

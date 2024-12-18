@@ -27,7 +27,7 @@ def main():
     # check arg count
     args = sys.argv[1:]
     if len(args) < 1 or len(args) > 2:
-        print(USAGE)
+        print(USAGE, file=sys.stderr)
         sys.exit(1)
 
     # parse args
