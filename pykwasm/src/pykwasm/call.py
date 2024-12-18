@@ -118,7 +118,8 @@ def main():
     params = parse_params(abi, method, params)
     eth = int(eth)
     # run method
-    run_method(w3, contract, sender, eth, method, params)
+    call_receipt = run_method(w3, contract, sender, eth, method, params)
+    print(call_receipt)
 
 
 if __name__ == '__main__':

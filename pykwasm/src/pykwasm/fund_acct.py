@@ -20,21 +20,31 @@ def fund_acct(w3, addr):
     return fund_tx_receipt
 
 
-USAGE = 'fund_acct.py <address> [node_url]'
+USAGE = 'fund_acct.py <address_or_pk_file> [node_url]'
 
 
 def main():
+    # check arg count
     args = sys.argv[1:]
     if len(args) < 1 or len(args) > 2:
         print(USAGE)
         sys.exit(1)
-    addr = args[0]
+
+    # parse args
+    addr_or_pkfile = args[0]
+    if not Web3.is_address(addr_or_pkfile):
+        pk = bytes.fromhex(Path(addr_or_pkfile).read_text().strip().removeprefix('0x'))
+        addr = Account.from_key(pk).address
+    else:
+        addr = addr_or_pkfile
     node_url = 'http://localhost:8545'
     if len(args) > 1:
         node_url = args[1]
-    assert Web3.is_address(addr)
+
+    # fund acct
     w3 = Web3(Web3.HTTPProvider(node_url))
     fund_receipt = fund_acct(w3, addr)
+
     print(fund_receipt)
 
 

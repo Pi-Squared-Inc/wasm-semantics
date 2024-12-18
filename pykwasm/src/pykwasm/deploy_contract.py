@@ -11,11 +11,6 @@ def deploy_contract(node_url, sender, contract_hex):
     w3 = Web3(Web3.HTTPProvider(node_url))
     if sender is None:
         sender = w3.eth.account.create()
-    # fund sender acct
-    fund_tx_hash = w3.eth.send_transaction(
-        {'from': w3.eth.accounts[0], 'to': sender.address, 'value': 1000000000000000000}
-    )
-    fund_tx_receipt = w3.eth.wait_for_transaction_receipt(fund_tx_hash)
     w3.middleware_onion.inject(SignAndSendRawMiddlewareBuilder.build(sender), layer=0)
     # deploy txn
     deploy_token_tx = {
@@ -29,7 +24,7 @@ def deploy_contract(node_url, sender, contract_hex):
     }
     deploy_tx_hash = w3.eth.send_transaction(deploy_token_tx)
     deploy_tx_receipt = w3.eth.wait_for_transaction_receipt(deploy_tx_hash)
-    return fund_tx_receipt, deploy_tx_receipt
+    return deploy_tx_receipt
 
 
 USAGE = 'deploy_contract.py <contract_file> [node_url] [sender_private_key_file]'
@@ -48,9 +43,10 @@ def main():
     if len(args) > 2:
         pk = bytes.fromhex(Path(args[2]).read_text().strip().removeprefix('0x'))
         sender = Account.from_key(pk)
-    fund_receipt, deploy_receipt = deploy_contract(node_url, sender, contract_hex)
-    print(fund_receipt)
-    print(deploy_receipt)
+    deploy_receipt = deploy_contract(node_url, sender, contract_hex)
+    contract_address = deploy_receipt['contractAddress']
+    assert contract_address
+    print(contract_address)
 
 
 if __name__ == '__main__':
