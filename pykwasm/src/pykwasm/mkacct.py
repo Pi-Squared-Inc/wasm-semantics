@@ -3,11 +3,13 @@ from web3 import Web3
 
 def mkaddr():
     w3 = Web3()
-    return w3.to_hex(w3.eth.account.create().key)
+    acct = w3.eth.account.create()
+    return (acct.address, w3.to_hex(acct.key))
 
 
 def main():
-    print(mkaddr())
+    address, key = mkaddr()
+    print(f'{address} {key}')
 
 
 if __name__ == '__main__':
