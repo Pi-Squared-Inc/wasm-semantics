@@ -104,7 +104,6 @@ function test_decimals {
   account1=($(mkacct))
   a1=${account1[0]}
   k1=${account1[1]}
-  # echo "Account 1. address: $a1; key: $k1"
   echo -n "."
 
   # fund accounts
@@ -113,7 +112,6 @@ function test_decimals {
 
   # deploy contract
   contract=$(erc20_deploy $k1)
-  # echo "Contract deployed. Contract address: $contract"
   echo -n "."
 
   decimals=$(erc20_decimals $k1 $contract)
@@ -130,19 +128,16 @@ function test_mint {
   account1=($(mkacct))
   a1=${account1[0]}
   k1=${account1[1]}
-  # echo "Account 1. address: $a1; key: $k1"
   echo -n "."
 
   account2=($(mkacct))
   a2=${account2[0]}
   k2=${account2[1]}
-  # echo "Account 2. address: $a2; key: $k2"
   echo -n "."
 
   account3=($(mkacct))
   a3=${account3[0]}
   k3=${account3[1]}
-  # echo "Account 3. address: $a3; key: $k3"
   echo -n "."
 
   # fund accounts
@@ -156,7 +151,6 @@ function test_mint {
   # deploy contract
   contract=$(erc20_deploy $k1)
   echo -n "."
-  # echo "Contract deployed. Contract address: $contract"
 
   balance2=$(erc20_balanceOf $k1 $contract $a2)
   echo -n "."
@@ -214,19 +208,16 @@ function test_transfer {
   a1=${account1[0]}
   k1=${account1[1]}
   echo -n "."
-  # echo "Account 1. address: $a1; key: $k1"
 
   account2=($(mkacct))
   a2=${account2[0]}
   k2=${account2[1]}
   echo -n "."
-  # echo "Account 2. address: $a2; key: $k2"
 
   account3=($(mkacct))
   a3=${account3[0]}
   k3=${account3[1]}
   echo -n "."
-  # echo "Account 3. address: $a3; key: $k3"
 
   # fund accounts
   fund /dev/stdin <<< $k1
@@ -239,7 +230,6 @@ function test_transfer {
   # deploy contract
   contract=$(erc20_deploy $k1)
   echo -n "."
-  # echo "Contract deployed. Contract address: $contract"
 
   balance2=$(erc20_balanceOf $k1 $contract $a2)
   echo -n "."
