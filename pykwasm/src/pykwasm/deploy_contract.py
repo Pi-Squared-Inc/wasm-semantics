@@ -26,7 +26,7 @@ def deploy_contract(w3, sender, contract_hex):
     try:
         deploy_tx_hash = w3.eth.send_transaction(deploy_token_tx)
         deploy_tx_receipt = w3.eth.wait_for_transaction_receipt(deploy_tx_hash)
-    except (ConnectionError, ConnectionRefusedError):
+    except ConnectionError:
         print('Failed to connect to node', file=sys.stderr)
         sys.exit(1)
     except Web3RPCError as e:

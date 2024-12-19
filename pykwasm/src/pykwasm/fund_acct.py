@@ -1,21 +1,20 @@
 #!/usr/bin/python3
 import sys
-from requests.exceptions import ConnectionError
 from pathlib import Path
 
 from eth_account import Account
+from requests.exceptions import ConnectionError
 from web3 import Web3
-from web3.middleware import SignAndSendRawMiddlewareBuilder
+
+# from web3.middleware import SignAndSendRawMiddlewareBuilder
 
 
 def fund_acct(w3, addr):
     try:
-        fund_tx_hash = w3.eth.send_transaction(
-            {'from': w3.eth.accounts[0], 'to': addr, 'value': 1000000000000000000}
-        )
+        fund_tx_hash = w3.eth.send_transaction({'from': w3.eth.accounts[0], 'to': addr, 'value': 1000000000000000000})
         fund_tx_receipt = w3.eth.wait_for_transaction_receipt(fund_tx_hash)
-    except (ConnectionError, ConnectionRefusedError):
-        print("Failed to connect to node", file=sys.stderr)
+    except ConnectionError:
+        print('Failed to connect to node', file=sys.stderr)
         sys.exit(1)
     return fund_tx_receipt
 
