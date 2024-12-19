@@ -223,7 +223,7 @@ As an example, to deploy a Wasm contract and invoke a function on it, you can do
 3.  Generate an account for use in the test
 
     ```sh
-    poetry -C pykwasm run mkacct > pk_file
+    poetry -C pykwasm run mkacct | cut -d' ' -f2 > pk_file
     ```
 
 4.  Fund the new account
