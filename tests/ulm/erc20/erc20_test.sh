@@ -9,7 +9,7 @@ cd "$ROOT_DIR"
 # re-execute script with poetry to get poetry script aliases
 if [ -z ${IN_POETRY_SHELL:+x} ]; then
   export IN_POETRY_SHELL=1
-  exec poetry -C pykwasm run bash "$SCRIPT_DIR/$0"
+  exec poetry -C pykwasm run bash "$SCRIPT_DIR/$(basename -- $0)"
 fi
 
 # generate some accounts
