@@ -72,17 +72,17 @@ jobs:
         with:
           submodules: recursive
       - name: 'Set up Docker'
-        uses: ./.github/actions/with-docker
+        uses: ./.github/actions/with-k
         with:
           container-name: kwasm-ci-erc20-${{ github.sha }}
       - name: 'Build everything'
-        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} make ulm-wasm ulm-contract-compiler ulm-build erc20-bin -j13
+        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "CXX=clang++-16 make ulm-wasm ulm-contract-compiler ulm-build erc20-bin"
       - name: 'Start server'
-        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} -d ./scripts/run-dev-ulm
+        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} -d bash -c "./scripts/run-dev-ulm"
       - name: 'Load kwasm library'
-        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} ./scripts/ulm-load-lang
+        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "./scripts/ulm-load-lang"
       - name: 'Run ERC20 tests'
-        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} tests/ulm/erc20/erc20_test.sh
+        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "tests/ulm/erc20/erc20_test.sh"
       - name: 'Tear down Docker'
         if: always()
         run: |

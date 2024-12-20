@@ -98,10 +98,10 @@ RUN pip3 install --user  \
            numpy
 
 # Install K
-RUN git clone --depth=1 --branch v${K_COMMIT} https://${GITHUB_TOKEN}@${KFRAMEWORK_REPO} k
+RUN git clone --depth=1 --branch v${K_COMMIT} https://${KFRAMEWORK_REPO} k
 RUN cd k && git submodule update --init --recursive
 ENV CXXFLAGS=-fvisibility=hidden
-RUN cd k && mvn package -Dhaskell.backend.skip -DskipTests
+RUN cd k && mvn package -Dhaskell.backend.skip -DskipTests -DskipKTest
 ENV PATH=$WORKDIR/k/k-distribution/target/release/k/bin:$PATH
 
 RUN mkdir /home/user/wasm-semantics

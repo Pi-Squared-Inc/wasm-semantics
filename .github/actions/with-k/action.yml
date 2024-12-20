@@ -11,13 +11,14 @@ runs:
     shell: bash {0}
     env:
       CONTAINER_NAME: ${{ inputs.container-name }}
+      GITHUB_TOKEN: ${{ github.token }}
     run: |
       set -euxo pipefail
 
       TAG=runtimeverificationinc/${CONTAINER_NAME}
       K_COMMIT=$(cat ./deps/k_release)
 
-      docker build . --tag ${TAG} --build-arg K_COMMIT=${K_COMMIT}
+      docker build -f .github/workflows/Dockerfile.k . --tag ${TAG} --build-arg K_COMMIT=${K_COMMIT} --build-arg GITHUB_TOKEN=${GITHUB_TOKEN}
 
       docker run                 \
         --name ${CONTAINER_NAME} \
@@ -26,8 +27,8 @@ runs:
         --tty                    \
         --detach                 \
         --user root              \
-        --workdir /home/user     \
+        --workdir /home/user/wasm-semantics \
         ${TAG}
 
-      docker cp . ${CONTAINER_NAME}:/home/user
-      docker exec ${CONTAINER_NAME} chown -R user:user /home/user
+      docker cp . ${CONTAINER_NAME}:/home/user/wasm-semantics
+      docker exec ${CONTAINER_NAME} chown -R user:user /home/user/wasm-semantics
