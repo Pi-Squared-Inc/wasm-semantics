@@ -80,15 +80,12 @@ ULM_SRC_HOOKS=$(shell find "$(ULM_CLONE_DIR)/kllvm" -type f -a '(' -name '*.cpp'
 
 ULM_GETH_TARGET=$(ULM_BUILD_DIR)/geth
 
-GITHUB_TOKEN ?= $(shell cat ~/.github-auth-token)
-GITHUB_PREFIX = $(if $(GITHUB_TOKEN),https://$(GITHUB_TOKEN)@github.com,https://github.com)
-
 ### ULM Crypto Plugin
 
 $(ULM_KRYPTO_DIR)/.git:
 	@mkdir -p $(ULM_DEP_DIR)
 	cd $(ULM_DEP_DIR); \
-	  git clone --depth 1 $(GITHUB_PREFIX)/runtimeverification/blockchain-k-plugin plugin; \
+	  git clone --depth 1 https://github.com/runtimeverification/blockchain-k-plugin plugin; \
 	  cd plugin; \
 	  git submodule update --init --recursive
 
@@ -105,7 +102,7 @@ ulm-krypto-build: $(ULM_KRYPTO_TARGET)
 $(ULM_CLONE_DIR)/.git:
 	@mkdir -p $(ULM_DEP_DIR)
 	cd $(ULM_DEP_DIR); \
-	  git clone --depth 1 --branch contract-size-limits $(GITHUB_PREFIX)/pi-squared-inc/ulm
+	  git clone --depth 1 --branch contract-size-limits https://github.com/pi-squared-inc/ulm
 
 $(ULM_HOOKS_TARGET): $(ULM_SRC_HOOKS) | $(ULM_CLONE_DIR)/.git
 	@mkdir -p $(ULM_LIB_DIR)
@@ -122,7 +119,7 @@ ulm-hooks-build: $(ULM_HOOKS_TARGET)
 $(ULM_KEVM_DIR)/.git:
 	@mkdir -p $(ULM_DEP_DIR)
 	cd $(ULM_DEP_DIR); \
-	  git clone --depth 1 $(GITHUB_PREFIX)/pi-squared-inc/evm-semantics -b $(ULM_KEVM_BRANCH) evm-semantics
+	  git clone --depth 1 https://github.com/pi-squared-inc/evm-semantics -b $(ULM_KEVM_BRANCH) evm-semantics
 
 $(ULM_KEVM_TARGET): $(ULM_KRYPTO_TARGET) $(ULM_HOOKS_TARGET) | $(ULM_KEVM_DIR)/.git
 	@mkdir -p $(ULM_LIB_DIR)

@@ -51,9 +51,6 @@ ARG HOME
 
 ## Define build argument for GitHub Token
 
-ARG GITHUB_TOKEN
-ENV GITHUB_TOKEN=${GITHUB_TOKEN}
-
 ARG KFRAMEWORK_REPO=github.com/runtimeverification/k.git
 ARG K_COMMIT
 ARG LLVM_VERSION=16
