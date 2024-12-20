@@ -98,17 +98,16 @@ def run_method(w3, contract, sender, eth, method, params):
         else:
             tx_hash = func.transact({'from': sender.address, 'value': eth})
             result_or_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
-    except (ConnectionError, BadFunctionCallOutput, Web3RPCError) as e:
+    except (ConnectionError, ContractLogicError, BadFunctionCallOutput, Web3RPCError) as e:
         if isinstance(e, (ConnectionError, ConnectionRefusedError)):
             msg = f'Failed to connect to node: {e.message}'
         elif isinstance(e, BadFunctionCallOutput):
             msg = f'Could not interpret function output: {",".join(e.args)}'
+        elif isinstance(e, ContractLogicError):
+            msg = f'Contract logic error: {e.message}'
         else:
             msg = f'Node RPC encountered an error: {e.message}'
         print(msg, file=sys.stderr)
-        sys.exit(1)
-    except ContractLogicError as e:
-        print(f'Contract logic error: {e.message}', file=sys.stderr)
         sys.exit(1)
 
     return (view_like, result_or_receipt)

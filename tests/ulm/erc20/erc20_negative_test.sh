@@ -174,7 +174,7 @@ function test_transfer_too_much {
   assert_eq "1000" "$supply" "Total Supply"
 
   echo -e -n "\nTransfer too much test (should fail): "
-  erc20_transfer $k2 $contract $a3 $(to_hex 600) || true  # this should fail
+  (! erc20_transfer $k2 $contract $a3 $(to_hex 600))  # this should fail
 
   echo -n "Transfer test (continue): "
   balance2=$(erc20_balanceOf $k1 $contract $a2)
@@ -418,7 +418,7 @@ function test_transfer_too_much_from {
   # ***** Account 3 transfers 100 tokens from Account 2 to Account 3
 
   echo -e -n "\nTransfer more than allowance test (should fail): "
-  erc20_transfer_from $k3 $contract $a2 $a3 $(to_hex 200) || true  # this should fail
+  (! erc20_transfer_from $k3 $contract $a2 $a3 $(to_hex 200))  # this should fail
 
   # ***** Check state after transfer
 
