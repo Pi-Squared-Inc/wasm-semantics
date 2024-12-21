@@ -128,8 +128,6 @@ function test_transfer_too_much {
   contract=$(erc20_deploy $k1)
   echo -n "."
 
-  exit 0
-
   balance2=$(erc20_balanceOf $k1 $contract $a2)
   echo -n "."
   assert_eq "0" "$balance2" "Balance of Account 2"
