@@ -91,6 +91,13 @@ RUN pip3 install --user  \
            cytoolz       \
            numpy
 
+# Install Rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH=/home/user/.cargo/bin:$PATH
+
+RUN rustup target add wasm32-unknown-unknown
+
+
 # Install K
 RUN git clone --depth=1 --branch v${K_COMMIT} https://${KFRAMEWORK_REPO} k
 RUN cd k && git submodule update --init --recursive
