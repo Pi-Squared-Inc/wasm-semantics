@@ -101,8 +101,16 @@ jobs:
         uses: ./.github/actions/with-k
         with:
           container-name: kwasm-ci-erc20-${{ github.sha }}
-      - name: 'Build everything'
-        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "CXX=clang++-16 make ulm-wasm ulm-contract-compiler ulm-build erc20-bin"
+      - name: 'Build pykwasm'
+        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} poetry -C pykwasm install
+      - name: 'Build ulm-wasm'
+        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "CXX=clang++-16 make ulm-wasm"
+      - name: 'Build ulm-contract-compiler'
+        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "CXX=clang++-16 make ulm-contract-compiler"
+      - name: 'Build ulm-build'
+        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "CXX=clang++-16 make ulm-build"
+      - name: 'Build erc20-bin'
+        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "CXX=clang++-16 make erc20-bin"
       - name: 'Start server'
         run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} -d bash -c "./scripts/run-dev-ulm"
       - name: 'Load kwasm library'

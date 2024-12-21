@@ -78,9 +78,6 @@ RUN groupadd -g $GROUP_ID user && useradd -m -u $USER_ID -s /bin/sh -g user user
 USER user:user
 WORKDIR /home/user
 
-## Setup the base directory
-ENV WORKDIR=/home/user
-
 # Add Go to the PATH
 ENV PATH=$PATH:/usr/local/go/bin
 
@@ -88,7 +85,7 @@ ENV PATH=$PATH:/usr/local/go/bin
 
 RUN curl -sSL https://install.python-poetry.org -o install-poetry.py
 RUN python3 install-poetry.py --version ${POETRY_VERSION} && rm install-poetry.py
-ENV PATH=$HOME/.local/bin:$PATH
+ENV PATH=/home/user/.local/bin:$PATH
 
 RUN pip3 install --user  \
            cytoolz       \
@@ -99,7 +96,7 @@ RUN git clone --depth=1 --branch v${K_COMMIT} https://${KFRAMEWORK_REPO} k
 RUN cd k && git submodule update --init --recursive
 ENV CXXFLAGS=-fvisibility=hidden
 RUN cd k && mvn package -Dhaskell.backend.skip -DskipTests -DskipKTest
-ENV PATH=$WORKDIR/k/k-distribution/target/release/k/bin:$PATH
+ENV PATH=/home/user/k/k-distribution/target/release/k/bin:$PATH
 
 RUN mkdir /home/user/wasm-semantics
 WORKDIR /home/user/wasm-semantics
