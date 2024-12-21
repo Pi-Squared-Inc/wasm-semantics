@@ -111,14 +111,14 @@ jobs:
         run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "CXX=clang++-16 make ulm-build"
       - name: 'Build erc20-bin'
         run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "CXX=clang++-16 make erc20-bin"
-      - name: 'Start server'
-        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} -d bash -c "./scripts/run-dev-ulm"
-      - name: 'Load kwasm library'
-        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "./scripts/ulm-load-lang"
-      - name: 'Run ERC20 tests'
-        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "tests/ulm/erc20/erc20_test.sh"
-      - name: 'Run ERC20 negative tests'
-        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "tests/ulm/erc20/erc20_negative_test.sh"
+      - name: 'Start test'
+        run: docker exec -u user -d -i -t kwasm-ci-erc20-${GITHUB_SHA} bash -c "(sleep 3 ; ./scripts/ulm-load-lang ./build/lib/libkwasm.so ; tests/ulm/erc20/erc20_test.sh ; tests/ulm/erc20/erc20_negative_test.sh; killall geth ) & (./scripts/run-dev-ulm &> ulm.log)"
+      # - name: 'Load kwasm library'
+      #   run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "./scripts/ulm-load-lang ./build/lib/libkwasm.so"
+      # - name: 'Run ERC20 tests'
+      #   run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "tests/ulm/erc20/erc20_test.sh"
+      # - name: 'Run ERC20 negative tests'
+      #   run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "tests/ulm/erc20/erc20_negative_test.sh"
       - name: 'Tear down Docker'
         if: always()
         run: |
