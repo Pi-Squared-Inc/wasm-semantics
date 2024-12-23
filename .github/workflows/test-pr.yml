@@ -60,3 +60,60 @@ jobs:
         if: always()
         run: |
           docker stop --time=0 kwasm-ci-conformance-${GITHUB_SHA}
+
+  erc20-tests:
+    name: 'ERC20 Tests'
+    needs: pykwasm-code-quality-checks
+    runs-on: [self-hosted, aws, us-east-2, m6a.4xlarge]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/create-github-app-token@v1
+        id: temp-token
+        name: Generate temporary GitHub Token
+        with:
+          app-id: ${{ vars.CICD_GITHUB_WEBAPP_ID }}
+          private-key: ${{ secrets.CICD_GITHUB_WEBAPP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+      - name: 'Check out code'
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: 'Check out blockchain-k-plugin'
+        uses: actions/checkout@v3
+        with:
+          repository: 'runtimeverification/blockchain-k-plugin'
+          submodules: 'recursive'
+          path: 'build/deps/plugin'
+      - name: 'Check out ulm'
+        uses: actions/checkout@v3
+        with:
+          repository: 'pi-squared-inc/ulm'
+          ref: 'contract-size-limits'
+          token: ${{ steps.temp-token.outputs.token }}
+          path: 'build/deps/ulm'
+      - name: 'Check out evm-semantics'
+        uses: actions/checkout@v3
+        with:
+          repository: 'pi-squared-inc/evm-semantics'
+          ref: 'ulm'
+          path: 'build/deps/evm-semantics'
+      - name: 'Set up Docker'
+        uses: ./.github/actions/with-k
+        with:
+          container-name: kwasm-ci-erc20-${{ github.sha }}
+      - name: 'Build pykwasm'
+        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} poetry -C pykwasm install
+      - name: 'Build ulm-wasm'
+        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "CXX=clang++-16 make ulm-wasm"
+      - name: 'Build ulm-contract-compiler'
+        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "CXX=clang++-16 make ulm-contract-compiler"
+      - name: 'Build ulm-build'
+        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "CXX=clang++-16 make ulm-build"
+      - name: 'Build erc20-bin'
+        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "CXX=clang++-16 make erc20-bin"
+      - name: 'Run ERC20 tests'
+        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "./tests/ulm/erc20/run_tests.sh"
+      - name: 'Tear down Docker'
+        if: always()
+        run: |
+          docker stop --time=0 kwasm-ci-erc20-${GITHUB_SHA}
