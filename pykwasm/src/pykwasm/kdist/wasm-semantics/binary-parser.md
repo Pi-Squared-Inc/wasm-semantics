@@ -682,7 +682,7 @@ module BINARY-PARSER [private]
   rule #parseModuleSections(S:Sections, BWI:BytesWithIndex)
       => success
           ( addSectionsToModule
-              ( S
+              ( S  // Do not reverse, as required by addDefnToModule.
               , #module
                   (... types: .Defns
                   , funcs: .Defns
@@ -700,6 +700,22 @@ module BINARY-PARSER [private]
   rule #parseModuleSections(E:ParseError, _:BytesWithIndex) => E
 
   syntax ModuleDecl ::= addSectionsToModule(Sections, ModuleDecl)  [function, total]
+  rule addSectionsToModule(.Sections, M:ModuleDecl) => M
+  rule addSectionsToModule(S:Section : Ss:Sections, M:ModuleDecl)
+      => addSectionsToModule(Ss, addSectionToModule(S, M))
+  syntax ModuleDecl ::= addSectionToModule(Section, ModuleDecl)  [function, total]
+  rule addSectionToModule(customSection(_:Bytes), M:ModuleDecl) => M
+  rule addSectionToModule(defnsSection(D:Defns), M:ModuleDecl) => addDefnsToModule(D, M)
+  syntax ModuleDecl ::= addDefnsToModule(Defns, ModuleDecl)  [function, total]
+  rule addDefnsToModule(.Defns, M:ModuleDecl) => M
+  rule addDefnsToModule(D:Defn Ds:Defns, M:ModuleDecl)
+      => addDefnsToModule(Ds, addDefnToModule(false, D, M))
+  syntax ModuleDecl ::= addDefnToModule(Bool, Defn, ModuleDecl)  [function, total]
+  rule addDefnToModule(true, _, M) => M
+  // The following add the defn at the top of the existing defns (e.g. T Ts), so
+  // addDefnToModule should be called with Defns in reverse order
+  // (the last defn should be processed in the first call).
+  rule addDefnToModule(false => true, T:TypeDefn, #module(... types: Ts => T Ts))
 
   syntax Sections ::= List{Section, ":"}
   syntax ParsedSectionsResult ::= Sections | ParseError
@@ -719,8 +735,117 @@ module BINARY-PARSER [private]
   syntax SectionResult ::= parseSection(UnparsedSection)  [function, total]
 
   syntax Section ::= customSection(Bytes)
+  syntax Section ::= defnsSection(reverseDefns:Defns)
   rule parseSection(unparsedSection(CUSTOM_SEC, Data:Bytes))
       => sectionResult(customSection(Data), bwi(Data, lengthBytes(Data)))
+  rule parseSection(unparsedSection(TYPE_SEC, Data:Bytes))
+      => parseTypeSection(bwi(Data, 0))
+  // rule parseSection(A) => parseError("parseSection", ListItem(A))
+  //     [owise]
+
+  syntax SectionResult  ::= parseTypeSection(BytesWithIndex)  [function, total]
+                          | #parseTypeSection(IntResult)  [function, total]
+  rule parseTypeSection(BWI:BytesWithIndex) => #parseTypeSection(parseLeb128UInt(BWI))
+  rule #parseTypeSection(intResult(Count:Int, BWI:BytesWithIndex))
+      => parseTypeSectionVector(Count, .Defns, BWI)
+  rule #parseTypeSection(E:ParseError) => E
+
+  syntax SectionResult  ::= parseTypeSectionVector(remainingCount:Int, Defns, BytesWithIndex)  [function, total]
+                          | #parseTypeSectionVector(remainingCount:Int, Defns, DefnResult)  [function, total]
+  rule parseTypeSectionVector(0, D:Defns, BWI:BytesWithIndex) => sectionResult(defnsSection(D), BWI)
+  rule parseTypeSectionVector(Count:Int, D:Defns, BWI:BytesWithIndex)
+      => #parseTypeSectionVector(Count, D, parseFuncType(BWI))
+      requires Count >Int 0
+  rule parseTypeSectionVector(Count:Int, D:Defns, bwi(B:Bytes, I:Int))
+      => parseError("parseTypeSectionVector", ListItem(Count) ListItem(D) ListItem(I) ListItem(lengthBytes(B)) ListItem(B))
+      [owise]
+  rule #parseTypeSectionVector(RemainingCount:Int, Ds:Defns, defnResult(D:Defn, BWI:BytesWithIndex))
+      => parseTypeSectionVector(RemainingCount -Int 1, D Ds, BWI)
+  rule #parseTypeSectionVector(_RemainingCount:Int, _Ds:Defns, E:ParseError)
+      => E
+
+  syntax DefnResult ::= defnResult(Defn, BytesWithIndex) | ParseError
+
+  syntax DefnResult ::= parseFuncType(BytesWithIndex)  [function, total]
+                      | #parseFuncType(BytesWithIndexOrError)  [function, total]
+                      | #parseFuncType1(ResultTypeResult)  [function, total]
+                      | #parseFuncType2(VecType, ResultTypeResult)  [function, total]
+  rule parseFuncType(BWI:BytesWithIndex) => #parseFuncType(parseConstant(BWI, TYPE_FUN))
+  rule #parseFuncType(BWI:BytesWithIndex) => #parseFuncType1(parseResultType(BWI))
+  rule #parseFuncType(E:ParseError) => E
+  rule #parseFuncType1(resultTypeResult(V:VecType, BWI:BytesWithIndex))
+      => #parseFuncType2(V, parseResultType(BWI))
+  rule #parseFuncType1(E:ParseError) => E
+  rule #parseFuncType2(V1:VecType, resultTypeResult(V2:VecType, BWI:BytesWithIndex))
+      => defnResult(#type(V1 -> V2, ), BWI:BytesWithIndex)
+  rule #parseFuncType2(_:VecType, E:ParseError) => E
+
+  syntax ResultTypeResult ::= resultTypeResult(VecType, BytesWithIndex) | ParseError
+  syntax ResultTypeResult ::= parseResultType(BytesWithIndex)  [function, total]
+                            | #parseResultType(IntResult)  [function, total]
+                            | #parseResultType1(ValTypesResult)  [function, total]
+  rule parseResultType(BWI:BytesWithIndex) => #parseResultType(parseLeb128UInt(BWI))
+  rule #parseResultType(intResult(Count:Int, BWI:BytesWithIndex))
+      => #parseResultType1(parseValTypes(Count, .ValTypes, BWI))
+  rule #parseResultType(E:ParseError) => E
+  rule #parseResultType1(valTypesResult(V:ValTypes, BWI:BytesWithIndex))
+      => resultTypeResult([V], BWI)
+  rule #parseResultType1(E:ParseError) => E
+
+  syntax ValTypesResult ::= valTypesResult(ValTypes, BytesWithIndex) | ParseError
+  syntax ValTypesResult ::= parseValTypes(remaining:Int, ValTypes, BytesWithIndex)  [function, total]
+                          | #parseValTypes(remaining:Int, ValTypes, ValTypeResult)  [function, total]
+  rule parseValTypes(0, V:ValTypes, BWI:BytesWithIndex)
+      => valTypesResult(reverse(V), BWI)
+  rule parseValTypes(Count:Int, V:ValTypes, BWI:BytesWithIndex)
+      => #parseValTypes(Count -Int 1, V, parseValType(BWI))
+      requires Count >Int 0
+  rule parseValTypes(Count:Int, V:ValTypes, bwi(B:Bytes, I:Int))
+      => parseError("parseValTypes", ListItem(Count) ListItem(V) ListItem(I) ListItem(lengthBytes(B)) ListItem(B))
+      [owise]
+  rule #parseValTypes(Count:Int, Vs:ValTypes, valTypeResult(V:ValType, BWI:BytesWithIndex))
+      => parseValTypes(Count, V Vs, BWI)
+  rule #parseValTypes(_:Int, _:ValTypes, E:ParseError) => E
+
+  syntax ValTypes ::= reverse(ValTypes)  [function, total]
+                    | #reverse(ValTypes, ValTypes)  [function, total]
+  rule reverse(V:ValTypes) => #reverse(V, .ValTypes)
+  rule #reverse(.ValTypes, Vs:ValTypes) => Vs
+  rule #reverse(V:ValType Vs1:ValTypes, Vs2:ValTypes) => #reverse(Vs1, V Vs2)
+
+  syntax ValTypeResult ::= valTypeResult(ValType, BytesWithIndex) | ParseError
+  syntax ValTypeResult  ::= parseValType(BytesWithIndex)  [function, total]
+                          | #parseValTypeI32(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                          | #parseValTypeI64(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                          | #parseValTypeF32(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                          | #parseValTypeF64(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                          | #parseValTypeVec(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                          | #parseValTypeFuncRef(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                          | #parseValTypeExtRef(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+  rule parseValType(BWI:BytesWithIndex)
+      => #parseValTypeI32(BWI, parseConstant(BWI, TYPE_I32))
+  rule #parseValTypeI32(_, BWI:BytesWithIndex) => valTypeResult(i32, BWI)
+  rule #parseValTypeI32(BWI:BytesWithIndex, _:ParseError)
+      => #parseValTypeI64(BWI, parseConstant(BWI, TYPE_I64))
+  rule #parseValTypeI64(_, BWI:BytesWithIndex) => valTypeResult(i64, BWI)
+  rule #parseValTypeI64(BWI:BytesWithIndex, _:ParseError)
+      => #parseValTypeF32(BWI, parseConstant(BWI, TYPE_F32))
+  rule #parseValTypeF32(_, BWI:BytesWithIndex) => valTypeResult(f32, BWI)
+  rule #parseValTypeF32(BWI:BytesWithIndex, _:ParseError)
+      => #parseValTypeF64(BWI, parseConstant(BWI, TYPE_F64))
+  rule #parseValTypeF64(_, BWI:BytesWithIndex) => valTypeResult(f64, BWI)
+  rule #parseValTypeF64(BWI:BytesWithIndex, _:ParseError)
+      => #parseValTypeVec(BWI, parseConstant(BWI, TYPE_VEC))
+  rule #parseValTypeVec(_:BytesWithIndex, _:BytesWithIndex)
+      => parseError("#parseValTypeVec: v128 not implemented", .List)
+  rule #parseValTypeVec(BWI:BytesWithIndex, _:ParseError)
+      => #parseValTypeFuncRef(BWI, parseConstant(BWI, TYPE_FUN_REF))
+  rule #parseValTypeFuncRef(_, BWI:BytesWithIndex) => valTypeResult(funcref, BWI)
+  rule #parseValTypeFuncRef(BWI:BytesWithIndex, _:ParseError)
+      => #parseValTypeExtRef(BWI, parseConstant(BWI, TYPE_EXT_REF))
+  rule #parseValTypeExtRef(_, BWI:BytesWithIndex) => valTypeResult(externref, BWI)
+  rule #parseValTypeExtRef(_:BytesWithIndex, E:ParseError)
+      => E
 
   syntax BytesWithIndexOrError ::= BytesWithIndex | ParseError
 
@@ -813,8 +938,8 @@ module BINARY-PARSER [private]
   rule #parseLeb128IntChunks(_Value:Int, E:ParseError) => E
 
 
-  syntax IntResult ::= parseLeb128UInt(BytesWithIndex)  [function, total]
-                          | #parseLeb128UInt(IntListResult)  [function, total]
+  syntax IntResult  ::= parseLeb128UInt(BytesWithIndex)  [function, total]
+                      | #parseLeb128UInt(IntListResult)  [function, total]
 
   rule parseLeb128UInt(BWI:BytesWithIndex) => #parseLeb128UInt(parseLeb128IntChunks(BWI))
   rule #parseLeb128UInt(intListResult(L:IntList, BWI:BytesWithIndex))
