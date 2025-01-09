@@ -14,10 +14,11 @@ To build the contract with all of the size minimization options, first, ensure t
 ```sh
 rustup install nightly
 rustup target add wasm32-unknown-unknown --toolchain nightly
+rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
 ```
 
 Then run the build script as follows:
 
 ```sh
-build.sh
+./build.sh
 ```
