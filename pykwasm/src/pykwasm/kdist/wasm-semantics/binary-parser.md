@@ -1,6 +1,7 @@
 # Wasm Binary Parser
 
-This file defines a Wasm binary parser.
+This file defines a Wasm binary parser based on this
+[spec](https://webassembly.github.io/spec/core/binary/index.html).
 To begin, we define constant macros which drive the parser process.
 
 ```k
