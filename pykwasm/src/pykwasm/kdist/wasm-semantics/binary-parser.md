@@ -650,7 +650,7 @@ endmodule
 ```
 
 ```k
-module BINARY-PARSER [private]
+module BINARY-PARSER //[private]
   imports BINARY-PARSER-DATA
   imports LIST
   imports STRING
@@ -956,7 +956,7 @@ module BINARY-PARSER [private]
       requires Index +Int lengthBytes(Constant) <=Int lengthBytes(Buffer)
           andBool substrBytes(Buffer, Index, Index +Int lengthBytes(Constant)) ==K Constant
   rule parseConstant(bwi(Buffer:Bytes, Index:Int), Constant:Bytes)
-      => parseError("parseConstant", ListItem(Buffer) ListItem(lengthBytes(Buffer)) ListItem(Index) ListItem(Constant))
+      => parseError("parseConstant", ListItem(lengthBytes(Buffer)) ListItem(Index) ListItem(Constant) ListItem(Buffer))
       [owise]
   rule parseConstant(E:ParseError, _:Bytes) => E
 

@@ -137,4 +137,14 @@ __TARGETS__: Final = {
     'ulm-wasm-test': KompileTarget(
         lambda src_dir: ulm_wasm_args(src_dir, ulm_test=True),
     ),
+    'binary-parser-test': KompileTarget(
+        lambda src_dir: {
+            'backend': PykBackend.LLVM,
+            'main_file': src_dir / 'wasm-semantics/binary-parser-test.md',
+            'main_module': 'BINARY-PARSER-TEST',
+            'syntax_module': 'BINARY-PARSER-TEST-SYNTAX',
+            'md_selector': 'k',
+            'warnings_to_errors': True,
+        },
+    ),
 }
