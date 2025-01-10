@@ -35,3 +35,6 @@ RUN pip3 install --user  \
 ENV PATH=/home/user/.local/bin:$PATH
 
 RUN poetry --version
+RUN poetry self install
+RUN poetry -C ~/.config/pypoetry self update 1.8.3
+
