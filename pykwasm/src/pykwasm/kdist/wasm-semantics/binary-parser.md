@@ -115,8 +115,8 @@ _Limits_ are used to encode the minimum size of memories and tables;
 a separate form that also specifies a maximum size is available.
 
 ```k
-  syntax Bytes ::= "LIMITS"     [macro] rule LIMITS     => b"\x00"
-  syntax Bytes ::= "LIMITS_MAX" [macro] rule LIMITS_MAX => b"\x01"
+  syntax Bytes ::= "LIMITS_MIN" [macro] rule LIMITS_MIN => b"\x00"
+  syntax Bytes ::= "LIMITS"     [macro] rule LIMITS     => b"\x01"
 ```
 
 _Globals_ may be declared as mutable or immutable.
@@ -716,6 +716,7 @@ module BINARY-PARSER //[private]
   // addDefnToModule should be called with Defns in reverse order
   // (the last defn should be processed in the first call).
   rule addDefnToModule(false => true, T:TypeDefn, #module(... types: Ts => T Ts))
+  rule addDefnToModule(false => true, I:ImportDefn, #module(... importDefns: Is => I Is))
 
   syntax Sections ::= List{Section, ":"}
   syntax ParsedSectionsResult ::= Sections | ParseError
@@ -740,8 +741,10 @@ module BINARY-PARSER //[private]
       => sectionResult(customSection(Data), bwi(Data, lengthBytes(Data)))
   rule parseSection(unparsedSection(TYPE_SEC, Data:Bytes))
       => parseTypeSection(bwi(Data, 0))
-  // rule parseSection(A) => parseError("parseSection", ListItem(A))
-  //     [owise]
+  rule parseSection(unparsedSection(IMPORT_SEC, Data:Bytes))
+      => parseImportSection(bwi(Data, 0))
+  rule parseSection(A) => parseError("parseSection", ListItem(A))
+      [owise]
 
   syntax SectionResult  ::= parseTypeSection(BytesWithIndex)  [function, total]
                           | #parseTypeSection(IntResult)  [function, total]
@@ -763,6 +766,27 @@ module BINARY-PARSER //[private]
       => parseTypeSectionVector(RemainingCount -Int 1, D Ds, BWI)
   rule #parseTypeSectionVector(_RemainingCount:Int, _Ds:Defns, E:ParseError)
       => E
+
+  syntax SectionResult  ::= parseImportSection(BytesWithIndex)  [function, total]
+                          | #parseImportSection(IntResult)  [function, total]
+  rule parseImportSection(BWI:BytesWithIndex) => #parseImportSection(parseLeb128UInt(BWI))
+  rule #parseImportSection(intResult(Count:Int, BWI:BytesWithIndex))
+      => parseImportSectionVector(Count, .Defns, BWI)
+  rule #parseImportSection(E:ParseError) => E
+
+  syntax SectionResult  ::= parseImportSectionVector(remainingCount:Int, Defns, BytesWithIndex)  [function, total]
+                          | #parseImportSectionVector(remainingCount:Int, Defns, DefnResult)  [function, total]
+  rule parseImportSectionVector(0, D:Defns, BWI:BytesWithIndex) => sectionResult(defnsSection(D), BWI)
+  rule parseImportSectionVector(Count:Int, D:Defns, BWI:BytesWithIndex)
+      => #parseImportSectionVector(Count, D, parseImport(BWI))
+      requires Count >Int 0
+  rule parseImportSectionVector(Count:Int, D:Defns, bwi(B:Bytes, I:Int))
+      => parseError("parseImportSectionVector", ListItem(Count) ListItem(D) ListItem(I) ListItem(lengthBytes(B)) ListItem(B))
+      [owise]
+  rule #parseImportSectionVector(Count:Int, Ds:Defns, defnResult(D:Defn, BWI:BytesWithIndex))
+      => parseImportSectionVector(Count -Int 1, D Ds, BWI)
+  rule #parseImportSectionVector(_Count:Int, _:Defns, E:ParseError) => E
+
 
   syntax DefnResult ::= defnResult(Defn, BytesWithIndex) | ParseError
 
@@ -846,6 +870,136 @@ module BINARY-PARSER //[private]
   rule #parseValTypeExtRef(_, BWI:BytesWithIndex) => valTypeResult(externref, BWI)
   rule #parseValTypeExtRef(_:BytesWithIndex, E:ParseError)
       => E
+
+  syntax DefnResult ::= parseImport(BytesWithIndex)  [function, total]
+                      | #parseImport1(NameResult)  [function, total]
+                      | #parseImport2(WasmString, NameResult)  [function, total]
+                      | #parseImport3(WasmString, WasmString, ImportDescResult)  [function, total]
+  rule parseImport(BWI:BytesWithIndex) => #parseImport1(parseName(BWI))
+  rule #parseImport1(nameResult(Name:WasmString, BWI:BytesWithIndex))
+      => #parseImport2(Name, parseName(BWI))
+  rule #parseImport1(E:ParseError) => E
+  rule #parseImport2(ModuleName:WasmString, nameResult(ObjectName:WasmString, BWI:BytesWithIndex))
+      => #parseImport3(ModuleName, ObjectName, parseImportDesc(BWI))
+  rule #parseImport2(_, E:ParseError) => E
+  rule #parseImport3(ModuleName:WasmString, ObjectName:WasmString, importDescResult(Desc:ImportDesc, BWI:BytesWithIndex))
+      => defnResult(#import(ModuleName, ObjectName, Desc), BWI)
+  rule #parseImport3(_, _, E:ParseError) => E
+
+
+  syntax ImportDescResult ::= importDescResult(ImportDesc, BytesWithIndex) | ParseError
+  syntax ImportDescResult ::= parseImportDesc(BytesWithIndex)  [function, total]
+                            | #parseImportDescFunc(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                            | #parseImportDescTable(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                            | #parseImportDescMem(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                            | #parseImportDescGlobal(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                            | parseImportDescFunc(IntResult)  [function, total]
+                            | parseImportDescTable(ValTypeResult)  [function, total]
+                            | #parseImportDescTable1(ValType, LimitsResult)  [function, total]
+                            | parseImportDescMem(LimitsResult)  [function, total]
+                            | parseImportDescGlobal(ValTypeResult)  [function, total]
+                            | #parseImportDescGlobal1(ValType, MutResult)  [function, total]
+  rule parseImportDesc(BWI:BytesWithIndex)
+      => #parseImportDescFunc(BWI, parseConstant(BWI, IMPORT_FUNC))
+  rule #parseImportDescFunc(_:BytesWithIndex, BWI:BytesWithIndex)
+      => parseImportDescFunc(parseLeb128UInt(BWI))
+  rule #parseImportDescFunc(BWI:BytesWithIndex, _:ParseError)
+      => #parseImportDescTable(BWI, parseConstant(BWI, IMPORT_TBLT))
+  rule #parseImportDescTable(_:BytesWithIndex, BWI:BytesWithIndex)
+      // TODO: This should use parseRefType in order to properly validate the
+      // data, but we are dropping the result for now so we're using the
+      // already implemented parseValType.
+      => parseImportDescTable(parseValType(BWI))
+  rule #parseImportDescTable(BWI:BytesWithIndex, _:ParseError)
+      => #parseImportDescMem(BWI, parseConstant(BWI, IMPORT_MEMT))
+  rule #parseImportDescMem(_:BytesWithIndex, BWI:BytesWithIndex)
+      => parseImportDescMem(parseLimits(BWI))
+  rule #parseImportDescMem(BWI:BytesWithIndex, _:ParseError)
+      => #parseImportDescGlobal(BWI, parseConstant(BWI, IMPORT_GLBT))
+  rule #parseImportDescGlobal(_:BytesWithIndex, BWI:BytesWithIndex)
+      => parseImportDescGlobal(parseValType(BWI))
+  rule #parseImportDescGlobal(_:BytesWithIndex, E:ParseError) => E
+
+  rule parseImportDescFunc(intResult(Value:Int, BWI:BytesWithIndex))
+      => importDescResult(#funcDesc(, Value), BWI)
+  rule parseImportDescFunc(E:ParseError) => E
+
+  rule parseImportDescTable(valTypeResult(Value:ValType, BWI:BytesWithIndex))
+      => #parseImportDescTable1(Value, parseLimits(BWI))
+  rule parseImportDescTable(E:ParseError) => E
+  // TODO: Do we need RefType for anything?
+  rule #parseImportDescTable1(_RefType:ValType, limitsResult(L:Limits, BWI:BytesWithIndex))
+      => importDescResult(#tableDesc(, L), BWI)
+  rule #parseImportDescTable1(_, E:ParseError) => E
+
+  rule parseImportDescMem(limitsResult(L:Limits, BWI:BytesWithIndex))
+      => importDescResult(#memoryDesc(, L), BWI)
+  rule parseImportDescMem(E:ParseError) => E
+
+  rule parseImportDescGlobal(valTypeResult(T:ValType, BWI:BytesWithIndex))
+      => #parseImportDescGlobal1(T, parseMut(BWI))
+  rule parseImportDescGlobal(E:ParseError) => E
+  rule #parseImportDescGlobal1(T:ValType, mutResult(Mut:Mut, BWI:BytesWithIndex))
+      => importDescResult(#globalDesc(, Mut T), BWI)
+  rule #parseImportDescGlobal1(_, E:ParseError) => E
+
+
+  syntax MutResult ::= mutResult(Mut, BytesWithIndex) | ParseError
+  syntax MutResult ::= parseMut(BytesWithIndex)  [function, total]
+                      | #parseMut1(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                      | #parseMut2(BytesWithIndexOrError)  [function, total]
+  rule parseMut(BWI:BytesWithIndex) => #parseMut1(BWI, parseConstant(BWI, GLOBAL_CNST))
+  rule #parseMut1(_:BytesWithIndex, BWI:BytesWithIndex) => mutResult(const, BWI)
+  rule #parseMut1(BWI, _:ParseError) => #parseMut2(parseConstant(BWI, GLOBAL_VAR))
+  rule #parseMut2(BWI:BytesWithIndex) => mutResult(var, BWI)
+  rule #parseMut2(E:ParseError) => E
+
+  syntax LimitsResult ::= limitsResult(Limits, BytesWithIndex) | ParseError
+  syntax LimitsResult ::= parseLimits(BytesWithIndex)  [function, total]
+                        | #parseLimits1(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseLimits2(BytesWithIndexOrError)  [function, total]
+                        | parseLimitsMin(IntResult)  [function, total]
+                        | parseLimitsMinMax(IntResult)  [function, total]
+                        | #parseLimitsMinMax(Int, IntResult)  [function, total]
+  rule parseLimits(BWI:BytesWithIndex) => #parseLimits1(BWI, parseConstant(BWI, LIMITS_MIN))
+  rule #parseLimits1(_:BytesWithIndex, BWI:BytesWithIndex)
+      => parseLimitsMin(parseLeb128UInt(BWI))
+  rule #parseLimits1(BWI:BytesWithIndex, _:ParseError)
+      => #parseLimits2(parseConstant(BWI, LIMITS))
+  rule #parseLimits2(BWI:BytesWithIndex)
+      => parseLimitsMinMax(parseLeb128UInt(BWI))
+  rule #parseLimits2(E:ParseError) => E
+
+  rule parseLimitsMin(intResult(Min:Int, BWI:BytesWithIndex))
+      => limitsResult(#limitsMin(Min), BWI)
+  rule parseLimitsMin(E:ParseError) => E
+
+  rule parseLimitsMinMax(intResult(Min:Int, BWI:BytesWithIndex))
+      => #parseLimitsMinMax(Min, parseLeb128UInt(BWI))
+  rule parseLimitsMinMax(E:ParseError) => E
+  rule #parseLimitsMinMax(Min:Int, intResult(Max:Int, BWI:BytesWithIndex))
+      => limitsResult(#limits(Min, Max), BWI)
+  rule #parseLimitsMinMax(_, E:ParseError) => E
+
+
+  syntax NameResult ::= nameResult(WasmString, BytesWithIndex) | ParseError
+  syntax NameResult ::= parseName(BytesWithIndex)  [function, total]
+                      | #parseName(IntResult)  [function, total]
+  rule parseName(BWI:BytesWithIndex) => #parseName(parseLeb128UInt(BWI))
+  rule #parseName(intResult(Length:Int, bwi(B:Bytes, Index:Int)))
+      // TODO: This should be decoded as an UTF-8 string. However, we do not have
+      // a good option when doing concrete execution. The documentation for
+      // Bytes2String does not specify an encoding, and decodeBytes is a partial
+      // function in a symbolic module.
+      => nameResult
+          ( #String2WasmString(Bytes2String(substrBytes(B, Index, Index +Int Length)))
+          , bwi(B, Index +Int Length)
+          )
+      requires 0 <=Int Index andBool Index +Int Length <=Int lengthBytes(B)
+  rule #parseName(intResult(Length:Int, bwi(B:Bytes, Index:Int)))
+      => parseError("#parseName", ListItem(Length) ListItem(Index) ListItem(lengthBytes(B)) ListItem(B))
+      [owise]
+  rule #parseName(E:ParseError) => E
 
   syntax BytesWithIndexOrError ::= BytesWithIndex | ParseError
 

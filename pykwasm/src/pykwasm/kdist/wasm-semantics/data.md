@@ -50,6 +50,7 @@ The exception is for characters that are explicitly escaped which can represent 
                         | WasmStringToken
  // -------------------------------------
 
+    syntax WasmStringToken ::= #String2WasmString ( String ) [function, total, hook(STRING.string2token)]
     syntax String ::= #parseWasmString   ( WasmStringToken ) [function, total, hook(STRING.token2string)]
  // ----------------------------------------------------------------------------------------------------------
 
