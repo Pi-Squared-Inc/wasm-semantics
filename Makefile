@@ -276,11 +276,12 @@ test-simple: $(simple_tests_passing:=.run)
 
 ### Parsing Tests
 
-build/binary-parsing/%.bprun: tests/binary-parsing/% # build-binary-parser-test TODO: Figure out how to depend on this without rerunning the test each time.
+build/binary-parsing/%.bprun: tests/binary-parsing/% build-binary-parser-test
 	mkdir -p build/binary-parsing
 	wat2wasm $< -o $@.wasm
 	cat $@.wasm \
 			| xxd -ps \
+			| tr -d '\n' \
 			| sed 's/\(..\)/\\x\1/g' \
 			| sed 's/^\(.*\)/\\dv{SortBytes{}}("\1")/' \
 			> $@.kore
@@ -298,6 +299,8 @@ binary_parsing_passing := $(filter-out $(binary_parsing_failing), $(binary_parsi
 binary_parsing_results := $(patsubst tests/binary-parsing/%, build/binary-parsing/%.bprun, $(binary_parsing_passing))
 
 test-binary-parsing: $(binary_parsing_results)
+
+.PHONY: test-binary-parsing
 
 ### Conformance Tests
 
