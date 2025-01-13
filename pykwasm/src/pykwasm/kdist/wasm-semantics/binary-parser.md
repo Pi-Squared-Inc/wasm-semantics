@@ -152,10 +152,13 @@ _Reference instructions_ are encoded with the following tags:
   syntax Bytes ::= "REF_ISNULL" [macro] rule REF_ISNULL => b"\xD1"
   syntax Bytes ::= "REF_FUNC"   [macro] rule REF_FUNC   => b"\xD2"
 ```
+
 ```k
   syntax Bytes ::= "DROP"           [macro] rule DROP           => b"\x1A"
   syntax Bytes ::= "SELECT"         [macro] rule SELECT         => b"\x1B"
   syntax Bytes ::= "SELECT_GENERIC" [macro] rule SELECT_GENERIC => b"\x1C"
+```
+
 _Variable instructions_ are encoded with the following tags:
 
 ```k
