@@ -105,7 +105,7 @@ These have special use requirements as we will see later.
   syntax Bytes ::= "TYPE_F64"     [macro] rule TYPE_F64     => b"\x7C"
   syntax Bytes ::= "TYPE_VEC"     [macro] rule TYPE_VEC     => b"\x7B"
   syntax Bytes ::= "TYPE_FUN_REF" [macro] rule TYPE_FUN_REF => b"\x70"
-  syntax Bytes ::= "TYPE_EXT_REF" [macro] rule TYPE_EXT_REF => b"\x64"
+  syntax Bytes ::= "TYPE_EXT_REF" [macro] rule TYPE_EXT_REF => b"\x6F"
   syntax Bytes ::= "TYPE_FUN"     [macro] rule TYPE_FUN     => b"\x60"
   syntax Bytes ::= "TYPE_EMPTY"   [macro] rule TYPE_EMPTY   => b"\x40"
 ```
