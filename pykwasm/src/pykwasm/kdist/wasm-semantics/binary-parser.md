@@ -152,7 +152,10 @@ _Reference instructions_ are encoded with the following tags:
   syntax Bytes ::= "REF_ISNULL" [macro] rule REF_ISNULL => b"\xD1"
   syntax Bytes ::= "REF_FUNC"   [macro] rule REF_FUNC   => b"\xD2"
 ```
-
+```k
+  syntax Bytes ::= "DROP"           [macro] rule DROP           => b"\x1A"
+  syntax Bytes ::= "SELECT"         [macro] rule SELECT         => b"\x1B"
+  syntax Bytes ::= "SELECT_GENERIC" [macro] rule SELECT_GENERIC => b"\x1C"
 _Variable instructions_ are encoded with the following tags:
 
 ```k
@@ -457,10 +460,10 @@ _Vector instructions_ have the following tags:
   syntax Bytes ::= "I32X4_GE_S" [macro] rule I32X4_GE_S => b"\xFD\x3F"
   syntax Bytes ::= "I32X4_GE_U" [macro] rule I32X4_GE_U => b"\xFD\x40"
 
-  syntax Bytes ::= "I64X2_EQ" [macro] rule I64X2_EQ => b"\xFD\xD6X01"
-  syntax Bytes ::= "I64X2_NE" [macro] rule I64X2_NE => b"\xFD\xD7X01"
-  syntax Bytes ::= "I64X2_LT_S" [macro] rule I64X2_LT_S => b"\xFD\xD8X01"
-  syntax Bytes ::= "I64X2_GT_S" [macro] rule I64X2_GT_S => b"\xFD\xD9X01"
+  syntax Bytes ::= "I64X2_EQ" [macro] rule I64X2_EQ => b"\xFD\xD6\x01"
+  syntax Bytes ::= "I64X2_NE" [macro] rule I64X2_NE => b"\xFD\xD7\x01"
+  syntax Bytes ::= "I64X2_LT_S" [macro] rule I64X2_LT_S => b"\xFD\xD8\x01"
+  syntax Bytes ::= "I64X2_GT_S" [macro] rule I64X2_GT_S => b"\xFD\xD9\x01"
   syntax Bytes ::= "I64X2_LE_S" [macro] rule I64X2_LE_S => b"\xFD\xDA\x01"
   syntax Bytes ::= "I64X2_GE_S" [macro] rule I64X2_GE_S => b"\xFD\xDB\x01"
 
@@ -561,7 +564,7 @@ _Vector instructions_ have the following tags:
   syntax Bytes ::= "I32X4_MIN_U" [macro] rule I32X4_MIN_U => b"\xFD\xB7\x01"
   syntax Bytes ::= "I32X4_MAX_S" [macro] rule I32X4_MAX_S => b"\xFD\xB8\x01"
   syntax Bytes ::= "I32X4_MAX_U" [macro] rule I32X4_MAX_U => b"\xFD\xB9\x01"
-  syntax Bytes ::= "I32X4_DOT_I16X8" [macro] rule I32X4_DOT_I16X8 => b"\xFD\xBA\x01"
+  syntax Bytes ::= "I32X4_DOT_I16X8_S" [macro] rule I32X4_DOT_I16X8_S => b"\xFD\xBA\x01"
   syntax Bytes ::= "I32X4_EXTMUL_LOW_I16X8_S" [macro] rule I32X4_EXTMUL_LOW_I16X8_S => b"\xFD\xBC\x01"
   syntax Bytes ::= "I32X4_EXTMUL_HIGH_I16X8_S" [macro] rule I32X4_EXTMUL_HIGH_I16X8_S => b"\xFD\xBD\x01"
   syntax Bytes ::= "I32X4_EXTMUL_LOW_I16X8_U" [macro] rule I32X4_EXTMUL_LOW_I16X8_U => b"\xFD\xBE\x01"
