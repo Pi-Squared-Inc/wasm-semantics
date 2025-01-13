@@ -683,33 +683,56 @@ module BINARY-PARSER //[private]
       => success
           ( addSectionsToModule
               ( S  // Do not reverse, as required by addDefnToModule.
-              , #module
-                  (... types: .Defns
-                  , funcs: .Defns
-                  , tables: .Defns
-                  , mems: .Defns
-                  , globals: .Defns
-                  , elem: .Defns
-                  , data: .Defns
-                  , start: .Defns
-                  , importDefns: .Defns
-                  , exports: .Defns
-                  , metadata: #meta(... id: , funcIds: .Map, filename: .String)
+              , moduleAndFunctions
+                  ( #module
+                      (... types: .Defns
+                      , funcs: .Defns
+                      , tables: .Defns
+                      , mems: .Defns
+                      , globals: .Defns
+                      , elem: .Defns
+                      , data: .Defns
+                      , start: .Defns
+                      , importDefns: .Defns
+                      , exports: .Defns
+                      , metadata: #meta(... id: , funcIds: .Map, filename: .String)
+                      )
+                  , .BinaryDefnFunctionTypes
                   )
-              ), BWI)
+              )
+          , BWI
+          )
   rule #parseModuleSections(E:ParseError, _:BytesWithIndex) => E
 
-  syntax ModuleDecl ::= addSectionsToModule(Sections, ModuleDecl)  [function, total]
-  rule addSectionsToModule(.Sections, M:ModuleDecl) => M
-  rule addSectionsToModule(S:Section : Ss:Sections, M:ModuleDecl)
-      => addSectionsToModule(Ss, addSectionToModule(S, M))
-  syntax ModuleDecl ::= addSectionToModule(Section, ModuleDecl)  [function, total]
-  rule addSectionToModule(customSection(_:Bytes), M:ModuleDecl) => M
-  rule addSectionToModule(defnsSection(D:Defns), M:ModuleDecl) => addDefnsToModule(D, M)
-  syntax ModuleDecl ::= addDefnsToModule(Defns, ModuleDecl)  [function, total]
-  rule addDefnsToModule(.Defns, M:ModuleDecl) => M
-  rule addDefnsToModule(D:Defn Ds:Defns, M:ModuleDecl)
-      => addDefnsToModule(Ds, addDefnToModule(false, D, M))
+  syntax ModuleDecl ::= addSectionsToModule(Sections, ModuleAndFunctions)  [function, total]
+  syntax ModuleDecl ::= #addSectionsToModule(Sections, ModuleAndFunctions)  [function, total]
+  // TODO: Combine the function types with the function definitions and add them to the module.
+  rule addSectionsToModule(.Sections, moduleAndFunctions(M:ModuleDecl, _:BinaryDefnFunctionTypes))
+      => M
+  rule addSectionsToModule(S:Section : Ss:Sections, M:ModuleAndFunctions)
+      => #addSectionsToModule(Ss, addSectionToModule(S, M))
+  rule #addSectionsToModule(Ss:Sections, M:ModuleAndFunctions)
+      => addSectionsToModule(Ss, M)
+
+  syntax ModuleAndFunctions ::= addSectionToModule(Section, ModuleAndFunctions)  [function, total]
+  rule addSectionToModule(customSection(_:Bytes), M:ModuleAndFunctions) => M
+  rule addSectionToModule(defnsSection(D:BinaryDefns), M:ModuleAndFunctions)
+      => addDefnsToModule(D, M)
+
+  syntax ModuleAndFunctions ::= moduleAndFunctions(mod:ModuleDecl, functionTypes:BinaryDefnFunctionTypes)
+
+  syntax ModuleAndFunctions ::= addDefnsToModule(BinaryDefns, ModuleAndFunctions)  [function, total]
+  rule addDefnsToModule(.BinaryDefns, M:ModuleAndFunctions) => M
+  rule addDefnsToModule
+      ( D:Defn Ds:BinaryDefns => Ds
+      , moduleAndFunctions(... mod: M:ModuleDecl => addDefnToModule(false, D, M))
+      )
+  rule addDefnsToModule
+          ( (binaryDefnFunctionType(_TypeIndex:Int) #as FT:BinaryDefnFunctionType) Ds:BinaryDefns
+              => Ds
+          , moduleAndFunctions(... functionTypes: FTs:BinaryDefnFunctionTypes => FT FTs)
+          )
+
   syntax ModuleDecl ::= addDefnToModule(Bool, Defn, ModuleDecl)  [function, total]
   rule addDefnToModule(true, _, M) => M
   // The following add the defn at the top of the existing defns (e.g. T Ts), so
@@ -736,13 +759,15 @@ module BINARY-PARSER //[private]
   syntax SectionResult ::= parseSection(UnparsedSection)  [function, total]
 
   syntax Section ::= customSection(Bytes)
-  syntax Section ::= defnsSection(reverseDefns:Defns)
+  syntax Section ::= defnsSection(reverseDefns:BinaryDefns)
   rule parseSection(unparsedSection(CUSTOM_SEC, Data:Bytes))
       => sectionResult(customSection(Data), bwi(Data, lengthBytes(Data)))
   rule parseSection(unparsedSection(TYPE_SEC, Data:Bytes))
       => parseTypeSection(bwi(Data, 0))
   rule parseSection(unparsedSection(IMPORT_SEC, Data:Bytes))
       => parseImportSection(bwi(Data, 0))
+  rule parseSection(unparsedSection(FUNC_SEC, Data:Bytes))
+      => parseFuncSection(bwi(Data, 0))
   rule parseSection(A) => parseError("parseSection", ListItem(A))
       [owise]
 
@@ -750,59 +775,80 @@ module BINARY-PARSER //[private]
                           | #parseTypeSection(IntResult)  [function, total]
   rule parseTypeSection(BWI:BytesWithIndex) => #parseTypeSection(parseLeb128UInt(BWI))
   rule #parseTypeSection(intResult(Count:Int, BWI:BytesWithIndex))
-      => parseTypeSectionVector(Count, .Defns, BWI)
+      => parseSectionVector(defnType, Count, .BinaryDefns, BWI)
   rule #parseTypeSection(E:ParseError) => E
-
-  syntax SectionResult  ::= parseTypeSectionVector(remainingCount:Int, Defns, BytesWithIndex)  [function, total]
-                          | #parseTypeSectionVector(remainingCount:Int, Defns, DefnResult)  [function, total]
-  rule parseTypeSectionVector(0, D:Defns, BWI:BytesWithIndex) => sectionResult(defnsSection(D), BWI)
-  rule parseTypeSectionVector(Count:Int, D:Defns, BWI:BytesWithIndex)
-      => #parseTypeSectionVector(Count, D, parseFuncType(BWI))
-      requires Count >Int 0
-  rule parseTypeSectionVector(Count:Int, D:Defns, bwi(B:Bytes, I:Int))
-      => parseError("parseTypeSectionVector", ListItem(Count) ListItem(D) ListItem(I) ListItem(lengthBytes(B)) ListItem(B))
-      [owise]
-  rule #parseTypeSectionVector(RemainingCount:Int, Ds:Defns, defnResult(D:Defn, BWI:BytesWithIndex))
-      => parseTypeSectionVector(RemainingCount -Int 1, D Ds, BWI)
-  rule #parseTypeSectionVector(_RemainingCount:Int, _Ds:Defns, E:ParseError)
-      => E
 
   syntax SectionResult  ::= parseImportSection(BytesWithIndex)  [function, total]
                           | #parseImportSection(IntResult)  [function, total]
   rule parseImportSection(BWI:BytesWithIndex) => #parseImportSection(parseLeb128UInt(BWI))
   rule #parseImportSection(intResult(Count:Int, BWI:BytesWithIndex))
-      => parseImportSectionVector(Count, .Defns, BWI)
+      => parseSectionVector(defnImport, Count, .BinaryDefns, BWI)
   rule #parseImportSection(E:ParseError) => E
 
-  syntax SectionResult  ::= parseImportSectionVector(remainingCount:Int, Defns, BytesWithIndex)  [function, total]
-                          | #parseImportSectionVector(remainingCount:Int, Defns, DefnResult)  [function, total]
-  rule parseImportSectionVector(0, D:Defns, BWI:BytesWithIndex) => sectionResult(defnsSection(D), BWI)
-  rule parseImportSectionVector(Count:Int, D:Defns, BWI:BytesWithIndex)
-      => #parseImportSectionVector(Count, D, parseImport(BWI))
+  syntax SectionResult  ::= parseFuncSection(BytesWithIndex)  [function, total]
+                          | #parseFuncSection(IntResult)  [function, total]
+  rule parseFuncSection(BWI:BytesWithIndex) => #parseFuncSection(parseLeb128UInt(BWI))
+  rule #parseFuncSection(intResult(Count:Int, BWI:BytesWithIndex))
+      => parseSectionVector(defnFunc, Count, .BinaryDefns, BWI)
+  rule #parseFuncSection(E:ParseError) => E
+
+  syntax DefnKind ::= "defnType" | "defnImport" | "defnFunc"
+  syntax SectionResult  ::= parseSectionVector
+                                ( type:DefnKind
+                                , remainingCount:Int
+                                , BinaryDefns
+                                , BytesWithIndex
+                                )  [function, total]
+                          | #parseSectionVector
+                                ( type:DefnKind
+                                , remainingCount:Int
+                                , BinaryDefns
+                                , DefnResult
+                                )  [function, total]
+  rule parseSectionVector(_:DefnKind, 0, D:BinaryDefns, BWI:BytesWithIndex)
+      => sectionResult(defnsSection(D), BWI)
+  rule parseSectionVector(T:DefnKind, Count:Int, D:BinaryDefns, BWI:BytesWithIndex)
+      => #parseSectionVector(T, Count, D, parseDefnType(T, BWI))
       requires Count >Int 0
-  rule parseImportSectionVector(Count:Int, D:Defns, bwi(B:Bytes, I:Int))
-      => parseError("parseImportSectionVector", ListItem(Count) ListItem(D) ListItem(I) ListItem(lengthBytes(B)) ListItem(B))
+  rule parseSectionVector(T:DefnKind, Count:Int, D:BinaryDefns, bwi(B:Bytes, I:Int))
+      => parseError("parseSectionVector", ListItem(T) ListItem(Count) ListItem(D) ListItem(I) ListItem(lengthBytes(B)) ListItem(B))
       [owise]
-  rule #parseImportSectionVector(Count:Int, Ds:Defns, defnResult(D:Defn, BWI:BytesWithIndex))
-      => parseImportSectionVector(Count -Int 1, D Ds, BWI)
-  rule #parseImportSectionVector(_Count:Int, _:Defns, E:ParseError) => E
+  rule #parseSectionVector
+          ( T:DefnKind
+          , RemainingCount:Int
+          , Ds:BinaryDefns
+          , defnResult(D:BinaryDefn, BWI:BytesWithIndex)
+          )
+      => parseSectionVector(T, RemainingCount -Int 1, D Ds, BWI)
+  rule #parseSectionVector(_:DefnKind, _RemainingCount:Int, _Ds:BinaryDefns, E:ParseError)
+      => E
 
+  syntax DefnResult ::= parseDefnType(DefnKind, BytesWithIndex)  [function, total]
+  rule parseDefnType(defnType, BWI:BytesWithIndex) => parseDefnType(BWI)
+  rule parseDefnType(defnImport, BWI:BytesWithIndex) => parseDefnImport(BWI)
+  rule parseDefnType(defnFunc, BWI:BytesWithIndex) => parseDefnFunc(BWI)
 
-  syntax DefnResult ::= defnResult(Defn, BytesWithIndex) | ParseError
+  syntax BinaryDefns ::= List{BinaryDefn, ""}
+  syntax BinaryDefnFunctionTypes ::= List{BinaryDefnFunctionType, ""}
 
-  syntax DefnResult ::= parseFuncType(BytesWithIndex)  [function, total]
-                      | #parseFuncType(BytesWithIndexOrError)  [function, total]
-                      | #parseFuncType1(ResultTypeResult)  [function, total]
-                      | #parseFuncType2(VecType, ResultTypeResult)  [function, total]
-  rule parseFuncType(BWI:BytesWithIndex) => #parseFuncType(parseConstant(BWI, TYPE_FUN))
-  rule #parseFuncType(BWI:BytesWithIndex) => #parseFuncType1(parseResultType(BWI))
-  rule #parseFuncType(E:ParseError) => E
-  rule #parseFuncType1(resultTypeResult(V:VecType, BWI:BytesWithIndex))
-      => #parseFuncType2(V, parseResultType(BWI))
-  rule #parseFuncType1(E:ParseError) => E
-  rule #parseFuncType2(V1:VecType, resultTypeResult(V2:VecType, BWI:BytesWithIndex))
+  syntax BinaryDefnFunctionType ::= binaryDefnFunctionType(typeIndex: Int)
+  syntax BinaryDefn ::= Defn
+                      | BinaryDefnFunctionType
+  syntax DefnResult ::= defnResult(BinaryDefn, BytesWithIndex) | ParseError
+
+  syntax DefnResult ::= parseDefnType(BytesWithIndex)  [function, total]
+                      | #parseDefnType(BytesWithIndexOrError)  [function, total]
+                      | #parseDefnType1(ResultTypeResult)  [function, total]
+                      | #parseDefnType2(VecType, ResultTypeResult)  [function, total]
+  rule parseDefnType(BWI:BytesWithIndex) => #parseDefnType(parseConstant(BWI, TYPE_FUN))
+  rule #parseDefnType(BWI:BytesWithIndex) => #parseDefnType1(parseResultType(BWI))
+  rule #parseDefnType(E:ParseError) => E
+  rule #parseDefnType1(resultTypeResult(V:VecType, BWI:BytesWithIndex))
+      => #parseDefnType2(V, parseResultType(BWI))
+  rule #parseDefnType1(E:ParseError) => E
+  rule #parseDefnType2(V1:VecType, resultTypeResult(V2:VecType, BWI:BytesWithIndex))
       => defnResult(#type(V1 -> V2, ), BWI:BytesWithIndex)
-  rule #parseFuncType2(_:VecType, E:ParseError) => E
+  rule #parseDefnType2(_:VecType, E:ParseError) => E
 
   syntax ResultTypeResult ::= resultTypeResult(VecType, BytesWithIndex) | ParseError
   syntax ResultTypeResult ::= parseResultType(BytesWithIndex)  [function, total]
@@ -871,20 +917,20 @@ module BINARY-PARSER //[private]
   rule #parseValTypeExtRef(_:BytesWithIndex, E:ParseError)
       => E
 
-  syntax DefnResult ::= parseImport(BytesWithIndex)  [function, total]
-                      | #parseImport1(NameResult)  [function, total]
-                      | #parseImport2(WasmString, NameResult)  [function, total]
-                      | #parseImport3(WasmString, WasmString, ImportDescResult)  [function, total]
-  rule parseImport(BWI:BytesWithIndex) => #parseImport1(parseName(BWI))
-  rule #parseImport1(nameResult(Name:WasmString, BWI:BytesWithIndex))
-      => #parseImport2(Name, parseName(BWI))
-  rule #parseImport1(E:ParseError) => E
-  rule #parseImport2(ModuleName:WasmString, nameResult(ObjectName:WasmString, BWI:BytesWithIndex))
-      => #parseImport3(ModuleName, ObjectName, parseImportDesc(BWI))
-  rule #parseImport2(_, E:ParseError) => E
-  rule #parseImport3(ModuleName:WasmString, ObjectName:WasmString, importDescResult(Desc:ImportDesc, BWI:BytesWithIndex))
+  syntax DefnResult ::= parseDefnImport(BytesWithIndex)  [function, total]
+                      | #parseDefnImport1(NameResult)  [function, total]
+                      | #parseDefnImport2(WasmString, NameResult)  [function, total]
+                      | #parseDefnImport3(WasmString, WasmString, ImportDescResult)  [function, total]
+  rule parseDefnImport(BWI:BytesWithIndex) => #parseDefnImport1(parseName(BWI))
+  rule #parseDefnImport1(nameResult(Name:WasmString, BWI:BytesWithIndex))
+      => #parseDefnImport2(Name, parseName(BWI))
+  rule #parseDefnImport1(E:ParseError) => E
+  rule #parseDefnImport2(ModuleName:WasmString, nameResult(ObjectName:WasmString, BWI:BytesWithIndex))
+      => #parseDefnImport3(ModuleName, ObjectName, parseImportDesc(BWI))
+  rule #parseDefnImport2(_, E:ParseError) => E
+  rule #parseDefnImport3(ModuleName:WasmString, ObjectName:WasmString, importDescResult(Desc:ImportDesc, BWI:BytesWithIndex))
       => defnResult(#import(ModuleName, ObjectName, Desc), BWI)
-  rule #parseImport3(_, _, E:ParseError) => E
+  rule #parseDefnImport3(_, _, E:ParseError) => E
 
 
   syntax ImportDescResult ::= importDescResult(ImportDesc, BytesWithIndex) | ParseError
@@ -943,6 +989,13 @@ module BINARY-PARSER //[private]
       => importDescResult(#globalDesc(, Mut T), BWI)
   rule #parseImportDescGlobal1(_, E:ParseError) => E
 
+
+  syntax DefnResult ::= parseDefnFunc(BytesWithIndex)  [function, total]
+                      | #parseDefnFunc(IntResult)  [function, total]
+  rule parseDefnFunc(BWI:BytesWithIndex) => #parseDefnFunc(parseLeb128UInt(BWI))
+  rule #parseDefnFunc(intResult(TypeIndex:Int, BWI:BytesWithIndex))
+      => defnResult(binaryDefnFunctionType(TypeIndex), BWI)
+  rule #parseDefnFunc(E:ParseError) => E
 
   syntax MutResult ::= mutResult(Mut, BytesWithIndex) | ParseError
   syntax MutResult ::= parseMut(BytesWithIndex)  [function, total]
