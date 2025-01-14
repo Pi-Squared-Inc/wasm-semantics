@@ -17,7 +17,8 @@ RUN    apt-get update              \
                        pandoc      \
                        python3     \
                        python3-pip \
-                       wabt
+                       wabt        \
+                       xxd
 
 ARG USER_ID=1000
 ARG GROUP_ID=1000
