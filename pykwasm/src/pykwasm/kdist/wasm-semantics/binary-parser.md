@@ -669,9 +669,21 @@ module BINARY-PARSER //[private]
 
   syntax ModuleParseResult ::= success(ModuleDecl, BytesWithIndex) | ParseError
 
+```
+
+  [Module](https://webassembly.github.io/spec/core/binary/modules.html) parsing
+
+```k
+
   syntax ModuleParseResult ::= parseModule(BytesWithIndex)  [function, total]
   rule parseModule(BWI:BytesWithIndex)
       => parseModuleSections(reverseSections(splitSections(parseConstant(parseConstant(BWI, MAGIC), VERSION))))
+
+```
+
+  [https://webassembly.github.io/spec/core/binary/modules.html#sections](section) parsing
+
+```k
 
   syntax ModuleParseResult  ::= parseModuleSections(UnparsedSectionsResult)  [function, total]
                               | #parseModuleSections(ParsedSectionsResult, BytesWithIndex)  [function, total]
@@ -743,6 +755,12 @@ module BINARY-PARSER //[private]
   // rule parseSection(A) => parseError("parseSection", ListItem(A))
   //     [owise]
 
+```
+
+  Parsing for the [type section](https://webassembly.github.io/spec/core/binary/modules.html#binary-typesec).
+
+```k
+
   syntax SectionResult  ::= parseTypeSection(BytesWithIndex)  [function, total]
                           | #parseTypeSection(IntResult)  [function, total]
   rule parseTypeSection(BWI:BytesWithIndex) => #parseTypeSection(parseLeb128UInt(BWI))
@@ -765,6 +783,12 @@ module BINARY-PARSER //[private]
       => E
 
   syntax DefnResult ::= defnResult(Defn, BytesWithIndex) | ParseError
+
+```
+
+  Parsing a [function type](https://webassembly.github.io/spec/core/binary/types.html#binary-functype).
+
+```k
 
   syntax DefnResult ::= parseFuncType(BytesWithIndex)  [function, total]
                       | #parseFuncType(BytesWithIndexOrError)  [function, total]
@@ -791,6 +815,13 @@ module BINARY-PARSER //[private]
   rule #parseResultType1(valTypesResult(V:ValTypes, BWI:BytesWithIndex))
       => resultTypeResult([V], BWI)
   rule #parseResultType1(E:ParseError) => E
+
+```
+
+  Parsing [value types](https://webassembly.github.io/spec/core/binary/types.html#binary-valtype)
+  individually and as a vector.
+
+```k
 
   syntax ValTypesResult ::= valTypesResult(ValTypes, BytesWithIndex) | ParseError
   syntax ValTypesResult ::= parseValTypes(remaining:Int, ValTypes, BytesWithIndex)  [function, total]
@@ -848,6 +879,12 @@ module BINARY-PARSER //[private]
       => E
 
   syntax BytesWithIndexOrError ::= BytesWithIndex | ParseError
+
+```
+
+  Splitting a module in individual sections
+
+```k
 
   syntax UnparsedSection ::= unparsedSection(sectionId:Int, sectionData:Bytes)
   syntax UnparsedSectionResult ::= unparsedSectionResult(UnparsedSection, BytesWithIndex) | ParseError
@@ -949,6 +986,12 @@ module BINARY-PARSER //[private]
   syntax Int ::= buildLeb128UInt(IntList) [function, total]
   rule buildLeb128UInt(.IntList) => 0
   rule buildLeb128UInt(Value:Int : L:IntList) => Value +Int 128 *Int buildLeb128UInt(L)
+
+```
+
+  Skipping over a constant prefix in the input.
+
+```k
 
   syntax BytesWithIndexOrError ::= parseConstant(BytesWithIndexOrError, Bytes)  [function, total]
   rule parseConstant(bwi(Buffer:Bytes, Index:Int), Constant:Bytes)
