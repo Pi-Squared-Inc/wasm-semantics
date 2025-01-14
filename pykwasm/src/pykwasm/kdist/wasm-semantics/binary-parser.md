@@ -1069,6 +1069,379 @@ module BINARY-PARSER //[private]
                         | #parseInstr24(BytesWithIndex, BytesWithIndexOrError)  [function, total]
                         | #parseInstr25(BytesWithIndex, BytesWithIndexOrError)  [function, total]
                         | #parseInstr26(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr27(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr28(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr29(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr30(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr31(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr32(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr33(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr34(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr35(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr36(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr37(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr38(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr39(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr40(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr41(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr42(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr43(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr44(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr45(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr46(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr47(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr48(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr49(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr50(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr51(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr52(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr53(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr54(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr55(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr56(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr57(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr58(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr59(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr60(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr61(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr62(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr63(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr64(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr65(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr66(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr67(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr68(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr69(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr70(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr71(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr72(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr73(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr74(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr75(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr76(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr77(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr78(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr79(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr80(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr81(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr82(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr83(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr84(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr85(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr86(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr87(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr88(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr89(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr90(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr91(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr92(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr93(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr94(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr95(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr96(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr97(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr98(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr99(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr100(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr101(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr102(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr103(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr104(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr105(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr106(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr107(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr108(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr109(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr110(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr111(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr112(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr113(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr114(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr115(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr116(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr117(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr118(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr119(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr120(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr121(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr122(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr123(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr124(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr125(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr126(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr127(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr128(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr129(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr130(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr131(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr132(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr133(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr134(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr135(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr136(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr137(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr138(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr139(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr140(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr141(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr142(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr143(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr144(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr145(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr146(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr147(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr148(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr149(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr150(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr151(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr152(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr153(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr154(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr155(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr156(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr157(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr158(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr159(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr160(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr161(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr162(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr163(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr164(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr165(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr166(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr167(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr168(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr169(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr170(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr171(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr172(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr173(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr174(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr175(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr176(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr177(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr178(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr179(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr180(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr181(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr182(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr183(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr184(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr185(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr186(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr187(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr188(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr189(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr190(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr191(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr192(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr193(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr194(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr195(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr196(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr197(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr198(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr199(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr200(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr201(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr202(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr203(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr204(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr205(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr206(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr207(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr208(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr209(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr210(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr211(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr212(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr213(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr214(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr215(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr216(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr217(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr218(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr219(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr220(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr221(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr222(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr223(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr224(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr225(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr226(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr227(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr228(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr229(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr230(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr231(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr232(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr233(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr234(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr235(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr236(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr237(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr238(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr239(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr240(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr241(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr242(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr243(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr244(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr245(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr246(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr247(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr248(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr249(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr250(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr251(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr252(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr253(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr254(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr255(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr256(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr257(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr258(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr259(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr260(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr261(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr262(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr263(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr264(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr265(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr266(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr267(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr268(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr269(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr270(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr271(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr272(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr273(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr274(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr275(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr276(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr277(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr278(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr279(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr280(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr281(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr282(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr283(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr284(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr285(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr286(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr287(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr288(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr289(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr290(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr291(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr292(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr293(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr294(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr295(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr296(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr297(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr298(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr299(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr300(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr301(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr302(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr303(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr304(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr305(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr306(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr307(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr308(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr309(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr310(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr311(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr312(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr313(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr314(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr315(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr316(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr317(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr318(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr319(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr320(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr321(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr322(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr323(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr324(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr325(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr326(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr327(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr328(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr329(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr330(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr331(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr332(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr333(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr334(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr335(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr336(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr337(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr338(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr339(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr340(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr341(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr342(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr343(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr344(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr345(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr346(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr347(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr348(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr349(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr350(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr351(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr352(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr353(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr354(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr355(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr356(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr357(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr358(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr359(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr360(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr361(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr362(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr363(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr364(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr365(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr366(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr367(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr368(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr369(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr370(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr371(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr372(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr373(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr374(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr375(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr376(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr377(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr378(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr379(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr380(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr381(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr382(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr383(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr384(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr385(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr386(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr387(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr388(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr389(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr390(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr391(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr392(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr393(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr394(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr395(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr396(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr397(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr398(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                        | #parseInstr399(BytesWithIndex, BytesWithIndexOrError)  [function, total]
   rule parseInstr(BytesWithIndex)
       => #parseInstr1(BytesWithIndex, parseConstant(BytesWithIndex, UNREACHABLE))
   rule #parseInstr1(_:BytesWithIndex, BWI:BytesWithIndex) => instrResult(unreachable, BWI)
@@ -1955,22 +2328,619 @@ module BINARY-PARSER //[private]
       => #parseInstr295(BWI, parseConstant(BWI, V128_ANY_TRUE))
   rule #parseInstr295(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
   rule #parseInstr295(BWI:BytesWithIndex, _:ParseError)
-      => #parseInstr296(BWI, parseConstant(BWI, REF_NULL))
+      => #parseInstr296(BWI, parseConstant(BWI, I8X16_ABS))
   rule #parseInstr296(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
   rule #parseInstr296(BWI:BytesWithIndex, _:ParseError)
-      => #parseInstr297(BWI, parseConstant(BWI, REF_NULL))
+      => #parseInstr297(BWI, parseConstant(BWI, I8X16_NEG))
   rule #parseInstr297(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
   rule #parseInstr297(BWI:BytesWithIndex, _:ParseError)
-      => #parseInstr298(BWI, parseConstant(BWI, REF_NULL))
+      => #parseInstr298(BWI, parseConstant(BWI, I8X16_POPCNT))
   rule #parseInstr298(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
   rule #parseInstr298(BWI:BytesWithIndex, _:ParseError)
-      => #parseInstr299(BWI, parseConstant(BWI, REF_NULL))
+      => #parseInstr299(BWI, parseConstant(BWI, I8X16_ALL_TRUE))
   rule #parseInstr299(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
   rule #parseInstr299(BWI:BytesWithIndex, _:ParseError)
-      => #parseInstr30(BWI, parseConstant(BWI, REF_NULL))
-  rule #parseInstr30(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
-  rule #parseInstr30(BWI:BytesWithIndex, _:ParseError)
-      => #parseInstr30(BWI, parseConstant(BWI, REF_NULL))
+      => #parseInstr300(BWI, parseConstant(BWI, I8X16_BITMASK))
+  rule #parseInstr300(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr300(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr301(BWI, parseConstant(BWI, I8X16_NARROW_I16X8_S))
+  rule #parseInstr301(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr301(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr302(BWI, parseConstant(BWI, I8X16_NARROW_I16X8_U))
+  rule #parseInstr302(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr302(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr303(BWI, parseConstant(BWI, I8X16_SHL))
+  rule #parseInstr303(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr303(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr304(BWI, parseConstant(BWI, I8X16_SHR_S))
+  rule #parseInstr304(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr304(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr305(BWI, parseConstant(BWI, I8X16_SHR_U))
+  rule #parseInstr305(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr305(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr306(BWI, parseConstant(BWI, I8X16_ADD))
+  rule #parseInstr306(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr306(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr307(BWI, parseConstant(BWI, I8X16_ADD_SAT_S))
+  rule #parseInstr307(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr307(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr308(BWI, parseConstant(BWI, I8X16_ADD_SAT_U))
+  rule #parseInstr308(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr308(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr309(BWI, parseConstant(BWI, I8X16_SUB))
+  rule #parseInstr309(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr309(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr310(BWI, parseConstant(BWI, I8X16_SUB_SAT_S))
+  rule #parseInstr310(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr310(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr311(BWI, parseConstant(BWI, I8X16_SUB_SAT_U))
+  rule #parseInstr311(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr311(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr312(BWI, parseConstant(BWI, I8X16_MIN_S))
+  rule #parseInstr312(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr312(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr313(BWI, parseConstant(BWI, I8X16_MIN_U))
+  rule #parseInstr313(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr313(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr314(BWI, parseConstant(BWI, I8X16_MAX_S))
+  rule #parseInstr314(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr314(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr315(BWI, parseConstant(BWI, I8X16_MAX_U))
+  rule #parseInstr315(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr315(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr316(BWI, parseConstant(BWI, I8X16_AVGR_U))
+  rule #parseInstr316(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr316(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr317(BWI, parseConstant(BWI, I16X8_EXTADD_PAIRWISE_I8X16_S))
+  rule #parseInstr317(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr317(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr318(BWI, parseConstant(BWI, I16X8_EXTADD_PAIRWISE_I8X16_U))
+  rule #parseInstr318(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr318(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr319(BWI, parseConstant(BWI, I16X8_ABS))
+  rule #parseInstr319(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr319(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr320(BWI, parseConstant(BWI, I16X8_NEG))
+  rule #parseInstr320(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr320(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr321(BWI, parseConstant(BWI, I16X8_Q15MULR_SAT_S))
+  rule #parseInstr321(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr321(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr322(BWI, parseConstant(BWI, I16X8_ALL_TRUE))
+  rule #parseInstr322(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr322(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr323(BWI, parseConstant(BWI, I16X8_BITMASK))
+  rule #parseInstr323(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr323(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr324(BWI, parseConstant(BWI, I16X8_NARROW_I32X4_S))
+  rule #parseInstr324(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr324(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr325(BWI, parseConstant(BWI, I16X8_NARROW_I32X4_U))
+  rule #parseInstr325(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr325(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr326(BWI, parseConstant(BWI, I16X8_EXTEND_LOW_I8X16_S))
+  rule #parseInstr326(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr326(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr327(BWI, parseConstant(BWI, I16X8_EXTEND_HIGH_I8X16_S))
+  rule #parseInstr327(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr327(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr328(BWI, parseConstant(BWI, I16X8_EXTEND_LOW_I8X16_U))
+  rule #parseInstr328(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr328(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr329(BWI, parseConstant(BWI, I16X8_EXTEND_HIGH_I8X16_U))
+  rule #parseInstr329(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr329(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr330(BWI, parseConstant(BWI, I16X8_SHL))
+  rule #parseInstr330(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr330(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr331(BWI, parseConstant(BWI, I16X8_SHR_S))
+  rule #parseInstr331(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr331(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr332(BWI, parseConstant(BWI, I16X8_SHR_U))
+  rule #parseInstr332(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr332(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr333(BWI, parseConstant(BWI, I16X8_ADD))
+  rule #parseInstr333(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr333(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr334(BWI, parseConstant(BWI, I16X8_ADD_SAT_S))
+  rule #parseInstr334(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr334(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr335(BWI, parseConstant(BWI, I16X8_ADD_SAT_U))
+  rule #parseInstr335(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr335(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr336(BWI, parseConstant(BWI, I16X8_SUB))
+  rule #parseInstr336(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr336(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr337(BWI, parseConstant(BWI, I16X8_SUB_SAT_S))
+  rule #parseInstr337(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr337(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr338(BWI, parseConstant(BWI, I16X8_SUB_SAT_U))
+  rule #parseInstr338(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr338(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr339(BWI, parseConstant(BWI, I16X8_MUL))
+  rule #parseInstr339(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr339(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr340(BWI, parseConstant(BWI, I16X8_MIN_S))
+  rule #parseInstr340(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr340(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr341(BWI, parseConstant(BWI, I16X8_MIN_U))
+  rule #parseInstr341(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr341(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr342(BWI, parseConstant(BWI, I16X8_MAX_S))
+  rule #parseInstr342(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr342(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr343(BWI, parseConstant(BWI, I16X8_MAX_U))
+  rule #parseInstr343(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr343(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr344(BWI, parseConstant(BWI, I16X8_AVGR_U))
+  rule #parseInstr344(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr344(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr345(BWI, parseConstant(BWI, I16X8_EXTMUL_LOW_I8X16_S))
+  rule #parseInstr345(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr345(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr346(BWI, parseConstant(BWI, I16X8_EXTMUL_HIGH_I8X16_S))
+  rule #parseInstr346(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr346(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr347(BWI, parseConstant(BWI, I16X8_EXTMUL_LOW_I8X16_U))
+  rule #parseInstr347(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr347(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr348(BWI, parseConstant(BWI, I16X8_EXTMUL_HIGH_I8X16_U))
+  rule #parseInstr348(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr348(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr349(BWI, parseConstant(BWI, I32X4_EXTADD_PAIRWISE_I16X8_S))
+  rule #parseInstr349(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr349(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr350(BWI, parseConstant(BWI, I32X4_EXTADD_PAIRWISE_I16X8_U))
+  rule #parseInstr350(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr350(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr351(BWI, parseConstant(BWI, I32X4_ABS))
+  rule #parseInstr351(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr351(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr352(BWI, parseConstant(BWI, I32X4_NEG))
+  rule #parseInstr352(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr352(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr353(BWI, parseConstant(BWI, I32X4_ALL_TRUE))
+  rule #parseInstr353(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr353(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr354(BWI, parseConstant(BWI, I32X4_BITMASK))
+  rule #parseInstr354(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr354(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr355(BWI, parseConstant(BWI, I32X4_EXTEND_LOW_I16X8_S))
+  rule #parseInstr355(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr355(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr356(BWI, parseConstant(BWI, I32X4_EXTEND_HIGH_I16X8_S))
+  rule #parseInstr356(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr356(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr357(BWI, parseConstant(BWI, I32X4_EXTEND_LOW_I16X8_U))
+  rule #parseInstr357(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr357(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr358(BWI, parseConstant(BWI, I32X4_EXTEND_HIGH_I16X8_U))
+  rule #parseInstr358(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr358(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr359(BWI, parseConstant(BWI, I32X4_SHL))
+  rule #parseInstr359(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr359(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr360(BWI, parseConstant(BWI, I32X4_SHR_S))
+  rule #parseInstr360(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr360(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr361(BWI, parseConstant(BWI, I32X4_SHR_U))
+  rule #parseInstr361(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr361(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr362(BWI, parseConstant(BWI, I32X4_ADD))
+  rule #parseInstr362(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr362(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr363(BWI, parseConstant(BWI, I32X4_SUB))
+  rule #parseInstr363(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr363(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr364(BWI, parseConstant(BWI, I32X4_MUL))
+  rule #parseInstr364(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr364(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr365(BWI, parseConstant(BWI, I32X4_MIN_S))
+  rule #parseInstr365(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr365(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr366(BWI, parseConstant(BWI, I32X4_MIN_U))
+  rule #parseInstr366(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr366(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr367(BWI, parseConstant(BWI, I32X4_MAX_S))
+  rule #parseInstr367(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr367(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr368(BWI, parseConstant(BWI, I32X4_MAX_U))
+  rule #parseInstr368(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr368(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr369(BWI, parseConstant(BWI, I32X4_DOT_I16X8_S))
+  rule #parseInstr369(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr369(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr370(BWI, parseConstant(BWI, I32X4_EXTMUL_LOW_I16X8_S))
+  rule #parseInstr370(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr370(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr371(BWI, parseConstant(BWI, I32X4_EXTMUL_HIGH_I16X8_S))
+  rule #parseInstr371(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr371(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr372(BWI, parseConstant(BWI, I32X4_EXTMUL_LOW_I16X8_U))
+  rule #parseInstr372(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr372(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr373(BWI, parseConstant(BWI, I32X4_EXTMUL_HIGH_I16X8_U))
+  rule #parseInstr373(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr373(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr374(BWI, parseConstant(BWI, I64X2_ABS))
+  rule #parseInstr374(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr374(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr375(BWI, parseConstant(BWI, I64X2_NEG))
+  rule #parseInstr375(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr375(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr376(BWI, parseConstant(BWI, I64X2_ALL_TRUE))
+  rule #parseInstr376(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr376(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr377(BWI, parseConstant(BWI, I64X2_BITMASK))
+  rule #parseInstr377(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr377(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr378(BWI, parseConstant(BWI, I64X2_EXTEND_LOW_I32X4_S))
+  rule #parseInstr378(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr378(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr379(BWI, parseConstant(BWI, I64X2_EXTEND_HIGH_I32X4_S))
+  rule #parseInstr379(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr379(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr380(BWI, parseConstant(BWI, I64X2_EXTEND_LOW_I32X4_U))
+  rule #parseInstr380(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr380(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr381(BWI, parseConstant(BWI, I64X2_EXTEND_HIGH_I32X4_U))
+  rule #parseInstr381(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr381(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr382(BWI, parseConstant(BWI, I64X2_SHL))
+  rule #parseInstr382(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr382(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr383(BWI, parseConstant(BWI, I64X2_SHR_S))
+  rule #parseInstr383(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr383(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr384(BWI, parseConstant(BWI, I64X2_SHR_U))
+  rule #parseInstr384(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr384(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr385(BWI, parseConstant(BWI, I64X2_ADD))
+  rule #parseInstr385(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr385(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr386(BWI, parseConstant(BWI, I64X2_SUB))
+  rule #parseInstr386(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr386(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr387(BWI, parseConstant(BWI, I64X2_MUL))
+  rule #parseInstr387(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr387(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr388(BWI, parseConstant(BWI, I64X2_EXTMUL_LOW_I32X4_S))
+  rule #parseInstr388(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr388(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr389(BWI, parseConstant(BWI, I64X2_EXTMUL_HIGH_I32X4_S))
+  rule #parseInstr389(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr389(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr390(BWI, parseConstant(BWI, I64X2_EXTMUL_LOW_I32X4_U))
+  rule #parseInstr390(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr390(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr391(BWI, parseConstant(BWI, I64X2_EXTMUL_HIGH_I32X4_U))
+  rule #parseInstr391(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr391(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr392(BWI, parseConstant(BWI, F32X4_CEIL))
+  rule #parseInstr392(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr392(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr393(BWI, parseConstant(BWI, F32X4_FLOOR))
+  rule #parseInstr393(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr393(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr394(BWI, parseConstant(BWI, F32X4_TRUNC))
+  rule #parseInstr394(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr394(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr395(BWI, parseConstant(BWI, F32X4_NEAREST))
+  rule #parseInstr395(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr395(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr396(BWI, parseConstant(BWI, F32X4_ABS))
+  rule #parseInstr396(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr396(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr397(BWI, parseConstant(BWI, F32X4_NEG))
+  rule #parseInstr397(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr397(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr398(BWI, parseConstant(BWI, F32X4_SQRT))
+  rule #parseInstr398(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr398(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr399(BWI, parseConstant(BWI, F32X4_ADD))
+  rule #parseInstr399(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr399(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr400(BWI, parseConstant(BWI, F32X4_SUB))
+  rule #parseInstr400(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr400(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr401(BWI, parseConstant(BWI, F32X4_MUL))
+  rule #parseInstr401(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr401(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr402(BWI, parseConstant(BWI, F32X4_DIV))
+  rule #parseInstr402(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr402(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr403(BWI, parseConstant(BWI, F32X4_MIN))
+  rule #parseInstr403(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr403(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr404(BWI, parseConstant(BWI, F32X4_MAX))
+  rule #parseInstr404(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr404(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr405(BWI, parseConstant(BWI, F32X4_PMIN))
+  rule #parseInstr405(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr405(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr406(BWI, parseConstant(BWI, F32X4_PMAX))
+  rule #parseInstr406(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr406(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr407(BWI, parseConstant(BWI, F64X2_CEIL))
+  rule #parseInstr407(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr407(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr408(BWI, parseConstant(BWI, F64X2_FLOOR))
+  rule #parseInstr408(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr408(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr409(BWI, parseConstant(BWI, F64X2_TRUNC))
+  rule #parseInstr409(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr409(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr410(BWI, parseConstant(BWI, F64X2_NEAREST))
+  rule #parseInstr410(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr410(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr411(BWI, parseConstant(BWI, F64X2_ABS))
+  rule #parseInstr411(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr411(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr412(BWI, parseConstant(BWI, F64X2_NEG))
+  rule #parseInstr412(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr412(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr413(BWI, parseConstant(BWI, F64X2_SQRT))
+  rule #parseInstr413(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr413(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr414(BWI, parseConstant(BWI, F64X2_ADD))
+  rule #parseInstr414(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr414(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr415(BWI, parseConstant(BWI, F64X2_SUB))
+  rule #parseInstr415(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr415(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr416(BWI, parseConstant(BWI, F64X2_MUL))
+  rule #parseInstr416(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr416(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr417(BWI, parseConstant(BWI, F64X2_DIV))
+  rule #parseInstr417(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr417(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr418(BWI, parseConstant(BWI, F64X2_MIN))
+  rule #parseInstr418(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr418(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr419(BWI, parseConstant(BWI, F64X2_MAX))
+  rule #parseInstr419(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr419(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr420(BWI, parseConstant(BWI, F64X2_PMIN))
+  rule #parseInstr420(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr420(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr421(BWI, parseConstant(BWI, F64X2_PMAX))
+  rule #parseInstr421(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr421(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr422(BWI, parseConstant(BWI, I32X4_TRUNC_SAT_F32X4_S))
+  rule #parseInstr422(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr422(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr423(BWI, parseConstant(BWI, I32X4_TRUNC_SAT_F32X4_U))
+  rule #parseInstr423(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr423(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr424(BWI, parseConstant(BWI, F32X4_CONVERT_I32X4_S))
+  rule #parseInstr424(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr424(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr425(BWI, parseConstant(BWI, F32X4_CONVERT_I32X4_U))
+  rule #parseInstr425(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr425(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr426(BWI, parseConstant(BWI, I32X4_TRUNC_SAT_F64X2_S_ZERO))
+  rule #parseInstr426(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr426(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr427(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr427(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr427(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr428(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr428(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr428(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr429(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr429(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr429(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr430(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr430(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr430(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr431(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr431(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr431(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr432(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr432(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr432(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr433(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr433(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr433(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr434(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr434(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr434(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr435(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr435(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr435(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr436(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr436(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr436(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr437(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr437(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr437(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr438(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr438(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr438(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr439(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr439(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr439(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr440(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr440(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr440(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr441(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr441(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr441(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr442(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr442(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr442(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr443(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr443(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr443(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr444(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr444(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr444(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr445(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr445(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr445(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr446(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr446(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr446(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr447(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr447(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr447(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr448(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr448(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr448(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr449(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr449(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr449(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr450(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr450(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr450(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr451(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr451(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr451(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr452(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr452(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr452(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr453(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr453(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr453(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr454(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr454(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr454(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr455(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr455(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr455(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr456(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr456(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr456(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr457(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr457(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr457(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr458(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr458(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr458(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr459(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr459(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr459(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr460(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr460(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr460(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr461(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr461(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr461(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr462(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr462(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr462(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr463(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr463(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr463(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr464(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr464(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr464(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr465(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr465(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr465(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr466(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr466(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr466(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr467(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr467(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr467(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr468(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr468(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr468(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr469(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr469(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr469(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr470(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr470(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr470(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr471(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr471(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr471(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr472(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr472(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr472(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr473(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr473(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr473(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr474(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr474(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr474(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr475(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr475(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr475(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr476(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr476(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr476(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr477(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr477(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr477(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr478(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr478(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr478(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr479(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr479(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr479(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr480(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr480(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr480(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr481(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr481(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr481(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr482(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr482(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr482(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr483(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr483(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr483(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr484(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr484(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr484(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr485(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr485(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr485(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr486(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr486(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr486(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr487(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr487(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr487(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr488(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr488(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr488(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr489(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr489(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr489(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr490(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr490(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr490(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr491(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr491(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr491(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr492(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr492(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr492(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr493(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr493(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr493(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr494(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr494(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr494(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr495(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr495(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr495(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr496(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr496(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr496(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr497(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr497(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr497(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr498(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr498(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr498(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr499(BWI, parseConstant(BWI, REF_NULL))
+  rule #parseInstr499(_:BytesWithIndex, BWI:BytesWithIndex) => (, BWI)
+  rule #parseInstr499(BWI:BytesWithIndex, _:ParseError)
+      => #parseInstr500(BWI, parseConstant(BWI, REF_NULL))
 
 
   syntax MutResult ::= mutResult(Mut, BytesWithIndex) | ParseError
