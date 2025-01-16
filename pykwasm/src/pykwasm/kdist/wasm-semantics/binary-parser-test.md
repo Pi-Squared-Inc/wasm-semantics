@@ -28,8 +28,5 @@ module BINARY-PARSER-TEST
             , #module(... metadata: _ => #meta (... id:  , funcIds: .Map , filename: "error: test addDefnToModule branch called." )))
         [owise]
 
-    rule parseSection(U:UnparsedSection)
-        => parseError("parseSection test default", ListItem(U))
-        [owise]
 endmodule
 ```
