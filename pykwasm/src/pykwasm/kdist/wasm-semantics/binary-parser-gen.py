@@ -131,6 +131,11 @@ class TypedArg(Argument):
     arg_type: str
 
     def parser(self, bwi: str) -> str:
+        if self.arg_type == 'UnsignedInt':
+            return 'parseLeb128UInt'
+        if self.arg_type == 'SignedInt':
+            return 'parseLeb128SInt'
+
         return f'parse{self.arg_type}({bwi})'
 
     def is_used_in_constructor(self) -> bool:
@@ -151,8 +156,10 @@ class TypedArg(Argument):
     def inner_type(self) -> str:
         if self.arg_type == 'UnsignedInt':
             return 'Int'
+        if self.arg_type == 'SignedInt':
+            return 'Int'
         if self.arg_type == 'UnsignedIntVec':
-            return 'IntVec'
+            return 'IntList'
         return self.arg_type
 
     def value_type(self) -> str:

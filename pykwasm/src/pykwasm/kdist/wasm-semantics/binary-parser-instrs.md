@@ -223,7 +223,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx12s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx12(BWI) => #parseInstrx12s1(parseUnsignedInt(BWI))
+  rule parseInstrx12(BWI) => #parseInstrx12s1(parseLeb128UInt)
   rule parseInstrx12(E:ParseError) => E
   rule #parseInstrx12s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #br(UnsignedInt0)
   rule #parseInstrx12s1(E:ParseError) => E
@@ -231,21 +231,21 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx13s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx13(BWI) => #parseInstrx13s1(parseUnsignedInt(BWI))
+  rule parseInstrx13(BWI) => #parseInstrx13s1(parseLeb128UInt)
   rule parseInstrx13(E:ParseError) => E
   rule #parseInstrx13s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #br_if(UnsignedInt0)
   rule #parseInstrx13s1(E:ParseError) => E
   syntax InstrResult ::= #parseInstrx14(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx14s1
-                            ( IntVecResult
+                            ( IntListResult
                             )  [function, total]
   rule parseInstrx14(BWI) => #parseInstrx14s1(parseUnsignedIntVec(BWI))
   rule parseInstrx14(E:ParseError) => E
   syntax InstrResult ::= #parseInstrx14s2
-                            ( IntVec
+                            ( IntList
                             , IntResult
                             )  [function, total]
-  rule #parseInstrx14s1(intVecResult(UnsignedIntVec0:IntVec, BWI:BytesWithIndex)) => #parseInstrx14s2(UnsignedIntVec0, parseUnsignedInt(BWI))
+  rule #parseInstrx14s1(intListResult(UnsignedIntVec0:IntList, BWI:BytesWithIndex)) => #parseInstrx14s2(UnsignedIntVec0, parseLeb128UInt)
   rule #parseInstrx14s1(E:ParseError) => E
   rule #parseInstrx14s2(UnsignedIntVec0:UnsignedIntVec, intResult(UnsignedInt1:Int, _BWI:BytesWithIndex)) => #br_table(UnsignedIntVec0UnsignedInt1)
   rule #parseInstrx14s2(_UnsignedIntVec0:UnsignedIntVec, E:ParseError) => E
@@ -255,7 +255,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx16s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx16(BWI) => #parseInstrx16s1(parseUnsignedInt(BWI))
+  rule parseInstrx16(BWI) => #parseInstrx16s1(parseLeb128UInt)
   rule parseInstrx16(E:ParseError) => E
   rule #parseInstrx16s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #call(UnsignedInt0)
   rule #parseInstrx16s1(E:ParseError) => E
@@ -263,13 +263,13 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx17s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx17(BWI) => #parseInstrx17s1(parseUnsignedInt(BWI))
+  rule parseInstrx17(BWI) => #parseInstrx17s1(parseLeb128UInt)
   rule parseInstrx17(E:ParseError) => E
   syntax InstrResult ::= #parseInstrx17s2
                             ( Int
                             , IntResult
                             )  [function, total]
-  rule #parseInstrx17s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => #parseInstrx17s2(UnsignedInt0, parseUnsignedInt(BWI))
+  rule #parseInstrx17s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => #parseInstrx17s2(UnsignedInt0, parseLeb128UInt)
   rule #parseInstrx17s1(E:ParseError) => E
   rule #parseInstrx17s2(UnsignedInt0:UnsignedInt, intResult(UnsignedInt1:Int, _BWI:BytesWithIndex)) => buildCallIndirect(UnsignedInt0UnsignedInt1)
   rule #parseInstrx17s2(_UnsignedInt0:UnsignedInt, E:ParseError) => E
@@ -289,7 +289,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx32s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx32(BWI) => #parseInstrx32s1(parseUnsignedInt(BWI))
+  rule parseInstrx32(BWI) => #parseInstrx32s1(parseLeb128UInt)
   rule parseInstrx32(E:ParseError) => E
   rule #parseInstrx32s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #local.get(UnsignedInt0)
   rule #parseInstrx32s1(E:ParseError) => E
@@ -297,7 +297,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx33s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx33(BWI) => #parseInstrx33s1(parseUnsignedInt(BWI))
+  rule parseInstrx33(BWI) => #parseInstrx33s1(parseLeb128UInt)
   rule parseInstrx33(E:ParseError) => E
   rule #parseInstrx33s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #local.set(UnsignedInt0)
   rule #parseInstrx33s1(E:ParseError) => E
@@ -305,7 +305,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx34s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx34(BWI) => #parseInstrx34s1(parseUnsignedInt(BWI))
+  rule parseInstrx34(BWI) => #parseInstrx34s1(parseLeb128UInt)
   rule parseInstrx34(E:ParseError) => E
   rule #parseInstrx34s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #local.tee(UnsignedInt0)
   rule #parseInstrx34s1(E:ParseError) => E
@@ -313,7 +313,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx35s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx35(BWI) => #parseInstrx35s1(parseUnsignedInt(BWI))
+  rule parseInstrx35(BWI) => #parseInstrx35s1(parseLeb128UInt)
   rule parseInstrx35(E:ParseError) => E
   rule #parseInstrx35s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #global.get(UnsignedInt0)
   rule #parseInstrx35s1(E:ParseError) => E
@@ -321,7 +321,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx36s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx36(BWI) => #parseInstrx36s1(parseUnsignedInt(BWI))
+  rule parseInstrx36(BWI) => #parseInstrx36s1(parseLeb128UInt)
   rule parseInstrx36(E:ParseError) => E
   rule #parseInstrx36s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #global.set(UnsignedInt0)
   rule #parseInstrx36s1(E:ParseError) => E
@@ -329,7 +329,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx37s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx37(BWI) => #parseInstrx37s1(parseUnsignedInt(BWI))
+  rule parseInstrx37(BWI) => #parseInstrx37s1(parseLeb128UInt)
   rule parseInstrx37(E:ParseError) => E
   rule #parseInstrx37s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #table.get(UnsignedInt0)
   rule #parseInstrx37s1(E:ParseError) => E
@@ -337,7 +337,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx38s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx38(BWI) => #parseInstrx38s1(parseUnsignedInt(BWI))
+  rule parseInstrx38(BWI) => #parseInstrx38s1(parseLeb128UInt)
   rule parseInstrx38(E:ParseError) => E
   rule #parseInstrx38s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #table.set(UnsignedInt0)
   rule #parseInstrx38s1(E:ParseError) => E
@@ -531,19 +531,19 @@ module BINARY-PARSER-INSTRS
   rule parseInstrx64(BWI:BytesWithIndex) => memory.grow
   syntax InstrResult ::= #parseInstrx65(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx65s1
-                            ( SignedIntResult
+                            ( IntResult
                             )  [function, total]
-  rule parseInstrx65(BWI) => #parseInstrx65s1(parseSignedInt(BWI))
+  rule parseInstrx65(BWI) => #parseInstrx65s1(parseLeb128SInt)
   rule parseInstrx65(E:ParseError) => E
-  rule #parseInstrx65s1(signedIntResult(SignedInt1:SignedInt, _BWI:BytesWithIndex)) => `aIConst`(i32, SignedInt1)
+  rule #parseInstrx65s1(intResult(SignedInt1:Int, _BWI:BytesWithIndex)) => `aIConst`(i32, SignedInt1)
   rule #parseInstrx65s1(E:ParseError) => E
   syntax InstrResult ::= #parseInstrx66(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx66s1
-                            ( SignedIntResult
+                            ( IntResult
                             )  [function, total]
-  rule parseInstrx66(BWI) => #parseInstrx66s1(parseSignedInt(BWI))
+  rule parseInstrx66(BWI) => #parseInstrx66s1(parseLeb128SInt)
   rule parseInstrx66(E:ParseError) => E
-  rule #parseInstrx66s1(signedIntResult(SignedInt1:SignedInt, _BWI:BytesWithIndex)) => `aIConst`(i64, SignedInt1)
+  rule #parseInstrx66s1(intResult(SignedInt1:Int, _BWI:BytesWithIndex)) => `aIConst`(i64, SignedInt1)
   rule #parseInstrx66s1(E:ParseError) => E
   syntax InstrResult ::= #parseInstrx67(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx67s1
@@ -831,7 +831,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx210s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx210(BWI) => #parseInstrx210s1(parseUnsignedInt(BWI))
+  rule parseInstrx210(BWI) => #parseInstrx210s1(parseLeb128UInt)
   rule parseInstrx210(E:ParseError) => E
   rule #parseInstrx210s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #ref.func(UnsignedInt0)
   rule #parseInstrx210s1(E:ParseError) => E
@@ -881,7 +881,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx252x8s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx252x8(BWI) => #parseInstrx252x8s1(parseUnsignedInt(BWI))
+  rule parseInstrx252x8(BWI) => #parseInstrx252x8s1(parseLeb128UInt)
   rule parseInstrx252x8(E:ParseError) => E
   syntax InstrResult ::= #parseInstrx252x8s2
                             ( Int
@@ -894,7 +894,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx252x9s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx252x9(BWI) => #parseInstrx252x9s1(parseUnsignedInt(BWI))
+  rule parseInstrx252x9(BWI) => #parseInstrx252x9s1(parseLeb128UInt)
   rule parseInstrx252x9(E:ParseError) => E
   rule #parseInstrx252x9s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(UnsignedInt0) ListItem(BWI))
   rule #parseInstrx252x9s1(E:ParseError) => E
@@ -923,13 +923,13 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx252x12s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx252x12(BWI) => #parseInstrx252x12s1(parseUnsignedInt(BWI))
+  rule parseInstrx252x12(BWI) => #parseInstrx252x12s1(parseLeb128UInt)
   rule parseInstrx252x12(E:ParseError) => E
   syntax InstrResult ::= #parseInstrx252x12s2
                             ( Int
                             , IntResult
                             )  [function, total]
-  rule #parseInstrx252x12s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => #parseInstrx252x12s2(UnsignedInt0, parseUnsignedInt(BWI))
+  rule #parseInstrx252x12s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => #parseInstrx252x12s2(UnsignedInt0, parseLeb128UInt)
   rule #parseInstrx252x12s1(E:ParseError) => E
   rule #parseInstrx252x12s2(UnsignedInt0:UnsignedInt, intResult(UnsignedInt1:Int, _BWI:BytesWithIndex)) => #table.init(UnsignedInt0UnsignedInt1)
   rule #parseInstrx252x12s2(_UnsignedInt0:UnsignedInt, E:ParseError) => E
@@ -937,7 +937,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx252x13s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx252x13(BWI) => #parseInstrx252x13s1(parseUnsignedInt(BWI))
+  rule parseInstrx252x13(BWI) => #parseInstrx252x13s1(parseLeb128UInt)
   rule parseInstrx252x13(E:ParseError) => E
   rule #parseInstrx252x13s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #elem.drop(UnsignedInt0)
   rule #parseInstrx252x13s1(E:ParseError) => E
@@ -945,13 +945,13 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx252x14s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx252x14(BWI) => #parseInstrx252x14s1(parseUnsignedInt(BWI))
+  rule parseInstrx252x14(BWI) => #parseInstrx252x14s1(parseLeb128UInt)
   rule parseInstrx252x14(E:ParseError) => E
   syntax InstrResult ::= #parseInstrx252x14s2
                             ( Int
                             , IntResult
                             )  [function, total]
-  rule #parseInstrx252x14s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => #parseInstrx252x14s2(UnsignedInt0, parseUnsignedInt(BWI))
+  rule #parseInstrx252x14s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => #parseInstrx252x14s2(UnsignedInt0, parseLeb128UInt)
   rule #parseInstrx252x14s1(E:ParseError) => E
   rule #parseInstrx252x14s2(UnsignedInt0:UnsignedInt, intResult(UnsignedInt1:Int, _BWI:BytesWithIndex)) => #table.copy(UnsignedInt0UnsignedInt1)
   rule #parseInstrx252x14s2(_UnsignedInt0:UnsignedInt, E:ParseError) => E
@@ -959,7 +959,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx252x15s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx252x15(BWI) => #parseInstrx252x15s1(parseUnsignedInt(BWI))
+  rule parseInstrx252x15(BWI) => #parseInstrx252x15s1(parseLeb128UInt)
   rule parseInstrx252x15(E:ParseError) => E
   rule #parseInstrx252x15s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #table.grow(UnsignedInt0)
   rule #parseInstrx252x15s1(E:ParseError) => E
@@ -967,7 +967,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx252x16s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx252x16(BWI) => #parseInstrx252x16s1(parseUnsignedInt(BWI))
+  rule parseInstrx252x16(BWI) => #parseInstrx252x16s1(parseLeb128UInt)
   rule parseInstrx252x16(E:ParseError) => E
   rule #parseInstrx252x16s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #table.size(UnsignedInt0)
   rule #parseInstrx252x16s1(E:ParseError) => E
@@ -975,7 +975,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx252x17s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx252x17(BWI) => #parseInstrx252x17s1(parseUnsignedInt(BWI))
+  rule parseInstrx252x17(BWI) => #parseInstrx252x17s1(parseLeb128UInt)
   rule parseInstrx252x17(E:ParseError) => E
   rule #parseInstrx252x17s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #table.fill(UnsignedInt0)
   rule #parseInstrx252x17s1(E:ParseError) => E
@@ -1353,7 +1353,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx253x21s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx253x21(BWI) => #parseInstrx253x21s1(parseUnsignedInt(BWI))
+  rule parseInstrx253x21(BWI) => #parseInstrx253x21s1(parseLeb128UInt)
   rule parseInstrx253x21(E:ParseError) => E
   rule #parseInstrx253x21s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(UnsignedInt0) ListItem(BWI))
   rule #parseInstrx253x21s1(E:ParseError) => E
@@ -1361,7 +1361,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx253x22s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx253x22(BWI) => #parseInstrx253x22s1(parseUnsignedInt(BWI))
+  rule parseInstrx253x22(BWI) => #parseInstrx253x22s1(parseLeb128UInt)
   rule parseInstrx253x22(E:ParseError) => E
   rule #parseInstrx253x22s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(UnsignedInt0) ListItem(BWI))
   rule #parseInstrx253x22s1(E:ParseError) => E
@@ -1369,7 +1369,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx253x23s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx253x23(BWI) => #parseInstrx253x23s1(parseUnsignedInt(BWI))
+  rule parseInstrx253x23(BWI) => #parseInstrx253x23s1(parseLeb128UInt)
   rule parseInstrx253x23(E:ParseError) => E
   rule #parseInstrx253x23s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(UnsignedInt0) ListItem(BWI))
   rule #parseInstrx253x23s1(E:ParseError) => E
@@ -1377,7 +1377,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx253x24s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx253x24(BWI) => #parseInstrx253x24s1(parseUnsignedInt(BWI))
+  rule parseInstrx253x24(BWI) => #parseInstrx253x24s1(parseLeb128UInt)
   rule parseInstrx253x24(E:ParseError) => E
   rule #parseInstrx253x24s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(UnsignedInt0) ListItem(BWI))
   rule #parseInstrx253x24s1(E:ParseError) => E
@@ -1385,7 +1385,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx253x25s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx253x25(BWI) => #parseInstrx253x25s1(parseUnsignedInt(BWI))
+  rule parseInstrx253x25(BWI) => #parseInstrx253x25s1(parseLeb128UInt)
   rule parseInstrx253x25(E:ParseError) => E
   rule #parseInstrx253x25s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(UnsignedInt0) ListItem(BWI))
   rule #parseInstrx253x25s1(E:ParseError) => E
@@ -1393,7 +1393,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx253x26s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx253x26(BWI) => #parseInstrx253x26s1(parseUnsignedInt(BWI))
+  rule parseInstrx253x26(BWI) => #parseInstrx253x26s1(parseLeb128UInt)
   rule parseInstrx253x26(E:ParseError) => E
   rule #parseInstrx253x26s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(UnsignedInt0) ListItem(BWI))
   rule #parseInstrx253x26s1(E:ParseError) => E
@@ -1401,7 +1401,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx253x27s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx253x27(BWI) => #parseInstrx253x27s1(parseUnsignedInt(BWI))
+  rule parseInstrx253x27(BWI) => #parseInstrx253x27s1(parseLeb128UInt)
   rule parseInstrx253x27(E:ParseError) => E
   rule #parseInstrx253x27s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(UnsignedInt0) ListItem(BWI))
   rule #parseInstrx253x27s1(E:ParseError) => E
@@ -1409,7 +1409,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx253x28s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx253x28(BWI) => #parseInstrx253x28s1(parseUnsignedInt(BWI))
+  rule parseInstrx253x28(BWI) => #parseInstrx253x28s1(parseLeb128UInt)
   rule parseInstrx253x28(E:ParseError) => E
   rule #parseInstrx253x28s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(UnsignedInt0) ListItem(BWI))
   rule #parseInstrx253x28s1(E:ParseError) => E
@@ -1417,7 +1417,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx253x29s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx253x29(BWI) => #parseInstrx253x29s1(parseUnsignedInt(BWI))
+  rule parseInstrx253x29(BWI) => #parseInstrx253x29s1(parseLeb128UInt)
   rule parseInstrx253x29(E:ParseError) => E
   rule #parseInstrx253x29s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(UnsignedInt0) ListItem(BWI))
   rule #parseInstrx253x29s1(E:ParseError) => E
@@ -1425,7 +1425,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx253x30s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx253x30(BWI) => #parseInstrx253x30s1(parseUnsignedInt(BWI))
+  rule parseInstrx253x30(BWI) => #parseInstrx253x30s1(parseLeb128UInt)
   rule parseInstrx253x30(E:ParseError) => E
   rule #parseInstrx253x30s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(UnsignedInt0) ListItem(BWI))
   rule #parseInstrx253x30s1(E:ParseError) => E
@@ -1433,7 +1433,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx253x31s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx253x31(BWI) => #parseInstrx253x31s1(parseUnsignedInt(BWI))
+  rule parseInstrx253x31(BWI) => #parseInstrx253x31s1(parseLeb128UInt)
   rule parseInstrx253x31(E:ParseError) => E
   rule #parseInstrx253x31s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(UnsignedInt0) ListItem(BWI))
   rule #parseInstrx253x31s1(E:ParseError) => E
@@ -1441,7 +1441,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx253x32s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx253x32(BWI) => #parseInstrx253x32s1(parseUnsignedInt(BWI))
+  rule parseInstrx253x32(BWI) => #parseInstrx253x32s1(parseLeb128UInt)
   rule parseInstrx253x32(E:ParseError) => E
   rule #parseInstrx253x32s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(UnsignedInt0) ListItem(BWI))
   rule #parseInstrx253x32s1(E:ParseError) => E
@@ -1449,7 +1449,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx253x33s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx253x33(BWI) => #parseInstrx253x33s1(parseUnsignedInt(BWI))
+  rule parseInstrx253x33(BWI) => #parseInstrx253x33s1(parseLeb128UInt)
   rule parseInstrx253x33(E:ParseError) => E
   rule #parseInstrx253x33s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(UnsignedInt0) ListItem(BWI))
   rule #parseInstrx253x33s1(E:ParseError) => E
@@ -1457,7 +1457,7 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= #parseInstrx253x34s1
                             ( IntResult
                             )  [function, total]
-  rule parseInstrx253x34(BWI) => #parseInstrx253x34s1(parseUnsignedInt(BWI))
+  rule parseInstrx253x34(BWI) => #parseInstrx253x34s1(parseLeb128UInt)
   rule parseInstrx253x34(E:ParseError) => E
   rule #parseInstrx253x34s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(UnsignedInt0) ListItem(BWI))
   rule #parseInstrx253x34s1(E:ParseError) => E
@@ -1569,7 +1569,7 @@ module BINARY-PARSER-INSTRS
                             ( MemArg
                             , IntResult
                             )  [function, total]
-  rule #parseInstrx253x84s1(memArgResult(MemArg0:MemArg, BWI:BytesWithIndex)) => #parseInstrx253x84s2(MemArg0, parseUnsignedInt(BWI))
+  rule #parseInstrx253x84s1(memArgResult(MemArg0:MemArg, BWI:BytesWithIndex)) => #parseInstrx253x84s2(MemArg0, parseLeb128UInt)
   rule #parseInstrx253x84s1(E:ParseError) => E
   rule #parseInstrx253x84s2(MemArg0:MemArg, intResult(UnsignedInt1:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(MemArg0) ListItem(UnsignedInt1) ListItem(BWI))
   rule #parseInstrx253x84s2(_MemArg0:MemArg, E:ParseError) => E
@@ -1583,7 +1583,7 @@ module BINARY-PARSER-INSTRS
                             ( MemArg
                             , IntResult
                             )  [function, total]
-  rule #parseInstrx253x85s1(memArgResult(MemArg0:MemArg, BWI:BytesWithIndex)) => #parseInstrx253x85s2(MemArg0, parseUnsignedInt(BWI))
+  rule #parseInstrx253x85s1(memArgResult(MemArg0:MemArg, BWI:BytesWithIndex)) => #parseInstrx253x85s2(MemArg0, parseLeb128UInt)
   rule #parseInstrx253x85s1(E:ParseError) => E
   rule #parseInstrx253x85s2(MemArg0:MemArg, intResult(UnsignedInt1:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(MemArg0) ListItem(UnsignedInt1) ListItem(BWI))
   rule #parseInstrx253x85s2(_MemArg0:MemArg, E:ParseError) => E
@@ -1597,7 +1597,7 @@ module BINARY-PARSER-INSTRS
                             ( MemArg
                             , IntResult
                             )  [function, total]
-  rule #parseInstrx253x86s1(memArgResult(MemArg0:MemArg, BWI:BytesWithIndex)) => #parseInstrx253x86s2(MemArg0, parseUnsignedInt(BWI))
+  rule #parseInstrx253x86s1(memArgResult(MemArg0:MemArg, BWI:BytesWithIndex)) => #parseInstrx253x86s2(MemArg0, parseLeb128UInt)
   rule #parseInstrx253x86s1(E:ParseError) => E
   rule #parseInstrx253x86s2(MemArg0:MemArg, intResult(UnsignedInt1:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(MemArg0) ListItem(UnsignedInt1) ListItem(BWI))
   rule #parseInstrx253x86s2(_MemArg0:MemArg, E:ParseError) => E
@@ -1611,7 +1611,7 @@ module BINARY-PARSER-INSTRS
                             ( MemArg
                             , IntResult
                             )  [function, total]
-  rule #parseInstrx253x87s1(memArgResult(MemArg0:MemArg, BWI:BytesWithIndex)) => #parseInstrx253x87s2(MemArg0, parseUnsignedInt(BWI))
+  rule #parseInstrx253x87s1(memArgResult(MemArg0:MemArg, BWI:BytesWithIndex)) => #parseInstrx253x87s2(MemArg0, parseLeb128UInt)
   rule #parseInstrx253x87s1(E:ParseError) => E
   rule #parseInstrx253x87s2(MemArg0:MemArg, intResult(UnsignedInt1:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(MemArg0) ListItem(UnsignedInt1) ListItem(BWI))
   rule #parseInstrx253x87s2(_MemArg0:MemArg, E:ParseError) => E
@@ -1625,7 +1625,7 @@ module BINARY-PARSER-INSTRS
                             ( MemArg
                             , IntResult
                             )  [function, total]
-  rule #parseInstrx253x88s1(memArgResult(MemArg0:MemArg, BWI:BytesWithIndex)) => #parseInstrx253x88s2(MemArg0, parseUnsignedInt(BWI))
+  rule #parseInstrx253x88s1(memArgResult(MemArg0:MemArg, BWI:BytesWithIndex)) => #parseInstrx253x88s2(MemArg0, parseLeb128UInt)
   rule #parseInstrx253x88s1(E:ParseError) => E
   rule #parseInstrx253x88s2(MemArg0:MemArg, intResult(UnsignedInt1:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(MemArg0) ListItem(UnsignedInt1) ListItem(BWI))
   rule #parseInstrx253x88s2(_MemArg0:MemArg, E:ParseError) => E
@@ -1639,7 +1639,7 @@ module BINARY-PARSER-INSTRS
                             ( MemArg
                             , IntResult
                             )  [function, total]
-  rule #parseInstrx253x89s1(memArgResult(MemArg0:MemArg, BWI:BytesWithIndex)) => #parseInstrx253x89s2(MemArg0, parseUnsignedInt(BWI))
+  rule #parseInstrx253x89s1(memArgResult(MemArg0:MemArg, BWI:BytesWithIndex)) => #parseInstrx253x89s2(MemArg0, parseLeb128UInt)
   rule #parseInstrx253x89s1(E:ParseError) => E
   rule #parseInstrx253x89s2(MemArg0:MemArg, intResult(UnsignedInt1:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(MemArg0) ListItem(UnsignedInt1) ListItem(BWI))
   rule #parseInstrx253x89s2(_MemArg0:MemArg, E:ParseError) => E
@@ -1653,7 +1653,7 @@ module BINARY-PARSER-INSTRS
                             ( MemArg
                             , IntResult
                             )  [function, total]
-  rule #parseInstrx253x90s1(memArgResult(MemArg0:MemArg, BWI:BytesWithIndex)) => #parseInstrx253x90s2(MemArg0, parseUnsignedInt(BWI))
+  rule #parseInstrx253x90s1(memArgResult(MemArg0:MemArg, BWI:BytesWithIndex)) => #parseInstrx253x90s2(MemArg0, parseLeb128UInt)
   rule #parseInstrx253x90s1(E:ParseError) => E
   rule #parseInstrx253x90s2(MemArg0:MemArg, intResult(UnsignedInt1:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(MemArg0) ListItem(UnsignedInt1) ListItem(BWI))
   rule #parseInstrx253x90s2(_MemArg0:MemArg, E:ParseError) => E
@@ -1667,7 +1667,7 @@ module BINARY-PARSER-INSTRS
                             ( MemArg
                             , IntResult
                             )  [function, total]
-  rule #parseInstrx253x91s1(memArgResult(MemArg0:MemArg, BWI:BytesWithIndex)) => #parseInstrx253x91s2(MemArg0, parseUnsignedInt(BWI))
+  rule #parseInstrx253x91s1(memArgResult(MemArg0:MemArg, BWI:BytesWithIndex)) => #parseInstrx253x91s2(MemArg0, parseLeb128UInt)
   rule #parseInstrx253x91s1(E:ParseError) => E
   rule #parseInstrx253x91s2(MemArg0:MemArg, intResult(UnsignedInt1:Int, _BWI:BytesWithIndex)) => parseError("instruction not implemented", ListItem(MemArg0) ListItem(UnsignedInt1) ListItem(BWI))
   rule #parseInstrx253x91s2(_MemArg0:MemArg, E:ParseError) => E

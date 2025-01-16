@@ -72,6 +72,12 @@ module BINARY-PARSER-BASE
 
 ```k
 
+  syntax ValTypeVec ::= List{ValType, ":"}
+  syntax ValTypeVecResult ::= valTypeVecResult(ValTypeVec, BytesWithIndex) | ParseError
+  syntax ValTypeVecResult ::= parseValTypeVec(BytesWithIndex)  [function, total]
+                            | #parseValTypeVec1(BytesWithIndex, ValTypeResult)  [function, total]
+                            | #parseValTypeVec2(ValType, ValTypeVecResult)  [function, total]
+  zuma
 
   syntax ValTypeResult ::= valTypeResult(ValType, BytesWithIndex) | ParseError
   syntax ValTypeResult  ::= parseValType(BytesWithIndex)  [function, total]
@@ -79,7 +85,7 @@ module BINARY-PARSER-BASE
                           | #parseValTypeI64(BytesWithIndex, BytesWithIndexOrError)  [function, total]
                           | #parseValTypeF32(BytesWithIndex, BytesWithIndexOrError)  [function, total]
                           | #parseValTypeF64(BytesWithIndex, BytesWithIndexOrError)  [function, total]
-                          | #parseValTypeVec(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                          | #parseValTypeVec128(BytesWithIndex, BytesWithIndexOrError)  [function, total]
                           | #parseValTypeFuncRef(BytesWithIndex, BytesWithIndexOrError)  [function, total]
                           | #parseValTypeExtRef(BytesWithIndex, BytesWithIndexOrError)  [function, total]
   rule parseValType(BWI:BytesWithIndex)
@@ -95,10 +101,10 @@ module BINARY-PARSER-BASE
       => #parseValTypeF64(BWI, parseConstant(BWI, TYPE_F64))
   rule #parseValTypeF64(_, BWI:BytesWithIndex) => valTypeResult(f64, BWI)
   rule #parseValTypeF64(BWI:BytesWithIndex, _:ParseError)
-      => #parseValTypeVec(BWI, parseConstant(BWI, TYPE_VEC))
-  rule #parseValTypeVec(_:BytesWithIndex, _:BytesWithIndex)
-      => parseError("#parseValTypeVec: v128 not implemented", .List)
-  rule #parseValTypeVec(BWI:BytesWithIndex, _:ParseError)
+      => #parseValTypeVec128(BWI, parseConstant(BWI, TYPE_VEC))
+  rule #parseValTypeVec128(_:BytesWithIndex, _:BytesWithIndex)
+      => parseError("#parseValTypeVec128: v128 not implemented", .List)
+  rule #parseValTypeVec128(BWI:BytesWithIndex, _:ParseError)
       => #parseValTypeFuncRef(BWI, parseConstant(BWI, TYPE_FUN_REF))
   rule #parseValTypeFuncRef(_, BWI:BytesWithIndex) => valTypeResult(funcref, BWI)
   rule #parseValTypeFuncRef(BWI:BytesWithIndex, _:ParseError)
