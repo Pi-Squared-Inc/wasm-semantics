@@ -9,6 +9,9 @@ module BINARY-PARSER-TEST
     imports BINARY-PARSER-TEST-SYNTAX
 
     imports BINARY-PARSER
+    imports BINARY-PARSER-SYNTAX
+    imports BINARY-PARSER-MODULE-TEST-SYNTAX
+    imports BINARY-PARSER-SECTION-SYNTAX
 
     syntax KItem ::= parseBinary(Bytes)
 
