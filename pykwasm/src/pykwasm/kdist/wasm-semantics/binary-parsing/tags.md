@@ -49,12 +49,12 @@ In the import/export sections, different kinds of imports/exports are tagged.
 _Element_ sections have various possible formats which are stored in a 3-bit code.
 The possible code words are explained in the table below:
 
-Bit # | "C"onstraint | "0" State         | "1" State              |
------ | ---------- | --------------- | -------------------- |
-0     | "N"one       | active          | passive/declarative  |
-1     | "B"it[0]=0   | has table index | zero table index     |
-1     | "B"it[0]=1   | passive         | declarative          |
-2     | "N"one       | elts by ref     | elts by value        |
+Bit # | Constraint  | "0" State       | "1" State            |
+----- | ----------  | --------------- | -------------------- |
+0     |  None       | active          | passive/declarative  |
+1     |  Bit[0]=0   | has table index | zero table index     |
+1     |  Bit[0]=1   | passive         | declarative          |
+2     |  None       | elts by ref     | elts by value        |
 
 ```k
   syntax Bytes ::= "ELTS_ACTIVE_ZERO_BY_REF" [macro] // 000
