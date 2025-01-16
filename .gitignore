@@ -1,5 +1,6 @@
 /.kwasm-logs/
 /tests/*/*-out
+/tmp
 
 *.pdf
 *.sty

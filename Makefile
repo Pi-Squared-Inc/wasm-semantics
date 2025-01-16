@@ -20,7 +20,7 @@ endif
 pykwasm:
 	$(POETRY) install
 
-.PHONY: build build-simple build-prove build-wrc20
+.PHONY: build build-simple build-prove build-wrc20 build-binary-parser-test
 build: pykwasm
 	$(KDIST) -v build -j3
 
@@ -32,6 +32,9 @@ build-prove: pykwasm
 
 build-wrc20: pykwasm
 	$(KDIST) -v build wasm-semantics.wrc20 -j3
+
+build-binary-parser-test: pykwasm
+	$(KDIST) -v build wasm-semantics.binary-parser-test -j3
 
 .PHONY: clean
 clean: pykwasm
@@ -270,6 +273,34 @@ simple_tests_failing := $(shell cat tests/failing.simple)
 simple_tests_passing := $(filter-out $(simple_tests_failing), $(simple_tests))
 
 test-simple: $(simple_tests_passing:=.run)
+
+### Parsing Tests
+
+build/binary-parsing/%.bprun: tests/binary-parsing/% build-binary-parser-test
+	mkdir -p build/binary-parsing
+	wat2wasm $< -o $@.wasm
+	cat $@.wasm \
+			| xxd -ps \
+			| tr -d '\n' \
+			| sed 's/\(..\)/\\x\1/g' \
+			| sed 's/^\(.*\)/\\dv{SortBytes{}}("\1")/' \
+			> $@.kore
+	krun \
+			--parser cat \
+			$@.kore \
+			--definition $(shell $(KDIST) which wasm-semantics.binary-parser-test) \
+			> $@-out
+	$(CHECK) $@-out $<.out
+	touch $@
+
+binary_parsing_tests   := $(wildcard tests/binary-parsing/*.wast)
+binary_parsing_failing := $(shell cat tests/binary-parsing/failing)
+binary_parsing_passing := $(filter-out $(binary_parsing_failing), $(binary_parsing_tests))
+binary_parsing_results := $(patsubst tests/binary-parsing/%, build/binary-parsing/%.bprun, $(binary_parsing_passing))
+
+test-binary-parsing: $(binary_parsing_results)
+
+.PHONY: test-binary-parsing
 
 ### Conformance Tests
 

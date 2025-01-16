@@ -56,6 +56,8 @@ jobs:
         run: docker exec -u user kwasm-ci-conformance-${GITHUB_SHA} make -j2 test-conformance-supported
       - name: 'Run conformance tests: parse'
         run: docker exec -u user kwasm-ci-conformance-${GITHUB_SHA} make test-conformance-parse
+      - name: 'Run conformance tests: binary parse'
+        run: docker exec -u user kwasm-ci-conformance-${GITHUB_SHA} make test-binary-parsing
       - name: 'Tear down Docker'
         if: always()
         run: |

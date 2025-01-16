@@ -7,6 +7,7 @@ To begin, we define constant macros which drive the parser process.
 ```k
 module BINARY-PARSER-DATA
   imports BYTES
+  imports INT
 ```
 
 ## Wasm Metadata Parser Tags
@@ -21,19 +22,19 @@ Every Wasm module starts with a 4-byte header and a 4-byte version.
 After that, a Wasm module is an ordered list of sections, each prefixed with a section id.
 
 ```k
-  syntax Bytes ::= "CUSTOM_SEC" [macro] rule CUSTOM_SEC => b"\x00"
-  syntax Bytes ::= "TYPE_SEC"   [macro] rule TYPE_SEC   => b"\x01"
-  syntax Bytes ::= "IMPORT_SEC" [macro] rule IMPORT_SEC => b"\x02"
-  syntax Bytes ::= "FUNC_SEC"   [macro] rule FUNC_SEC   => b"\x03"
-  syntax Bytes ::= "TABLE_SEC"  [macro] rule TABLE_SEC  => b"\x04"
-  syntax Bytes ::= "MEMORY_SEC" [macro] rule MEMORY_SEC => b"\x05"
-  syntax Bytes ::= "GLOBAL_SEC" [macro] rule GLOBAL_SEC => b"\x06"
-  syntax Bytes ::= "EXPORT_SEC" [macro] rule EXPORT_SEC => b"\x07"
-  syntax Bytes ::= "START_SEC"  [macro] rule START_SEC  => b"\x08"
-  syntax Bytes ::= "ELT_SEC"    [macro] rule ELT_SEC    => b"\x09"
-  syntax Bytes ::= "CODE_SEC"   [macro] rule CODE_SEC   => b"x0a"
-  syntax Bytes ::= "DAT_SEC"    [macro] rule DAT_SEC    => b"x0b"
-  syntax Bytes ::= "CNT_SEC"    [macro] rule CNT_SEC    => b"x0c"
+  syntax Int ::= "CUSTOM_SEC" [macro] rule CUSTOM_SEC => 0
+  syntax Int ::= "TYPE_SEC"   [macro] rule TYPE_SEC   => 1
+  syntax Int ::= "IMPORT_SEC" [macro] rule IMPORT_SEC => 2
+  syntax Int ::= "FUNC_SEC"   [macro] rule FUNC_SEC   => 3
+  syntax Int ::= "TABLE_SEC"  [macro] rule TABLE_SEC  => 4
+  syntax Int ::= "MEMORY_SEC" [macro] rule MEMORY_SEC => 5
+  syntax Int ::= "GLOBAL_SEC" [macro] rule GLOBAL_SEC => 6
+  syntax Int ::= "EXPORT_SEC" [macro] rule EXPORT_SEC => 7
+  syntax Int ::= "START_SEC"  [macro] rule START_SEC  => 8
+  syntax Int ::= "ELT_SEC"    [macro] rule ELT_SEC    => 9
+  syntax Int ::= "CODE_SEC"   [macro] rule CODE_SEC   => 10
+  syntax Int ::= "DAT_SEC"    [macro] rule DAT_SEC    => 11
+  syntax Int ::= "CNT_SEC"    [macro] rule CNT_SEC    => 12
 ```
 
 In the import/export sections, different kinds of imports/exports are tagged.
@@ -648,16 +649,359 @@ _Expression_ encoding
 endmodule
 ```
 
-module BINARY_PARSER [private]
+```k
+module BINARY-PARSER //[private]
+  imports BINARY-PARSER-DATA
+  imports LIST
+  imports STRING
   imports WASM
-  imports BINARY_PARSER_DATA
 
-  syntax ParseResult ::= "M"oduleDecl
-        syntax Bytes ::= "P"arseError(String)
+  syntax ParseError ::= parseError(String, List)
+
+  syntax ModuleOrError ::= ModuleDecl | ParseError
+  syntax BytesWithIndex ::= bwi(Bytes, Int)
+
+  syntax ModuleOrError ::= parseModule(Bytes)  [function, total]
+  rule parseModule(B:Bytes) => checkAllBytesParsed(parseModule(bwi(B, 0)))
+  syntax ModuleOrError ::= checkAllBytesParsed(ModuleParseResult)  [function, total]
+  rule checkAllBytesParsed(success(M, bwi(B:Bytes, Index:Int))) => M requires Index ==Int lengthBytes(B)
+  rule checkAllBytesParsed(E:ParseError) => E
+
+  syntax ModuleParseResult ::= success(ModuleDecl, BytesWithIndex) | ParseError
+
+```
+
+  [Module](https://webassembly.github.io/spec/core/binary/modules.html) parsing
+
+```k
+
+  syntax ModuleParseResult ::= parseModule(BytesWithIndex)  [function, total]
+  rule parseModule(BWI:BytesWithIndex)
+      => parseModuleSections(reverseSections(splitSections(parseConstant(parseConstant(BWI, MAGIC), VERSION))))
+
+```
+
+  [https://webassembly.github.io/spec/core/binary/modules.html#sections](section) parsing
+
+```k
+
+  syntax ModuleParseResult  ::= parseModuleSections(UnparsedSectionsResult)  [function, total]
+                              | #parseModuleSections(ParsedSectionsResult, BytesWithIndex)  [function, total]
+
+  rule parseModuleSections(unparsedSectionsResult(S:UnparsedSections, BWI:BytesWithIndex))
+      => #parseModuleSections(parseSections(S), BWI)
+  rule parseModuleSections(E:ParseError) => E
+  rule #parseModuleSections(S:Sections, BWI:BytesWithIndex)
+      => success
+          ( addSectionsToModule
+              ( S  // Do not reverse, as required by addDefnToModule.
+              , #module
+                  (... types: .Defns
+                  , funcs: .Defns
+                  , tables: .Defns
+                  , mems: .Defns
+                  , globals: .Defns
+                  , elem: .Defns
+                  , data: .Defns
+                  , start: .Defns
+                  , importDefns: .Defns
+                  , exports: .Defns
+                  , metadata: #meta(... id: , funcIds: .Map, filename: .String)
+                  )
+              ), BWI)
+  rule #parseModuleSections(E:ParseError, _:BytesWithIndex) => E
+
+  syntax ModuleDecl ::= addSectionsToModule(Sections, ModuleDecl)  [function, total]
+  rule addSectionsToModule(.Sections, M:ModuleDecl) => M
+  rule addSectionsToModule(S:Section : Ss:Sections, M:ModuleDecl)
+      => addSectionsToModule(Ss, addSectionToModule(S, M))
+  syntax ModuleDecl ::= addSectionToModule(Section, ModuleDecl)  [function, total]
+  rule addSectionToModule(customSection(_:Bytes), M:ModuleDecl) => M
+  rule addSectionToModule(defnsSection(D:Defns), M:ModuleDecl) => addDefnsToModule(D, M)
+  syntax ModuleDecl ::= addDefnsToModule(Defns, ModuleDecl)  [function, total]
+  rule addDefnsToModule(.Defns, M:ModuleDecl) => M
+  rule addDefnsToModule(D:Defn Ds:Defns, M:ModuleDecl)
+      => addDefnsToModule(Ds, addDefnToModule(false, D, M))
+  syntax ModuleDecl ::= addDefnToModule(Bool, Defn, ModuleDecl)  [function, total]
+  rule addDefnToModule(true, _, M) => M
+  // The following add the defn at the top of the existing defns (e.g. T Ts), so
+  // addDefnToModule should be called with Defns in reverse order
+  // (the last defn should be processed in the first call).
+  rule addDefnToModule(false => true, T:TypeDefn, #module(... types: Ts => T Ts))
+
+  syntax Sections ::= List{Section, ":"}
+  syntax ParsedSectionsResult ::= Sections | ParseError
+  syntax ParsedSectionsResult ::= parseSections(UnparsedSections)  [function, total]
+                                | #parseSections(SectionResult, ParsedSectionsResult)  [function, total]
+  rule parseSections(.UnparsedSections) => .Sections
+  rule parseSections(S:UnparsedSection : Ss:UnparsedSections)
+      => #parseSections(parseSection(S), parseSections(Ss))
+  rule #parseSections(sectionResult(S:Section, bwi(B:Bytes, I:Int)), Ss:Sections)
+      => S : Ss
+      requires I ==K lengthBytes(B)
+  rule #parseSections(E:ParseError, _) => E
+  rule #parseSections(_, E:ParseError) => E
+    [owise]
+
+  syntax SectionResult ::= sectionResult(Section, BytesWithIndex) | ParseError
+  syntax SectionResult ::= parseSection(UnparsedSection)  [function, total]
+
+  syntax Section ::= customSection(Bytes)
+  syntax Section ::= defnsSection(reverseDefns:Defns)
+  rule parseSection(unparsedSection(CUSTOM_SEC, Data:Bytes))
+      => sectionResult(customSection(Data), bwi(Data, lengthBytes(Data)))
+  rule parseSection(unparsedSection(TYPE_SEC, Data:Bytes))
+      => parseTypeSection(bwi(Data, 0))
+  // rule parseSection(A) => parseError("parseSection", ListItem(A))
+  //     [owise]
+
+```
+
+  Parsing for the [type section](https://webassembly.github.io/spec/core/binary/modules.html#binary-typesec).
+
+```k
+
+  syntax SectionResult  ::= parseTypeSection(BytesWithIndex)  [function, total]
+                          | #parseTypeSection(IntResult)  [function, total]
+  rule parseTypeSection(BWI:BytesWithIndex) => #parseTypeSection(parseLeb128UInt(BWI))
+  rule #parseTypeSection(intResult(Count:Int, BWI:BytesWithIndex))
+      => parseTypeSectionVector(Count, .Defns, BWI)
+  rule #parseTypeSection(E:ParseError) => E
+
+  syntax SectionResult  ::= parseTypeSectionVector(remainingCount:Int, Defns, BytesWithIndex)  [function, total]
+                          | #parseTypeSectionVector(remainingCount:Int, Defns, DefnResult)  [function, total]
+  rule parseTypeSectionVector(0, D:Defns, BWI:BytesWithIndex) => sectionResult(defnsSection(D), BWI)
+  rule parseTypeSectionVector(Count:Int, D:Defns, BWI:BytesWithIndex)
+      => #parseTypeSectionVector(Count, D, parseFuncType(BWI))
+      requires Count >Int 0
+  rule parseTypeSectionVector(Count:Int, D:Defns, bwi(B:Bytes, I:Int))
+      => parseError("parseTypeSectionVector", ListItem(Count) ListItem(D) ListItem(I) ListItem(lengthBytes(B)) ListItem(B))
+      [owise]
+  rule #parseTypeSectionVector(RemainingCount:Int, Ds:Defns, defnResult(D:Defn, BWI:BytesWithIndex))
+      => parseTypeSectionVector(RemainingCount -Int 1, D Ds, BWI)
+  rule #parseTypeSectionVector(_RemainingCount:Int, _Ds:Defns, E:ParseError)
+      => E
+
+  syntax DefnResult ::= defnResult(Defn, BytesWithIndex) | ParseError
+
+```
+
+  Parsing a [function type](https://webassembly.github.io/spec/core/binary/types.html#binary-functype).
+
+```k
+
+  syntax DefnResult ::= parseFuncType(BytesWithIndex)  [function, total]
+                      | #parseFuncType(BytesWithIndexOrError)  [function, total]
+                      | #parseFuncType1(ResultTypeResult)  [function, total]
+                      | #parseFuncType2(VecType, ResultTypeResult)  [function, total]
+  rule parseFuncType(BWI:BytesWithIndex) => #parseFuncType(parseConstant(BWI, TYPE_FUN))
+  rule #parseFuncType(BWI:BytesWithIndex) => #parseFuncType1(parseResultType(BWI))
+  rule #parseFuncType(E:ParseError) => E
+  rule #parseFuncType1(resultTypeResult(V:VecType, BWI:BytesWithIndex))
+      => #parseFuncType2(V, parseResultType(BWI))
+  rule #parseFuncType1(E:ParseError) => E
+  rule #parseFuncType2(V1:VecType, resultTypeResult(V2:VecType, BWI:BytesWithIndex))
+      => defnResult(#type(V1 -> V2, ), BWI:BytesWithIndex)
+  rule #parseFuncType2(_:VecType, E:ParseError) => E
+
+  syntax ResultTypeResult ::= resultTypeResult(VecType, BytesWithIndex) | ParseError
+  syntax ResultTypeResult ::= parseResultType(BytesWithIndex)  [function, total]
+                            | #parseResultType(IntResult)  [function, total]
+                            | #parseResultType1(ValTypesResult)  [function, total]
+  rule parseResultType(BWI:BytesWithIndex) => #parseResultType(parseLeb128UInt(BWI))
+  rule #parseResultType(intResult(Count:Int, BWI:BytesWithIndex))
+      => #parseResultType1(parseValTypes(Count, .ValTypes, BWI))
+  rule #parseResultType(E:ParseError) => E
+  rule #parseResultType1(valTypesResult(V:ValTypes, BWI:BytesWithIndex))
+      => resultTypeResult([V], BWI)
+  rule #parseResultType1(E:ParseError) => E
+
+```
+
+  Parsing [value types](https://webassembly.github.io/spec/core/binary/types.html#binary-valtype)
+  individually and as a vector.
+
+```k
+
+  syntax ValTypesResult ::= valTypesResult(ValTypes, BytesWithIndex) | ParseError
+  syntax ValTypesResult ::= parseValTypes(remaining:Int, ValTypes, BytesWithIndex)  [function, total]
+                          | #parseValTypes(remaining:Int, ValTypes, ValTypeResult)  [function, total]
+  rule parseValTypes(0, V:ValTypes, BWI:BytesWithIndex)
+      => valTypesResult(reverse(V), BWI)
+  rule parseValTypes(Count:Int, V:ValTypes, BWI:BytesWithIndex)
+      => #parseValTypes(Count -Int 1, V, parseValType(BWI))
+      requires Count >Int 0
+  rule parseValTypes(Count:Int, V:ValTypes, bwi(B:Bytes, I:Int))
+      => parseError("parseValTypes", ListItem(Count) ListItem(V) ListItem(I) ListItem(lengthBytes(B)) ListItem(B))
+      [owise]
+  rule #parseValTypes(Count:Int, Vs:ValTypes, valTypeResult(V:ValType, BWI:BytesWithIndex))
+      => parseValTypes(Count, V Vs, BWI)
+  rule #parseValTypes(_:Int, _:ValTypes, E:ParseError) => E
+
+  syntax ValTypes ::= reverse(ValTypes)  [function, total]
+                    | #reverse(ValTypes, ValTypes)  [function, total]
+  rule reverse(V:ValTypes) => #reverse(V, .ValTypes)
+  rule #reverse(.ValTypes, Vs:ValTypes) => Vs
+  rule #reverse(V:ValType Vs1:ValTypes, Vs2:ValTypes) => #reverse(Vs1, V Vs2)
+
+  syntax ValTypeResult ::= valTypeResult(ValType, BytesWithIndex) | ParseError
+  syntax ValTypeResult  ::= parseValType(BytesWithIndex)  [function, total]
+                          | #parseValTypeI32(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                          | #parseValTypeI64(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                          | #parseValTypeF32(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                          | #parseValTypeF64(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                          | #parseValTypeVec(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                          | #parseValTypeFuncRef(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                          | #parseValTypeExtRef(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+  rule parseValType(BWI:BytesWithIndex)
+      => #parseValTypeI32(BWI, parseConstant(BWI, TYPE_I32))
+  rule #parseValTypeI32(_, BWI:BytesWithIndex) => valTypeResult(i32, BWI)
+  rule #parseValTypeI32(BWI:BytesWithIndex, _:ParseError)
+      => #parseValTypeI64(BWI, parseConstant(BWI, TYPE_I64))
+  rule #parseValTypeI64(_, BWI:BytesWithIndex) => valTypeResult(i64, BWI)
+  rule #parseValTypeI64(BWI:BytesWithIndex, _:ParseError)
+      => #parseValTypeF32(BWI, parseConstant(BWI, TYPE_F32))
+  rule #parseValTypeF32(_, BWI:BytesWithIndex) => valTypeResult(f32, BWI)
+  rule #parseValTypeF32(BWI:BytesWithIndex, _:ParseError)
+      => #parseValTypeF64(BWI, parseConstant(BWI, TYPE_F64))
+  rule #parseValTypeF64(_, BWI:BytesWithIndex) => valTypeResult(f64, BWI)
+  rule #parseValTypeF64(BWI:BytesWithIndex, _:ParseError)
+      => #parseValTypeVec(BWI, parseConstant(BWI, TYPE_VEC))
+  rule #parseValTypeVec(_:BytesWithIndex, _:BytesWithIndex)
+      => parseError("#parseValTypeVec: v128 not implemented", .List)
+  rule #parseValTypeVec(BWI:BytesWithIndex, _:ParseError)
+      => #parseValTypeFuncRef(BWI, parseConstant(BWI, TYPE_FUN_REF))
+  rule #parseValTypeFuncRef(_, BWI:BytesWithIndex) => valTypeResult(funcref, BWI)
+  rule #parseValTypeFuncRef(BWI:BytesWithIndex, _:ParseError)
+      => #parseValTypeExtRef(BWI, parseConstant(BWI, TYPE_EXT_REF))
+  rule #parseValTypeExtRef(_, BWI:BytesWithIndex) => valTypeResult(externref, BWI)
+  rule #parseValTypeExtRef(_:BytesWithIndex, E:ParseError)
+      => E
+
+  syntax BytesWithIndexOrError ::= BytesWithIndex | ParseError
+
+```
+
+  Splitting a module in individual sections
+
+```k
+
+  syntax UnparsedSection ::= unparsedSection(sectionId:Int, sectionData:Bytes)
+  syntax UnparsedSectionResult ::= unparsedSectionResult(UnparsedSection, BytesWithIndex) | ParseError
+  syntax UnparsedSectionResult  ::= splitSection(BytesWithIndex) [function, total]
+                                  | #splitSection(sectionId:Int, IntResult) [function, total]
+
+  rule splitSection(bwi(Buffer:Bytes, Index:Int))
+      => #splitSection(Buffer[Index], parseLeb128UInt(bwi(Buffer, Index +Int 1)))
+      requires Index <Int lengthBytes(Buffer)
+
+  rule #splitSection(SectionId, intResult(SectionLength:Int, bwi(Buffer:Bytes, Index:Int)))
+      => unparsedSectionResult
+          ( unparsedSection(SectionId, substrBytes(Buffer, Index, Index +Int SectionLength))
+          , bwi(Buffer, Index +Int SectionLength)
+          )
+      requires 0 <=Int Index andBool Index +Int SectionLength <=Int lengthBytes(Buffer)
+  rule #splitSection(SectionId:Int, intResult(SectionLength:Int, bwi(Buffer:Bytes, Index:Int)))
+      => parseError("splitSection", ListItem(SectionId) ListItem(SectionLength) ListItem(Index) ListItem(lengthBytes(Buffer)) ListItem(Buffer))
+      [owise]
+  rule #splitSection(_SectionId:Int, E:ParseError) => E
 
 
-  syntax ModuleDecl ::= parseModule(Bytes)  [function, total]
-       syntax Bytes ::= parseMagic(Bytes)   [function, total]
-       syntax Bytes ::= parseVersion(Bytes) [function, total]
+  syntax UnparsedSections ::= List{UnparsedSection, ":"}
+  syntax UnparsedSectionsResult ::= unparsedSectionsResult(UnparsedSections, BytesWithIndex) | ParseError
+
+  syntax UnparsedSections ::= reverse(UnparsedSections)  [function, total]
+                            | #reverse(UnparsedSections, UnparsedSections)  [function, total]
+  rule reverse(S:UnparsedSections) => #reverse(S, .UnparsedSections)
+  rule #reverse(.UnparsedSections, S:UnparsedSections) => S
+  rule #reverse(S:UnparsedSection : Ss1:UnparsedSections, Ss2:UnparsedSections) => #reverse(Ss1, S: Ss2)
+
+  syntax UnparsedSectionsResult ::= reverseSections(UnparsedSectionsResult)  [function, total]
+  rule reverseSections(unparsedSectionsResult(S:UnparsedSections, BWI:BytesWithIndex))
+      => unparsedSectionsResult(reverse(S), BWI)
+  rule reverseSections(E:ParseError) => E
+
+  syntax UnparsedSectionsResult ::= splitSections(BytesWithIndexOrError)  [function, total]
+                                  | #splitSections(UnparsedSectionResult)  [function, total]
+                                  | concatOrError(UnparsedSection, UnparsedSectionsResult)  [function, total]
+
+  rule splitSections(bwi(B:Bytes, Index:Int))
+      => unparsedSectionsResult(.UnparsedSections, bwi(B:Bytes, Index:Int))
+      requires Index ==K lengthBytes(B)
+  rule splitSections(BWI:BytesWithIndex)
+      => #splitSections(splitSection(BWI))
+      [owise]
+  rule splitSections(E:ParseError) => E
+
+  rule #splitSections(unparsedSectionResult(S:UnparsedSection, BWI:BytesWithIndex))
+      => concatOrError(S, splitSections(BWI))
+  rule #splitSections(E:ParseError) => E
+
+  rule concatOrError(S:UnparsedSection, unparsedSectionsResult(Ss:UnparsedSections, BWI:BytesWithIndex))
+      => unparsedSectionsResult(S : Ss, BWI)
+  rule concatOrError(_:UnparsedSection, E:ParseError) => E
+
+  syntax IntResult ::= intResult(value:Int, remainder:BytesWithIndex) | ParseError
+```
+
+  See the [LEB128 encoding](https://en.wikipedia.org/wiki/LEB128) for more details.
+
+```k
+  syntax Bool ::= bit8IsSet(Int) [function, total]
+  rule bit8IsSet(I:Int) => I &Int 128 =/=Int 0
+
+  syntax Int ::= clearBit8(Int) [function, total]
+  rule clearBit8(I:Int) => I ^Int (I &Int 128)
+
+  syntax IntList ::= List{Int, ":"}
+  syntax IntListResult ::= intListResult(IntList, BytesWithIndex) | ParseError
+  syntax IntListResult  ::= parseLeb128IntChunks(BytesWithIndex) [function, total]
+                          | #parseLeb128IntChunks(Int, IntListResult) [function, total]
+
+  rule parseLeb128IntChunks(bwi(Buffer:Bytes, I:Int))
+      => parseError("parseLeb128IntChunks", ListItem(lengthBytes(Buffer)) ListItem(I) ListItem(Buffer))
+      requires I <Int 0 orBool lengthBytes(Buffer) <=Int I
+  rule parseLeb128IntChunks(bwi(Buffer:Bytes, I:Int))
+      => #parseLeb128IntChunks(clearBit8(Buffer[I]), parseLeb128IntChunks(bwi(Buffer, I +Int 1)))
+      requires 0 <=Int I andBool I <Int lengthBytes(Buffer)
+          andBool bit8IsSet(Buffer[I])
+  rule parseLeb128IntChunks(bwi(Buffer:Bytes, I:Int))
+      => intListResult(Buffer[I] : .IntList, bwi(Buffer, I +Int 1))
+      requires 0 <=Int I andBool I <Int lengthBytes(Buffer)
+          andBool notBool bit8IsSet(Buffer[I])
+
+  rule #parseLeb128IntChunks(Value:Int, intListResult(L:IntList, BWI:BytesWithIndex))
+      => intListResult(Value : L, BWI)
+  rule #parseLeb128IntChunks(_Value:Int, E:ParseError) => E
+
+
+  syntax IntResult  ::= parseLeb128UInt(BytesWithIndex)  [function, total]
+                      | #parseLeb128UInt(IntListResult)  [function, total]
+
+  rule parseLeb128UInt(BWI:BytesWithIndex) => #parseLeb128UInt(parseLeb128IntChunks(BWI))
+  rule #parseLeb128UInt(intListResult(L:IntList, BWI:BytesWithIndex))
+      => intResult(buildLeb128UInt(L), BWI)
+  rule #parseLeb128UInt(E:ParseError) => E
+
+  syntax Int ::= buildLeb128UInt(IntList) [function, total]
+  rule buildLeb128UInt(.IntList) => 0
+  rule buildLeb128UInt(Value:Int : L:IntList) => Value +Int 128 *Int buildLeb128UInt(L)
+
+```
+
+  Skipping over a constant prefix in the input.
+
+```k
+
+  syntax BytesWithIndexOrError ::= parseConstant(BytesWithIndexOrError, Bytes)  [function, total]
+  rule parseConstant(bwi(Buffer:Bytes, Index:Int), Constant:Bytes)
+      => bwi(Buffer, Index +Int lengthBytes(Constant))
+      requires Index +Int lengthBytes(Constant) <=Int lengthBytes(Buffer)
+          andBool substrBytes(Buffer, Index, Index +Int lengthBytes(Constant)) ==K Constant
+  rule parseConstant(bwi(Buffer:Bytes, Index:Int), Constant:Bytes)
+      => parseError("parseConstant", ListItem(lengthBytes(Buffer)) ListItem(Index) ListItem(Constant) ListItem(Buffer))
+      [owise]
+  rule parseConstant(E:ParseError, _:Bytes) => E
 
 endmodule
+```
