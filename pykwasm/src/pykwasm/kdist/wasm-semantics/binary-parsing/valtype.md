@@ -12,6 +12,12 @@ module BINARY-PARSER-VALTYPE-SYNTAX
 
   syntax ValTypesResult ::= valTypesResult(ValTypes, BytesWithIndex) | ParseError
   syntax ValTypesResult ::= parseValTypes(remaining:Int, ValTypes, BytesWithIndex)  [function, total]
+
+// +  syntax ValTypeVec ::= List{ValType, ":"}
+// +  syntax ValTypeVecResult ::= valTypeVecResult(ValTypeVec, BytesWithIndex) | ParseError
+// +  syntax ValTypeVecResult ::= parseValTypeVec(BytesWithIndex)  [function, total]
+// +                            | #parseValTypeVec1(BytesWithIndex, ValTypeResult)  [function, total]
+// +                            | #parseValTypeVec2(ValType, ValTypeVecResult)  [function, total]
 endmodule
 
 module BINARY-PARSER-VALTYPE  [private]
