@@ -312,6 +312,8 @@ For `Int`, however, a the context is irrelevant and the index always just resolv
     syntax Index ::= #getElemSegment (ElemSegment, Int) [function]
     syntax Int   ::= #lenInts        (Ints)             [function, total]
     syntax Int   ::= #getInts        (Ints,        Int) [function]
+    syntax Ints  ::= #appendInts     (Ints,        Int) [function, total]
+    syntax Ints  ::= #reverseInts    (Ints)             [function, total]
  // --------------------------------------------------------------
     rule #lenElemSegment(.ElemSegment) => 0
     rule #lenElemSegment(_TFIDX    ES) => 1 +Int #lenElemSegment(ES)
@@ -324,6 +326,14 @@ For `Int`, however, a the context is irrelevant and the index always just resolv
 
     rule #getInts(E _ES, 0) => E
     rule #getInts(_E ES, I) => #getInts(ES, I -Int 1) requires I >Int 0
+
+    rule #appendInts(.Ints, N:Int) => N .Ints
+    rule #appendInts(I:Int Is:Ints, N:Int) => I #appendInts(Is, N)
+
+    rule #reverseInts(Is:Ints) => #reverseIntsHelper(Is, .Ints)
+    syntax Ints ::= #reverseIntsHelper(Ints, Ints)  [function, total]
+    rule #reverseIntsHelper(.Ints, Is:Ints) => Is
+    rule #reverseIntsHelper(I:Int Is:Ints, Js:Ints) => #reverseIntsHelper(Is, I Js)
 
     syntax Ints ::= elemSegment2Ints ( ElemSegment ) [function]
  // -----------------------------------------------------------

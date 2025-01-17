@@ -29,6 +29,8 @@ jobs:
         run: make -C pykwasm cov-unit
       - name: 'Run Rust unit-tests'
         run: make rust-tests
+      - name: 'Generated code did not change'
+        run: make generate-code && git status --porcelain=v1 2>/dev/null
 
   conformance-tests:
     name: 'Conformance Tests'

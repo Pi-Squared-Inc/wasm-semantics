@@ -4,7 +4,7 @@
 module BINARY-PARSER-IMPORT-SYNTAX
   imports BINARY-PARSER-BASE-SYNTAX
 
-  syntax DefnResult ::= parseImport(BytesWithIndex)  [function, total]
+  syntax DefnResult ::= parseDefnImport(BytesWithIndex)  [function, total]
 
 endmodule
 
@@ -21,20 +21,19 @@ module BINARY-PARSER-IMPORT  [private]
   imports BINARY-PARSER-VALTYPE-SYNTAX
   imports WASM
 
-  syntax DefnResult ::= #parseImport1(NameResult)  [function, total]
-                      | #parseImport2(WasmString, NameResult)  [function, total]
-                      | #parseImport3(WasmString, WasmString, ImportDescResult)  [function, total]
-
-  rule parseImport(BWI:BytesWithIndex) => #parseImport1(parseName(BWI))
-  rule #parseImport1(nameResult(Name:WasmString, BWI:BytesWithIndex))
-      => #parseImport2(Name, parseName(BWI))
-  rule #parseImport1(E:ParseError) => E
-  rule #parseImport2(ModuleName:WasmString, nameResult(ObjectName:WasmString, BWI:BytesWithIndex))
-      => #parseImport3(ModuleName, ObjectName, parseImportDesc(BWI))
-  rule #parseImport2(_, E:ParseError) => E
-  rule #parseImport3(ModuleName:WasmString, ObjectName:WasmString, importDescResult(Desc:ImportDesc, BWI:BytesWithIndex))
-      => defnResult(#import(ModuleName, ObjectName, Desc), BWI)
-  rule #parseImport3(_, _, E:ParseError) => E
+  syntax DefnResult ::= #parseDefnImport1(NameResult)  [function, total]
+                      | #parseDefnImport2(WasmString, NameResult)  [function, total]
+                      | #parseDefnImport3(WasmString, WasmString, ImportDescResult)  [function, total]
+  rule parseDefnImport(BWI:BytesWithIndex) => #parseDefnImport1(parseName(BWI))
+  rule #parseDefnImport1(nameResult(Name:WasmString, BWI:BytesWithIndex))
+      => #parseDefnImport2(Name, parseName(BWI))
+  rule #parseDefnImport1(E:ParseError) => E
+  rule #parseDefnImport2(ModuleName:WasmString, nameResult(ObjectName:WasmString, BWI:BytesWithIndex))
+      => #parseDefnImport3(ModuleName, ObjectName, parseImportDesc(BWI))
+  rule #parseDefnImport2(_, E:ParseError) => E
+  rule #parseDefnImport3(ModuleName:WasmString, ObjectName:WasmString, importDescResult(Desc:ImportDesc, BWI:BytesWithIndex))
+       => defnResult(#import(ModuleName, ObjectName, Desc), BWI)
+  rule #parseDefnImport3(_, _, E:ParseError) => E
 
 
   syntax ImportDescResult ::= importDescResult(ImportDesc, BytesWithIndex) | ParseError

@@ -4,8 +4,12 @@ Parsing a [function type](https://webassembly.github.io/spec/core/binary/types.h
 module BINARY-PARSER-FUNCTYPE-SYNTAX
   imports BINARY-PARSER-BASE-SYNTAX
   imports BINARY-PARSER-DEFN-SYNTAX
+  imports WASM-DATA-COMMON
 
-  syntax DefnResult ::= parseFuncType(BytesWithIndex)  [function, total]
+  syntax DefnResult ::= parseDefnType(BytesWithIndex)  [function, total]
+
+  syntax FuncTypeResult ::= funcTypeResult(FuncType, BytesWithIndex) | ParseError
+  syntax FuncTypeResult ::= parseFuncType(BytesWithIndex)  [function, total]
 endmodule
 
 module BINARY-PARSER-FUNCTYPE  [private]
@@ -15,9 +19,17 @@ module BINARY-PARSER-FUNCTYPE  [private]
   imports BINARY-PARSER-TAGS
   imports WASM
 
-  syntax DefnResult ::= #parseFuncType(BytesWithIndexOrError)  [function, total]
-                      | #parseFuncType1(ResultTypeResult)  [function, total]
-                      | #parseFuncType2(VecType, ResultTypeResult)  [function, total]
+  syntax DefnResult ::= #parseDefnType(FuncTypeResult)  [function, total]
+
+  rule parseDefnType(BWI:BytesWithIndex) => #parseDefnType(parseFuncType(BWI))
+
+  rule #parseDefnType(funcTypeResult(F:FuncType, BWI:BytesWithIndex))
+      => defnResult(#type(F, ), BWI)
+  rule #parseDefnType(E:ParseError) => E
+
+  syntax FuncTypeResult ::= #parseFuncType(BytesWithIndexOrError)  [function, total]
+                          | #parseFuncType1(ResultTypeResult)  [function, total]
+                          | #parseFuncType2(VecType, ResultTypeResult)  [function, total]
 
   rule parseFuncType(BWI:BytesWithIndex) => #parseFuncType(parseConstant(BWI, TYPE_FUN))
   rule #parseFuncType(BWI:BytesWithIndex) => #parseFuncType1(parseResultType(BWI))
@@ -26,7 +38,7 @@ module BINARY-PARSER-FUNCTYPE  [private]
       => #parseFuncType2(V, parseResultType(BWI))
   rule #parseFuncType1(E:ParseError) => E
   rule #parseFuncType2(V1:VecType, resultTypeResult(V2:VecType, BWI:BytesWithIndex))
-      => defnResult(#type(V1 -> V2, ), BWI:BytesWithIndex)
+      => funcTypeResult(V1 -> V2, BWI:BytesWithIndex)
   rule #parseFuncType2(_:VecType, E:ParseError) => E
 
 endmodule

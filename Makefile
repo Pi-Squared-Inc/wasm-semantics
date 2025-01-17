@@ -20,25 +20,30 @@ endif
 pykwasm:
 	$(POETRY) install
 
+.PHONY: generate-code
+generate-code: pykwasm
+	$(POETRY_RUN) binary-parser-gen > pykwasm/src/pykwasm/kdist/wasm-semantics/binary-parsing/instr.md
+
 .PHONY: build build-simple build-prove build-wrc20 build-binary-parser-test
-build: pykwasm
+build: pykwasm generate-code
 	$(KDIST) -v build -j3
 
-build-simple: pykwasm
+build-simple: pykwasm generate-code
 	$(KDIST) -v build wasm-semantics.llvm -j3
 
-build-prove: pykwasm
+build-prove: pykwasm generate-code
 	$(KDIST) -v build wasm-semantics.kwasm-lemmas -j3
 
-build-wrc20: pykwasm
+build-wrc20: pykwasm generate-code
 	$(KDIST) -v build wasm-semantics.wrc20 -j3
 
-build-binary-parser-test: pykwasm
+build-binary-parser-test: pykwasm generate-code
 	$(KDIST) -v build wasm-semantics.binary-parser-test -j3
 
 .PHONY: clean
 clean: pykwasm
 	$(KDIST) clean
+	rm build -rf
 
 
 # Building ULM-integrated Definition
