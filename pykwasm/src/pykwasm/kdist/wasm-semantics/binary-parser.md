@@ -9,8 +9,13 @@ requires "binary-parsing/base.md"
 requires "binary-parsing/constant.md"
 requires "binary-parsing/defn.md"
 requires "binary-parsing/functype.md"
+requires "binary-parsing/globaltype.md"
+requires "binary-parsing/import.md"
+requires "binary-parsing/import-section.md"
 requires "binary-parsing/int.md"
+requires "binary-parsing/limits.md"
 requires "binary-parsing/module.md"
+requires "binary-parsing/name.md"
 requires "binary-parsing/resulttype.md"
 requires "binary-parsing/section.md"
 requires "binary-parsing/tags.md"
@@ -30,8 +35,13 @@ module BINARY-PARSER  [private]
 
   imports BINARY-PARSER-CONSTANT
   imports BINARY-PARSER-FUNCTYPE
+  imports BINARY-PARSER-GLOBALTYPE
+  imports BINARY-PARSER-IMPORT
+  imports BINARY-PARSER-IMPORT-SECTION
   imports BINARY-PARSER-INT
+  imports BINARY-PARSER-LIMITS
   imports BINARY-PARSER-MODULE
+  imports BINARY-PARSER-NAME
   imports BINARY-PARSER-RESULTTYPE
   imports BINARY-PARSER-SECTION
   imports BINARY-PARSER-SYNTAX

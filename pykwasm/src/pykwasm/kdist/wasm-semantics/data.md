@@ -50,6 +50,11 @@ The exception is for characters that are explicitly escaped which can represent 
                         | WasmStringToken
  // -------------------------------------
 
+    // Defined only when `needsWasmEscaping` returns true.
+    syntax WasmString ::= string2WasmString ( String ) [function]
+    syntax Bool ::= needsWasmEscaping(String) [function, total]
+
+    syntax WasmStringToken ::= #String2WasmStringToken ( String ) [function, total, hook(STRING.string2token)]
     syntax String ::= #parseWasmString   ( WasmStringToken ) [function, total, hook(STRING.token2string)]
  // ----------------------------------------------------------------------------------------------------------
 
@@ -534,7 +539,7 @@ Each call site _must_ ensure that this is desired behavior before using these fu
 
 ### Strings
 
-Wasm uses a different character escape rule with K, so we need to define the `unescape` function ourselves.
+Wasm uses a different character escape rule than K, so we need to define the `unescape` function ourselves.
 
 ```k
     syntax String ::= unescape(String)              [function]
@@ -608,6 +613,30 @@ The implementation is not correct for now because the UTF-8 encoding is not impl
     rule unescape(S, IDX, SB) => unescape(S, #idxCloseBracket(S, IDX) +Int 1, SB +String Bytes2String(#encodeUTF8(String2Base(substrString(S, IDX +Int 3, #idxCloseBracket(S, IDX +Int 3)), 16))))
       requires substrString(S, IDX, IDX +Int 1) ==K "\\"
        andBool substrString(S, IDX +Int 1, IDX +Int 2) ==K "u"
+```
+
+The WasmString -> String conversion is not fully defined for now
+
+```k
+
+  rule string2WasmString(S:String) => #String2WasmStringToken("\"" +String S +String "\"")
+    requires notBool needsWasmEscaping(S)
+
+  syntax Bool ::= #needsWasmEscaping(String, Int) [function, total]
+  rule needsWasmEscaping(S) => #needsWasmEscaping(S, 0)
+  rule #needsWasmEscaping(S, IDX) => false requires IDX <Int 0 orBool IDX >=Int lengthString(S)
+  rule #needsWasmEscaping(S, IDX) => true
+      requires 0 <=Int IDX
+          andBool IDX <Int lengthString(S)
+          andBool charNeedsWasmEscaping(substrString(S, IDX, IDX +Int 1))
+  rule #needsWasmEscaping(S, IDX) => #needsWasmEscaping(S, IDX +Int 1)
+      [owise]
+
+  syntax Bool ::= charNeedsWasmEscaping(String) [function, total]
+  rule charNeedsWasmEscaping(S:String) => false
+      requires " " <=String S andBool ordChar(S) =/=Int 127 andBool S =/=K "\"" andBool S =/=K "\\"
+  rule charNeedsWasmEscaping(_:String) => true
+      [owise]
 ```
 
 `DataString`, as is defined in the wasm semantics, is a list of `WasmString`s.

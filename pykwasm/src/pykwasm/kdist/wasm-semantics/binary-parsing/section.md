@@ -26,6 +26,7 @@ endmodule
 
 module BINARY-PARSER-SECTION  [private]
   imports BOOL
+  imports BINARY-PARSER-IMPORT-SECTION-SYNTAX
   imports BINARY-PARSER-INT-SYNTAX
   imports BINARY-PARSER-SECTION-SYNTAX
   imports BINARY-PARSER-TAGS
@@ -36,8 +37,10 @@ module BINARY-PARSER-SECTION  [private]
       => sectionResult(customSection(Data), bwi(Data, lengthBytes(Data)))
   rule parseSection(unparsedSection(TYPE_SEC, Data:Bytes))
       => parseTypeSection(bwi(Data, 0))
-  // rule parseSection(A) => parseError("parseSection", ListItem(A))
-  //     [owise]
+  rule parseSection(unparsedSection(IMPORT_SEC, Data:Bytes))
+      => parseImportSection(bwi(Data, 0))
+  rule parseSection(A) => parseError("parseSection", ListItem(A))
+      [owise]
 
 
   syntax ParsedSectionsResult ::= #parseSections(SectionResult, ParsedSectionsResult)  [function, total]

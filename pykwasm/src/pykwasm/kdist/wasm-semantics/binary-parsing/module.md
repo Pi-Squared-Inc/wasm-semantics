@@ -70,5 +70,7 @@ module BINARY-PARSER-MODULE  [private]
   // addDefnToModule should be called with Defns in reverse order
   // (the last defn should be processed in the first call).
   rule addDefnToModule(false => true, T:TypeDefn, #module(... types: Ts => T Ts))
+  rule addDefnToModule(false => true, I:ImportDefn, #module(... importDefns: Is => I Is))
+
 endmodule
 ```

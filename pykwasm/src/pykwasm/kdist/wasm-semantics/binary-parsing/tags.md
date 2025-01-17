@@ -111,8 +111,8 @@ _Limits_ are used to encode the minimum size of memories and tables;
 a separate form that also specifies a maximum size is available.
 
 ```k
-  syntax Bytes ::= "LIMITS"     [macro] rule LIMITS     => b"\x00"
-  syntax Bytes ::= "LIMITS_MAX" [macro] rule LIMITS_MAX => b"\x01"
+  syntax Bytes ::= "LIMITS_MIN" [macro] rule LIMITS_MIN => b"\x00"
+  syntax Bytes ::= "LIMITS"     [macro] rule LIMITS     => b"\x01"
 ```
 
 _Globals_ may be declared as mutable or immutable.
