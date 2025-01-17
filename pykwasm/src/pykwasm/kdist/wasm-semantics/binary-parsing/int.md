@@ -7,10 +7,13 @@ module BINARY-PARSER-INT-SYNTAX
   syntax IntResult ::= intResult(value:Int, remainder:BytesWithIndex) | ParseError
   syntax IntResult  ::= parseLeb128UInt(BytesWithIndex)  [function, total]
   syntax IntResult  ::= parseLeb128SInt(BytesWithIndex)  [function, total]
+  syntax IntResult  ::= parseByteAsInt(BytesWithIndex)  [function, total]
 
   // TODO: Rename to IntVec
   syntax IntList ::= List{Int, ":"}
   syntax IntListResult ::= intListResult(IntList, BytesWithIndex) | ParseError
+
+  syntax BytesWithIndexOrError ::= ignoreUnsignedInt(BytesWithIndex, Int)  [function, total]
 endmodule
 
 module BINARY-PARSER-INT  [private]
@@ -74,5 +77,25 @@ module BINARY-PARSER-INT  [private]
   syntax Int ::= size(IntList)  [function, total]
   rule size(.IntList) => 0
   rule size(_ : L:IntList) => 1 +Int size(L)
+
+  rule ignoreUnsignedInt(BWI:BytesWithIndex, Count:Int)
+      => #ignoreUnsignedInt(Count -Int 1, parseLeb128UInt(BWI:BytesWithIndex))
+      requires Count >Int 0
+  rule ignoreUnsignedInt(BWI:BytesWithIndex, 0) => BWI
+  rule ignoreUnsignedInt(BWI:BytesWithIndex, Count:Int)
+      => parseError("ignoreUnsignedInt", ListItem(Count) ListItem(BWI))
+      requires Count <Int 0
+
+  syntax BytesWithIndexOrError ::= #ignoreUnsignedInt(Int, IntResult)
+  rule #ignoreUnsignedInt(Count:Int, intResult(_:Int, BWI:BytesWithIndex))
+      => ignoreUnsignedInt(BWI, Count)
+  rule #ignoreUnsignedInt(_:Int, E:ParseError) => E
+
+  rule parseByteAsInt(bwi(B:Bytes, Index:Int))
+      => intResult(B[Index], bwi(B, Index +Int 1))
+      requires 0 <=Int Index andBool Index <=Int lengthBytes(B)
+  rule parseByteAsInt(bwi(B:Bytes, Index:Int))
+      => parseError("parseByteAsInt", ListItem(Index) ListItem(lengthBytes(B)) ListItem(B))
+
 endmodule
 ```

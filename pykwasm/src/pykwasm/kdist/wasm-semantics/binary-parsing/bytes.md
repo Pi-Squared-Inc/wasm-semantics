@@ -7,6 +7,7 @@ module BINARY-PARSER-BYTES-SYNTAX
   syntax BytesResult ::= bytesResult(Bytes, BytesWithIndex) | ParseError
   syntax BytesResult ::= parseBytes(BytesWithIndex, Int)  [function, total]
 
+  syntax BytesWithIndexOrError ::= ignoreBytes(BytesWithIndex, Int)  [function, total]
 endmodule
 
 module BINARY-PARSER-BYTES  [private]
@@ -22,6 +23,12 @@ module BINARY-PARSER-BYTES  [private]
       => parseError("parseBytes", ListItem(lengthBytes(Buffer)) ListItem(Index) ListItem(Count) ListItem(Buffer))
       [owise]
 
+  rule ignoreBytes(BWI:BytesWithIndex, Count:Int)
+      => #ignoreBytes(parseBytes(BWI), Count)
+
+  syntax BytesWithIndexOrError ::= #ignoreBytes(BytesResult)  [function, total]
+  rule #ignoreBytes(bytesResult(_:Bytes, BWI:BytesWithIndex)) => BWI
+  rule #ignoreBytes(E:ParseError) => E
 endmodule
 
 ```
