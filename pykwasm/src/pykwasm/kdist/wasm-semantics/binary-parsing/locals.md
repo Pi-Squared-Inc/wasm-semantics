@@ -36,7 +36,7 @@ module BINARY-PARSER-LOCALS  [private]
                             | #parseLocalsVec2(LocalsVec, Int, BytesWithIndex)  [function, total]
                             | #parseLocalsVec3(LocalsVec, Int, LocalsResult)  [function, total]
 
-  rule parseLocalsVec(_:BytesWithIndex) => #parseLocalsVec1(parseLeb128UInt(BWI))
+  rule parseLocalsVec(BWI:BytesWithIndex) => #parseLocalsVec1(parseLeb128UInt(BWI))
   rule #parseLocalsVec1(intResult(Count:Int, BWI:BytesWithIndex))
       => #parseLocalsVec2(.LocalsVec, Count, BWI)
   rule #parseLocalsVec1(E:ParseError) => E
@@ -62,7 +62,7 @@ module BINARY-PARSER-LOCALS  [private]
   rule #reverse((L:Locals , L1:LocalsVec), L2:LocalsVec) => #reverse(L1, (L , L2))
 
   rule localsVecToValTypes(.LocalsVec) => .ValTypes
-  rule localsVecToValTypes(locals(Count:Int, T:ValType) , Ls:LocalsVec)
+  rule localsVecToValTypes(locals(Count:Int, _T:ValType) , Ls:LocalsVec)
       => localsVecToValTypes(Ls)
       requires Count <=Int 0
   rule localsVecToValTypes(locals(Count:Int, T:ValType) , Ls:LocalsVec)

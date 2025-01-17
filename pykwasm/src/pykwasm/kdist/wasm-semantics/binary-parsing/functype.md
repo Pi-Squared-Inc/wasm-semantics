@@ -25,6 +25,7 @@ module BINARY-PARSER-FUNCTYPE  [private]
 
   rule #parseDefnType(funcTypeResult(F:FuncType, BWI:BytesWithIndex))
       => defnResult(#type(F, ), BWI)
+  rule #parseDefnType(E:ParseError) => E
 
   syntax FuncTypeResult ::= #parseFuncType(BytesWithIndexOrError)  [function, total]
                           | #parseFuncType1(ResultTypeResult)  [function, total]

@@ -6,6 +6,7 @@ module BINARY-PARSER-INT-SYNTAX
 
   syntax IntResult ::= intResult(value:Int, remainder:BytesWithIndex) | ParseError
   syntax IntResult  ::= parseLeb128UInt(BytesWithIndex)  [function, total]
+  syntax IntResult  ::= parseLeb128SInt(BytesWithIndex)  [function, total]
 
   // TODO: Rename to IntVec
   syntax IntList ::= List{Int, ":"}
@@ -53,5 +54,25 @@ module BINARY-PARSER-INT  [private]
   rule buildLeb128UInt(.IntList) => 0
   rule buildLeb128UInt(Value:Int : L:IntList) => Value +Int 128 *Int buildLeb128UInt(L)
 
+  syntax IntResult  ::= #parseLeb128SInt(IntListResult)  [function, total]
+
+  rule parseLeb128SInt(BWI:BytesWithIndex) => #parseLeb128SInt(parseLeb128IntChunks(BWI))
+  rule #parseLeb128SInt(intListResult(L:IntList, BWI:BytesWithIndex))
+      => intResult(leb128UnsignedToSigned(buildLeb128UInt(L), size(L) *Int 7), BWI)
+  rule #parseLeb128SInt(E:ParseError) => E
+
+  syntax Int ::= buildLeb128UInt(IntList) [function, total]
+  rule buildLeb128UInt(.IntList) => 0
+  rule buildLeb128UInt(Value:Int : L:IntList) => Value +Int 128 *Int buildLeb128UInt(L)
+
+  syntax Int ::= leb128UnsignedToSigned(unsigned: Int, bits: Int)  [function, total]
+  rule leb128UnsignedToSigned(U:Int, Bits:Int) => U
+      requires U <Int (1 <<Int (Bits -Int 1))
+  rule leb128UnsignedToSigned(U:Int, Bits:Int) => U -Int (1 <<Int Bits)
+      [owise]
+
+  syntax Int ::= size(IntList)  [function, total]
+  rule size(.IntList) => 0
+  rule size(_ : L:IntList) => 1 +Int size(L)
 endmodule
 ```
