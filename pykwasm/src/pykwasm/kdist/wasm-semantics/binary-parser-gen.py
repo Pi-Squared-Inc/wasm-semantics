@@ -6,16 +6,16 @@ def bytes_to_k(b:bytes) -> str:
     return 'b"' + escaped_bytes + '"'
 
 class Constructor:
-    def build(self, args: list[tuple['Argument', int]], output_pieces: list[str]) -> None:
+    def build(self, args: list[tuple['Argument', int]], bwi:str, output_pieces: list[str]) -> None:
         raise NotImplementedError('Constructor.build')
-    def is_parser(self) -> bool:
-        raise NotImplementedError('Constructor.is_parser')
+    def needs_bwi(self) -> bool:
+        raise NotImplementedError('Constructor.needs_bwi')
 
 @dataclass(frozen=True)
 class Symbol(Constructor):
     name: str
 
-    def build(self, args: list['Argument'], output_pieces: list[str]) -> None:
+    def build(self, args: list['Argument'], bwi:str, output_pieces: list[str]) -> None:
         output_pieces.append(f'`{self.name}`(')
         first = True
         for i, arg in enumerate(args):
@@ -29,14 +29,14 @@ class Symbol(Constructor):
             output_pieces.append('.KList')
         output_pieces.append(')')
 
-    def is_parser(self) -> bool:
+    def needs_bwi(self) -> bool:
         return False
 
 def symbol(s:str) -> Symbol:
     return Symbol(s)
 
 class Identity(Constructor):
-    def build(self, args: list['Argument'], output_pieces: list[str]) -> None:
+    def build(self, args: list['Argument'], bwi:str, output_pieces: list[str]) -> None:
         first = True
         for i, arg in enumerate(args):
             if not arg.is_used_in_constructor():
@@ -45,14 +45,15 @@ class Identity(Constructor):
                 raise ValueError(f'Identity constructor requires exactly one argument: {args}')
             first = False
             output_pieces.append(arg.rhs_argument(i))
-    def is_parser(self) -> bool:
+
+    def needs_bwi(self) -> bool:
         return False
 
 def identity() -> Identity:
     return Identity()
 
 class NotImplemented(Constructor):
-    def build(self, args: list['Argument'], output_pieces: list[str]) -> None:
+    def build(self, args: list['Argument'], bwi:str, output_pieces: list[str]) -> None:
         output_pieces.append('parseError("instruction not implemented",')
         for i, arg in enumerate(args):
             if not arg.is_used_in_constructor():
@@ -62,7 +63,8 @@ class NotImplemented(Constructor):
             output_pieces.append(f' ListItem({arg.rhs_argument(i)})')
         output_pieces.append(f' ListItem(BWI)')
         output_pieces.append(')')
-    def is_parser(self) -> bool:
+
+    def needs_bwi(self) -> bool:
         return False
 
 def notImplemented():
@@ -72,7 +74,7 @@ def notImplemented():
 class Parser(Constructor):
     parserName: str
 
-    def build(self, args: list['Argument'], output_pieces: list[str]) -> None:
+    def build(self, args: list['Argument'], bwi:str, output_pieces: list[str]) -> None:
         output_pieces.append(f'{self.parserName}(')
         first = True
         for i, arg in enumerate(args):
@@ -83,30 +85,39 @@ class Parser(Constructor):
             first = False
             output_pieces.append(arg.rhs_argument(i))
         output_pieces.append(')')
-    def is_parser(self) -> bool:
+
+    def needs_bwi(self) -> bool:
         return True
 
 def parser(s:str):
     return Parser(s)
 
 @dataclass(frozen=True)
-class ConstructorCall(Constructor):
+class ConstructorResult(Constructor):
     name: str
 
-    def build(self, args: list['Argument'], output_pieces: list[str]) -> None:
+    def build(self, args: list['Argument'], bwi:str, output_pieces: list[str]) -> None:
+        output_pieces.append('instrResult(')
         output_pieces.append(self.name)
         if args:
-            output_pieces.append('(')
             first = True
             for i, arg in enumerate(args):
                 if not arg.is_used_in_constructor():
                     continue
-                if not first:
+                if first:
+                    output_pieces.append('(')
+                    first = False
+                else:
                     output_pieces.append(', ')
                 output_pieces.append(arg.rhs_argument(i))
-            output_pieces.append(')')
-    def is_parser(self) -> bool:
-        return False
+            if not first:
+                output_pieces.append(')')
+        output_pieces.append(', ')
+        output_pieces.append(bwi)
+        output_pieces.append(')')
+
+    def needs_bwi(self) -> bool:
+        return True
 
 class Argument:
     def parser(self, bwi: str) -> str:
@@ -172,7 +183,7 @@ class TypedArg(Argument):
             prefix = '_'
         else:
             prefix = ''
-        return f'{prefix}{self.arg_type}{index}:{self.arg_type}'
+        return f'{prefix}{self.arg_type}{index}:{self.value_type()}'
 
     def rhs_argument(self, index:int) -> str:
         return f'{self.arg_type}{index}'
@@ -271,7 +282,7 @@ class InstrConfig:
         object.__setattr__(self, "name", name)
         object.__setattr__(self, "prefix", prefix)
         object.__setattr__(self, "args", [arg if isinstance(arg, Argument) else TypedArg(arg) for arg in args])
-        object.__setattr__(self, "constructor", constructor if isinstance(constructor, Constructor) else ConstructorCall(constructor))
+        object.__setattr__(self, "constructor", constructor if isinstance(constructor, Constructor) else ConstructorResult(constructor))
 
     def with_prefix(self, p: bytes) -> 'InstrConfig':
         return InstrConfig(self.name, p, self.args, self.constructor)
@@ -880,7 +891,7 @@ def parse_single_item(parser_prefix: str, item: InstrConfig, output_pieces: list
     for prev_arg, prev_index in prev_args:
         output_pieces.append(prev_arg.lhs_argument(prev_index, unused=False))
         output_pieces.append(', ')
-    if item.constructor.is_parser():
+    if item.constructor.needs_bwi():
         bwi = 'BWI'
     else:
         bwi = '_BWI'
@@ -889,7 +900,7 @@ def parse_single_item(parser_prefix: str, item: InstrConfig, output_pieces: list
     else:
         output_pieces.append('BWI:BytesWithIndex')
     output_pieces.append(f') => ')
-    item.constructor.build(item.args, output_pieces)
+    item.constructor.build(item.args, 'BWI', output_pieces)
     output_pieces.append('\n')
 
     if parsing_args:
@@ -956,6 +967,7 @@ module BINARY-PARSER-INSTRS
   imports BINARY-PARSER-FLOAT-SYNTAX
   imports BINARY-PARSER-MEMARG-SYNTAX
   imports BINARY-PARSER-VALTYPE-SYNTAX
+  imports WASM
 
 ''',
     ]

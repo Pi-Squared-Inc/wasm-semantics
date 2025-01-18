@@ -18,6 +18,7 @@ module BINARY-PARSER-INSTRS
   imports BINARY-PARSER-FLOAT-SYNTAX
   imports BINARY-PARSER-MEMARG-SYNTAX
   imports BINARY-PARSER-VALTYPE-SYNTAX
+  imports WASM
 
   syntax InstrResult ::= parseInstr(BytesWithIndex)  [function, total]
                        | #parseInstrp1(IntResult)  [function, total]
@@ -211,9 +212,9 @@ module BINARY-PARSER-INSTRS
   rule #parseInstrp2(I:Int, bwi(B:Bytes, Index:Int)) => parseError("#parseInstrp2", ListItem(I) ListItem(Index) ListItem(lengthBytes(B)) ListItem(B))  [owise]
 
   syntax InstrResult ::= parseInstrx0(BytesWithIndex)  [function, total]
-  rule parseInstrx0(BWI:BytesWithIndex) => unreachable
+  rule parseInstrx0(BWI:BytesWithIndex) => instrResult(unreachable, BWI)
   syntax InstrResult ::= parseInstrx1(BytesWithIndex)  [function, total]
-  rule parseInstrx1(BWI:BytesWithIndex) => nop
+  rule parseInstrx1(BWI:BytesWithIndex) => instrResult(nop, BWI)
   syntax InstrResult ::= parseInstrx2(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx2s1
                             ( BlockResult
@@ -226,7 +227,7 @@ module BINARY-PARSER-INSTRS
                             ( BlockResult
                             )  [function, total]
   rule parseInstrx3(BWI) => #parseInstrx3s1(parseBlock(BWI))
-  rule #parseInstrx3s1(blockResult(Block0:Block, _BWI:BytesWithIndex)) => loopFromBlock(Block0)
+  rule #parseInstrx3s1(blockResult(Block0:Block, BWI:BytesWithIndex)) => instrResult(loopFromBlock(Block0), BWI)
   rule #parseInstrx3s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx4(BytesWithIndex)  [function, total]
   rule parseInstrx4(BWI:BytesWithIndex) => parseIf()
@@ -235,14 +236,14 @@ module BINARY-PARSER-INSTRS
                             ( IntResult
                             )  [function, total]
   rule parseInstrx12(BWI) => #parseInstrx12s1(parseLeb128UInt(BWI))
-  rule #parseInstrx12s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #br(UnsignedInt0)
+  rule #parseInstrx12s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => instrResult(#br(UnsignedInt0), BWI)
   rule #parseInstrx12s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx13(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx13s1
                             ( IntResult
                             )  [function, total]
   rule parseInstrx13(BWI) => #parseInstrx13s1(parseLeb128UInt(BWI))
-  rule #parseInstrx13s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #br_if(UnsignedInt0)
+  rule #parseInstrx13s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => instrResult(#br_if(UnsignedInt0), BWI)
   rule #parseInstrx13s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx14(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx14s1
@@ -255,16 +256,16 @@ module BINARY-PARSER-INSTRS
                             )  [function, total]
   rule #parseInstrx14s1(intListResult(UnsignedIntVec0:IntList, BWI:BytesWithIndex)) => #parseInstrx14s2(UnsignedIntVec0, parseLeb128UInt(BWI))
   rule #parseInstrx14s1(E:ParseError) => E
-  rule #parseInstrx14s2(UnsignedIntVec0:UnsignedIntVec, intResult(UnsignedInt1:Int, _BWI:BytesWithIndex)) => #br_table(UnsignedIntVec0UnsignedInt1)
-  rule #parseInstrx14s2(_UnsignedIntVec0:UnsignedIntVec, E:ParseError) => E
+  rule #parseInstrx14s2(UnsignedIntVec0:IntList, intResult(UnsignedInt1:Int, BWI:BytesWithIndex)) => instrResult(#br_table(UnsignedIntVec0, UnsignedInt1), BWI)
+  rule #parseInstrx14s2(_UnsignedIntVec0:IntList, E:ParseError) => E
   syntax InstrResult ::= parseInstrx15(BytesWithIndex)  [function, total]
-  rule parseInstrx15(BWI:BytesWithIndex) => return
+  rule parseInstrx15(BWI:BytesWithIndex) => instrResult(return, BWI)
   syntax InstrResult ::= parseInstrx16(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx16s1
                             ( IntResult
                             )  [function, total]
   rule parseInstrx16(BWI) => #parseInstrx16s1(parseLeb128UInt(BWI))
-  rule #parseInstrx16s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #call(UnsignedInt0)
+  rule #parseInstrx16s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => instrResult(#call(UnsignedInt0), BWI)
   rule #parseInstrx16s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx17(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx17s1
@@ -277,12 +278,12 @@ module BINARY-PARSER-INSTRS
                             )  [function, total]
   rule #parseInstrx17s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => #parseInstrx17s2(UnsignedInt0, parseLeb128UInt(BWI))
   rule #parseInstrx17s1(E:ParseError) => E
-  rule #parseInstrx17s2(UnsignedInt0:UnsignedInt, intResult(UnsignedInt1:Int, _BWI:BytesWithIndex)) => buildCallIndirect(UnsignedInt0UnsignedInt1)
-  rule #parseInstrx17s2(_UnsignedInt0:UnsignedInt, E:ParseError) => E
+  rule #parseInstrx17s2(UnsignedInt0:Int, intResult(UnsignedInt1:Int, BWI:BytesWithIndex)) => instrResult(buildCallIndirect(UnsignedInt0, UnsignedInt1), BWI)
+  rule #parseInstrx17s2(_UnsignedInt0:Int, E:ParseError) => E
   syntax InstrResult ::= parseInstrx26(BytesWithIndex)  [function, total]
-  rule parseInstrx26(BWI:BytesWithIndex) => drop
+  rule parseInstrx26(BWI:BytesWithIndex) => instrResult(drop, BWI)
   syntax InstrResult ::= parseInstrx27(BytesWithIndex)  [function, total]
-  rule parseInstrx27(BWI:BytesWithIndex) => select
+  rule parseInstrx27(BWI:BytesWithIndex) => instrResult(select, BWI)
   syntax InstrResult ::= parseInstrx28(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx28s1
                             ( ValTypesResult
@@ -295,215 +296,215 @@ module BINARY-PARSER-INSTRS
                             ( IntResult
                             )  [function, total]
   rule parseInstrx32(BWI) => #parseInstrx32s1(parseLeb128UInt(BWI))
-  rule #parseInstrx32s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #local.get(UnsignedInt0)
+  rule #parseInstrx32s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => instrResult(#local.get(UnsignedInt0), BWI)
   rule #parseInstrx32s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx33(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx33s1
                             ( IntResult
                             )  [function, total]
   rule parseInstrx33(BWI) => #parseInstrx33s1(parseLeb128UInt(BWI))
-  rule #parseInstrx33s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #local.set(UnsignedInt0)
+  rule #parseInstrx33s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => instrResult(#local.set(UnsignedInt0), BWI)
   rule #parseInstrx33s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx34(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx34s1
                             ( IntResult
                             )  [function, total]
   rule parseInstrx34(BWI) => #parseInstrx34s1(parseLeb128UInt(BWI))
-  rule #parseInstrx34s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #local.tee(UnsignedInt0)
+  rule #parseInstrx34s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => instrResult(#local.tee(UnsignedInt0), BWI)
   rule #parseInstrx34s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx35(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx35s1
                             ( IntResult
                             )  [function, total]
   rule parseInstrx35(BWI) => #parseInstrx35s1(parseLeb128UInt(BWI))
-  rule #parseInstrx35s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #global.get(UnsignedInt0)
+  rule #parseInstrx35s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => instrResult(#global.get(UnsignedInt0), BWI)
   rule #parseInstrx35s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx36(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx36s1
                             ( IntResult
                             )  [function, total]
   rule parseInstrx36(BWI) => #parseInstrx36s1(parseLeb128UInt(BWI))
-  rule #parseInstrx36s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #global.set(UnsignedInt0)
+  rule #parseInstrx36s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => instrResult(#global.set(UnsignedInt0), BWI)
   rule #parseInstrx36s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx37(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx37s1
                             ( IntResult
                             )  [function, total]
   rule parseInstrx37(BWI) => #parseInstrx37s1(parseLeb128UInt(BWI))
-  rule #parseInstrx37s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #table.get(UnsignedInt0)
+  rule #parseInstrx37s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => instrResult(#table.get(UnsignedInt0), BWI)
   rule #parseInstrx37s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx38(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx38s1
                             ( IntResult
                             )  [function, total]
   rule parseInstrx38(BWI) => #parseInstrx38s1(parseLeb128UInt(BWI))
-  rule #parseInstrx38s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #table.set(UnsignedInt0)
+  rule #parseInstrx38s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => instrResult(#table.set(UnsignedInt0), BWI)
   rule #parseInstrx38s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx40(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx40s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx40(BWI) => #parseInstrx40s1(parseMemArg(BWI))
-  rule #parseInstrx40s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #load(i32loadMemArg2)
+  rule #parseInstrx40s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#load(i32, load, MemArg2), BWI)
   rule #parseInstrx40s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx41(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx41s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx41(BWI) => #parseInstrx41s1(parseMemArg(BWI))
-  rule #parseInstrx41s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #load(i64loadMemArg2)
+  rule #parseInstrx41s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#load(i64, load, MemArg2), BWI)
   rule #parseInstrx41s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx42(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx42s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx42(BWI) => #parseInstrx42s1(parseMemArg(BWI))
-  rule #parseInstrx42s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #load(f32loadMemArg2)
+  rule #parseInstrx42s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#load(f32, load, MemArg2), BWI)
   rule #parseInstrx42s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx43(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx43s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx43(BWI) => #parseInstrx43s1(parseMemArg(BWI))
-  rule #parseInstrx43s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #load(f64loadMemArg2)
+  rule #parseInstrx43s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#load(f64, load, MemArg2), BWI)
   rule #parseInstrx43s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx44(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx44s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx44(BWI) => #parseInstrx44s1(parseMemArg(BWI))
-  rule #parseInstrx44s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #load(i32load8_sMemArg2)
+  rule #parseInstrx44s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#load(i32, load8_s, MemArg2), BWI)
   rule #parseInstrx44s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx45(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx45s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx45(BWI) => #parseInstrx45s1(parseMemArg(BWI))
-  rule #parseInstrx45s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #load(i32load8_uMemArg2)
+  rule #parseInstrx45s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#load(i32, load8_u, MemArg2), BWI)
   rule #parseInstrx45s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx46(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx46s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx46(BWI) => #parseInstrx46s1(parseMemArg(BWI))
-  rule #parseInstrx46s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #load(i32load16_sMemArg2)
+  rule #parseInstrx46s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#load(i32, load16_s, MemArg2), BWI)
   rule #parseInstrx46s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx47(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx47s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx47(BWI) => #parseInstrx47s1(parseMemArg(BWI))
-  rule #parseInstrx47s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #load(i32load16_uMemArg2)
+  rule #parseInstrx47s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#load(i32, load16_u, MemArg2), BWI)
   rule #parseInstrx47s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx48(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx48s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx48(BWI) => #parseInstrx48s1(parseMemArg(BWI))
-  rule #parseInstrx48s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #load(i64load8_sMemArg2)
+  rule #parseInstrx48s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#load(i64, load8_s, MemArg2), BWI)
   rule #parseInstrx48s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx49(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx49s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx49(BWI) => #parseInstrx49s1(parseMemArg(BWI))
-  rule #parseInstrx49s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #load(i64load8_uMemArg2)
+  rule #parseInstrx49s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#load(i64, load8_u, MemArg2), BWI)
   rule #parseInstrx49s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx50(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx50s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx50(BWI) => #parseInstrx50s1(parseMemArg(BWI))
-  rule #parseInstrx50s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #load(i64load16_sMemArg2)
+  rule #parseInstrx50s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#load(i64, load16_s, MemArg2), BWI)
   rule #parseInstrx50s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx51(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx51s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx51(BWI) => #parseInstrx51s1(parseMemArg(BWI))
-  rule #parseInstrx51s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #load(i64load16_uMemArg2)
+  rule #parseInstrx51s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#load(i64, load16_u, MemArg2), BWI)
   rule #parseInstrx51s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx52(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx52s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx52(BWI) => #parseInstrx52s1(parseMemArg(BWI))
-  rule #parseInstrx52s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #load(i64load32_sMemArg2)
+  rule #parseInstrx52s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#load(i64, load32_s, MemArg2), BWI)
   rule #parseInstrx52s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx53(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx53s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx53(BWI) => #parseInstrx53s1(parseMemArg(BWI))
-  rule #parseInstrx53s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #load(i64load32_uMemArg2)
+  rule #parseInstrx53s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#load(i64, load32_u, MemArg2), BWI)
   rule #parseInstrx53s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx54(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx54s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx54(BWI) => #parseInstrx54s1(parseMemArg(BWI))
-  rule #parseInstrx54s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #store(i32storeMemArg2)
+  rule #parseInstrx54s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#store(i32, store, MemArg2), BWI)
   rule #parseInstrx54s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx55(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx55s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx55(BWI) => #parseInstrx55s1(parseMemArg(BWI))
-  rule #parseInstrx55s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #store(i64storeMemArg2)
+  rule #parseInstrx55s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#store(i64, store, MemArg2), BWI)
   rule #parseInstrx55s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx56(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx56s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx56(BWI) => #parseInstrx56s1(parseMemArg(BWI))
-  rule #parseInstrx56s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #store(f32storeMemArg2)
+  rule #parseInstrx56s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#store(f32, store, MemArg2), BWI)
   rule #parseInstrx56s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx57(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx57s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx57(BWI) => #parseInstrx57s1(parseMemArg(BWI))
-  rule #parseInstrx57s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #store(f64storeMemArg2)
+  rule #parseInstrx57s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#store(f64, store, MemArg2), BWI)
   rule #parseInstrx57s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx58(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx58s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx58(BWI) => #parseInstrx58s1(parseMemArg(BWI))
-  rule #parseInstrx58s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #store(i32store8MemArg2)
+  rule #parseInstrx58s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#store(i32, store8, MemArg2), BWI)
   rule #parseInstrx58s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx59(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx59s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx59(BWI) => #parseInstrx59s1(parseMemArg(BWI))
-  rule #parseInstrx59s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #store(i32store16MemArg2)
+  rule #parseInstrx59s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#store(i32, store16, MemArg2), BWI)
   rule #parseInstrx59s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx60(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx60s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx60(BWI) => #parseInstrx60s1(parseMemArg(BWI))
-  rule #parseInstrx60s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #store(i64store8MemArg2)
+  rule #parseInstrx60s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#store(i64, store8, MemArg2), BWI)
   rule #parseInstrx60s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx61(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx61s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx61(BWI) => #parseInstrx61s1(parseMemArg(BWI))
-  rule #parseInstrx61s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #store(i64store16MemArg2)
+  rule #parseInstrx61s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#store(i64, store16, MemArg2), BWI)
   rule #parseInstrx61s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx62(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx62s1
                             ( MemArgResult
                             )  [function, total]
   rule parseInstrx62(BWI) => #parseInstrx62s1(parseMemArg(BWI))
-  rule #parseInstrx62s1(memArgResult(MemArg2:MemArg, _BWI:BytesWithIndex)) => #store(i64store43MemArg2)
+  rule #parseInstrx62s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#store(i64, store43, MemArg2), BWI)
   rule #parseInstrx62s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx63(BytesWithIndex)  [function, total]
-  rule parseInstrx63(BWI:BytesWithIndex) => memory.size
+  rule parseInstrx63(BWI:BytesWithIndex) => instrResult(memory.size, BWI)
   syntax InstrResult ::= parseInstrx64(BytesWithIndex)  [function, total]
-  rule parseInstrx64(BWI:BytesWithIndex) => memory.grow
+  rule parseInstrx64(BWI:BytesWithIndex) => instrResult(memory.grow, BWI)
   syntax InstrResult ::= parseInstrx65(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx65s1
                             ( IntResult
@@ -771,13 +772,13 @@ module BINARY-PARSER-INSTRS
   syntax InstrResult ::= parseInstrx187(BytesWithIndex)  [function, total]
   rule parseInstrx187(BWI:BytesWithIndex) => `aCvtOp`(f64, promote_f32)
   syntax InstrResult ::= parseInstrx188(BytesWithIndex)  [function, total]
-  rule parseInstrx188(BWI:BytesWithIndex) => 
+  rule parseInstrx188(BWI:BytesWithIndex) => instrResult(, BWI)
   syntax InstrResult ::= parseInstrx189(BytesWithIndex)  [function, total]
-  rule parseInstrx189(BWI:BytesWithIndex) => 
+  rule parseInstrx189(BWI:BytesWithIndex) => instrResult(, BWI)
   syntax InstrResult ::= parseInstrx190(BytesWithIndex)  [function, total]
-  rule parseInstrx190(BWI:BytesWithIndex) => 
+  rule parseInstrx190(BWI:BytesWithIndex) => instrResult(, BWI)
   syntax InstrResult ::= parseInstrx191(BytesWithIndex)  [function, total]
-  rule parseInstrx191(BWI:BytesWithIndex) => 
+  rule parseInstrx191(BWI:BytesWithIndex) => instrResult(, BWI)
   syntax InstrResult ::= parseInstrx192(BytesWithIndex)  [function, total]
   rule parseInstrx192(BWI:BytesWithIndex) => `aExtendS`(i32, extend8_s)
   syntax InstrResult ::= parseInstrx193(BytesWithIndex)  [function, total]
@@ -796,13 +797,13 @@ module BINARY-PARSER-INSTRS
   rule #parseInstrx208s1(valTypeResult(ValType0:ValType, _BWI:BytesWithIndex)) => `aRef.null`(ValType0)
   rule #parseInstrx208s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx209(BytesWithIndex)  [function, total]
-  rule parseInstrx209(BWI:BytesWithIndex) => #ref.is_null
+  rule parseInstrx209(BWI:BytesWithIndex) => instrResult(#ref.is_null, BWI)
   syntax InstrResult ::= parseInstrx210(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx210s1
                             ( IntResult
                             )  [function, total]
   rule parseInstrx210(BWI) => #parseInstrx210s1(parseLeb128UInt(BWI))
-  rule #parseInstrx210s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #ref.func(UnsignedInt0)
+  rule #parseInstrx210s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => instrResult(#ref.func(UnsignedInt0), BWI)
   rule #parseInstrx210s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx252(BytesWithIndex)  [function, total]
                        | #parseInstrx252p1(IntResult)  [function, total]
@@ -857,8 +858,8 @@ module BINARY-PARSER-INSTRS
                             )  [function, total]
   rule #parseInstrx252x8s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => #parseInstrx252x8s2(UnsignedInt0, parseConstant(BWI, b"\x00"))
   rule #parseInstrx252x8s1(E:ParseError) => E
-  rule #parseInstrx252x8s2(UnsignedInt0:UnsignedInt, BWI:BytesWithIndex) => parseError("instruction not implemented", ListItem(UnsignedInt0) ListItem(BWI))
-  rule #parseInstrx252x8s2(_UnsignedInt0:UnsignedInt, E:ParseError) => E
+  rule #parseInstrx252x8s2(UnsignedInt0:Int, BWI:BytesWithIndex) => parseError("instruction not implemented", ListItem(UnsignedInt0) ListItem(BWI))
+  rule #parseInstrx252x8s2(_UnsignedInt0:Int, E:ParseError) => E
   syntax InstrResult ::= parseInstrx252x9(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx252x9s1
                             ( IntResult
@@ -876,14 +877,14 @@ module BINARY-PARSER-INSTRS
                             )  [function, total]
   rule #parseInstrx252x10s1(BWI) => #parseInstrx252x10s2(parseConstant(BWI, b"\x00"))
   rule #parseInstrx252x10s1(E:ParseError) => E
-  rule #parseInstrx252x10s2(BWI:BytesWithIndex) => memory.copy()
+  rule #parseInstrx252x10s2(BWI:BytesWithIndex) => instrResult(memory.copy, BWI)
   rule #parseInstrx252x10s2(E:ParseError) => E
   syntax InstrResult ::= parseInstrx252x11(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx252x11s1
                             ( BytesWithIndexOrError
                             )  [function, total]
   rule parseInstrx252x11(BWI) => #parseInstrx252x11s1(parseConstant(BWI, b"\x00"))
-  rule #parseInstrx252x11s1(BWI:BytesWithIndex) => memory.fill()
+  rule #parseInstrx252x11s1(BWI:BytesWithIndex) => instrResult(memory.fill, BWI)
   rule #parseInstrx252x11s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx252x12(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx252x12s1
@@ -896,14 +897,14 @@ module BINARY-PARSER-INSTRS
                             )  [function, total]
   rule #parseInstrx252x12s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => #parseInstrx252x12s2(UnsignedInt0, parseLeb128UInt(BWI))
   rule #parseInstrx252x12s1(E:ParseError) => E
-  rule #parseInstrx252x12s2(UnsignedInt0:UnsignedInt, intResult(UnsignedInt1:Int, _BWI:BytesWithIndex)) => #table.init(UnsignedInt0UnsignedInt1)
-  rule #parseInstrx252x12s2(_UnsignedInt0:UnsignedInt, E:ParseError) => E
+  rule #parseInstrx252x12s2(UnsignedInt0:Int, intResult(UnsignedInt1:Int, BWI:BytesWithIndex)) => instrResult(#table.init(UnsignedInt0, UnsignedInt1), BWI)
+  rule #parseInstrx252x12s2(_UnsignedInt0:Int, E:ParseError) => E
   syntax InstrResult ::= parseInstrx252x13(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx252x13s1
                             ( IntResult
                             )  [function, total]
   rule parseInstrx252x13(BWI) => #parseInstrx252x13s1(parseLeb128UInt(BWI))
-  rule #parseInstrx252x13s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #elem.drop(UnsignedInt0)
+  rule #parseInstrx252x13s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => instrResult(#elem.drop(UnsignedInt0), BWI)
   rule #parseInstrx252x13s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx252x14(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx252x14s1
@@ -916,28 +917,28 @@ module BINARY-PARSER-INSTRS
                             )  [function, total]
   rule #parseInstrx252x14s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => #parseInstrx252x14s2(UnsignedInt0, parseLeb128UInt(BWI))
   rule #parseInstrx252x14s1(E:ParseError) => E
-  rule #parseInstrx252x14s2(UnsignedInt0:UnsignedInt, intResult(UnsignedInt1:Int, _BWI:BytesWithIndex)) => #table.copy(UnsignedInt0UnsignedInt1)
-  rule #parseInstrx252x14s2(_UnsignedInt0:UnsignedInt, E:ParseError) => E
+  rule #parseInstrx252x14s2(UnsignedInt0:Int, intResult(UnsignedInt1:Int, BWI:BytesWithIndex)) => instrResult(#table.copy(UnsignedInt0, UnsignedInt1), BWI)
+  rule #parseInstrx252x14s2(_UnsignedInt0:Int, E:ParseError) => E
   syntax InstrResult ::= parseInstrx252x15(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx252x15s1
                             ( IntResult
                             )  [function, total]
   rule parseInstrx252x15(BWI) => #parseInstrx252x15s1(parseLeb128UInt(BWI))
-  rule #parseInstrx252x15s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #table.grow(UnsignedInt0)
+  rule #parseInstrx252x15s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => instrResult(#table.grow(UnsignedInt0), BWI)
   rule #parseInstrx252x15s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx252x16(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx252x16s1
                             ( IntResult
                             )  [function, total]
   rule parseInstrx252x16(BWI) => #parseInstrx252x16s1(parseLeb128UInt(BWI))
-  rule #parseInstrx252x16s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #table.size(UnsignedInt0)
+  rule #parseInstrx252x16s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => instrResult(#table.size(UnsignedInt0), BWI)
   rule #parseInstrx252x16s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx252x17(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx252x17s1
                             ( IntResult
                             )  [function, total]
   rule parseInstrx252x17(BWI) => #parseInstrx252x17s1(parseLeb128UInt(BWI))
-  rule #parseInstrx252x17s1(intResult(UnsignedInt0:Int, _BWI:BytesWithIndex)) => #table.fill(UnsignedInt0)
+  rule #parseInstrx252x17s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => instrResult(#table.fill(UnsignedInt0), BWI)
   rule #parseInstrx252x17s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx253(BytesWithIndex)  [function, total]
                        | #parseInstrx253p1(IntResult)  [function, total]
