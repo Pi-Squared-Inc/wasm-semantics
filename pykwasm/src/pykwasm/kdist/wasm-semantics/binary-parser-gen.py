@@ -16,6 +16,7 @@ class Symbol(Constructor):
     name: str
 
     def build(self, args: list['Argument'], bwi:str, output_pieces: list[str]) -> None:
+        output_pieces.append('instrResult(')
         output_pieces.append(f'`{self.name}`(')
         first = True
         for i, arg in enumerate(args):
@@ -28,9 +29,12 @@ class Symbol(Constructor):
         if first:
             output_pieces.append('.KList')
         output_pieces.append(')')
+        output_pieces.append(', ')
+        output_pieces.append(bwi)
+        output_pieces.append(')')
 
     def needs_bwi(self) -> bool:
-        return False
+        return True
 
 def symbol(s:str) -> Symbol:
     return Symbol(s)
