@@ -42,6 +42,7 @@ module BINARY-PARSER-SECTION  [private]
   imports BINARY-PARSER-INT-SYNTAX
   imports BINARY-PARSER-SECTION-SYNTAX
   imports BINARY-PARSER-TAGS
+  imports BINARY-PARSER-TABLE-SECTION-SYNTAX
   imports BINARY-PARSER-TYPE-SECTION-SYNTAX
   imports K-EQUAL-SYNTAX
 
@@ -53,6 +54,8 @@ module BINARY-PARSER-SECTION  [private]
       => parseImportSection(bwi(Data, 0))
   rule parseSection(unparsedSection(FUNC_SEC, Data:Bytes))
       => parseFuncSection(bwi(Data, 0))
+  rule parseSection(unparsedSection(TABLE_SEC, Data:Bytes))
+      => parseTableSection(bwi(Data, 0))
   rule parseSection(unparsedSection(CODE_SEC, Data:Bytes))
       => parseCodeSection(bwi(Data, 0))
   rule parseSection(A) => parseError("parseSection", ListItem(A))

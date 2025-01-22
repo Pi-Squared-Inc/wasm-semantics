@@ -29,11 +29,6 @@ module BINARY-PARSER-TEST
         [owise]
     rule addDefnToModule
             ( false => true
-            , _D:TableDefn
-            , #module(... metadata: _ => #meta (... id:  , funcIds: .Map , filename: "error: test addDefnToModule(TableDefn) branch called." )))
-        [owise]
-    rule addDefnToModule
-            ( false => true
             , _D:MemoryDefn
             , #module(... metadata: _ => #meta (... id:  , funcIds: .Map , filename: "error: test addDefnToModule(MemoryDefn) branch called." )))
         [owise]
