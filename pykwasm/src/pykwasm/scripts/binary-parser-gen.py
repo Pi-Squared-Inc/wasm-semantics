@@ -331,11 +331,12 @@ class InstrConfig:
 
 # fmt: off
 INSTRS_CONFIG:list[InstrConfig]=[
-    # Wasm _control instructions_ are encoded with the follow tags.
-    # Note that `ELSE` instructions must appear in conjunction with `IF` instructions.
-
     # The tuple structure is:
     # ('INSTRUCTION_NAME', b'instruction-prefix', ['Argument1Type', 'Argument2Type', ...], '#ConstructorName')
+
+    # Wasm _control instructions_.
+    # Note that `ELSE` instructions must appear in conjunction with `IF` instructions.
+
     InstrConfig('UNREACHABLE', b'\x00', [], 'unreachable'),
     InstrConfig('NOP', b'\x01', [], 'nop'),
     InstrConfig('BLOCK', b'\x02', ['Block', ], identity()),  # #block
@@ -349,7 +350,7 @@ INSTRS_CONFIG:list[InstrConfig]=[
     InstrConfig('CALL', b'\x10', ['UnsignedInt', ], '#call'),
     InstrConfig('CALL_INDIRECT', b'\x11', ['UnsignedInt', 'UnsignedInt', ], 'buildCallIndirect'),  # #call_indirect
 
-    # _Reference instructions_ are encoded with the following tags:
+    # _Reference instructions_::
 
     InstrConfig('REF_NULL', b'\xD0', ['HeapType', ], symbol('aRef.null')),
     InstrConfig('REF_ISNULL', b'\xD1', [], '#ref.is_null'),
@@ -359,7 +360,7 @@ INSTRS_CONFIG:list[InstrConfig]=[
     InstrConfig('SELECT', b'\x1B', [], 'select'),
     InstrConfig('SELECT_GENERIC', b'\x1C', ['ValTypes', ], not_implemented()),
 
-    # _Variable instructions_ are encoded with the following tags:
+    # _Variable instructions_:
 
     InstrConfig('LOCAL_GET', b'\x20', ['UnsignedInt', ], '#local.get'),
     InstrConfig('LOCAL_SET', b'\x21', ['UnsignedInt', ], '#local.set'),
@@ -367,7 +368,7 @@ INSTRS_CONFIG:list[InstrConfig]=[
     InstrConfig('GLOBAL_GET', b'\x23', ['UnsignedInt', ], '#global.get'),
     InstrConfig('GLOBAL_SET', b'\x24', ['UnsignedInt', ], '#global.set'),
 
-    # _Table instructions_ are encoded with the following tags:
+    # _Table instructions_:
 
     InstrConfig('TABLE_GET', b'\x25', ['UnsignedInt', ], '#table.get'),
     InstrConfig('TABLE_SET', b'\x26', ['UnsignedInt', ], '#table.set'),
@@ -378,7 +379,7 @@ INSTRS_CONFIG:list[InstrConfig]=[
     InstrConfig('TABLE_SIZE', b'\xFC\x10', ['UnsignedInt', ], '#table.size'),
     InstrConfig('TABLE_FILL', b'\xFC\x11', ['UnsignedInt', ], '#table.fill'),
 
-    # _Memory instructions_ are encoded with the following tags:
+    # _Memory instructions_::
 
     InstrConfig('I32_LOAD', b'\x28', [constructor_arg('i32'), constructor_arg('load'), 'MemArg', ], '#load'),
     InstrConfig('I64_LOAD', b'\x29', [constructor_arg('i64'), constructor_arg('load'), 'MemArg', ], '#load'),
@@ -410,7 +411,7 @@ INSTRS_CONFIG:list[InstrConfig]=[
     InstrConfig('MEM_COPY', b'\xFC\x0A', [parse_constant(b'\x00'), parse_constant(b'\x00'), ], 'memory.copy'),
     InstrConfig('MEM_FILL', b'\xFC\x0B', [parse_constant(b'\x00'), ], 'memory.fill'),
 
-    # _Numeric instructions_ have the following tags:
+    # _Numeric instructions_:
 
     InstrConfig('I32_CONST', b'\x41', [constructor_arg('i32'), 'SignedInt', ], symbol('aIConst')),
     InstrConfig('I64_CONST', b'\x42', [constructor_arg('i64'), 'SignedInt', ], symbol('aIConst')),
@@ -568,7 +569,7 @@ INSTRS_CONFIG:list[InstrConfig]=[
     InstrConfig('I64_TRUNC_SAT_F64_S', b'\xFC\x06', [], not_implemented()),
     InstrConfig('I64_TRUNC_SAT_F64_U', b'\xFC\x07', [], not_implemented()),
 
-    # _Vector instructions_ have the following tags:
+    # _Vector instructions_:
 
     InstrConfig('V128_LOAD', b'\xFD\x00', ['MemArg', ], not_implemented()),
     InstrConfig('V128_LOAD_8X8_S', b'\xFD\x01', ['MemArg', ], not_implemented()),
