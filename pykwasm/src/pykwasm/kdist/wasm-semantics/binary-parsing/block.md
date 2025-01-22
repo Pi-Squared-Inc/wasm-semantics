@@ -61,14 +61,6 @@ module BINARY-PARSER-BLOCK  [private]
   rule blockTypeToVecType(epsilon, _:Defns) => [ .ValTypes ]
   rule blockTypeToVecType(ValType, _:Defns) => [ ValType .ValTypes ]
   rule blockTypeToVecType(Index:Int, Ds::Defns) => parseError("blockTypeToVecType: unimplemented", ListItem(Index) ListItem(Ds))
-  // rule blockTypeToVecType(Index:Int, .Defns) => parseError("blockTypeToVecType: not found", ListItem(Index))
-  // rule blockTypeToVecType(0, #type(FT:FuncType, _:OptionalId) Ds:Defns) => [FT]
-  // rule blockTypeToVecType(0, D:Defn Ds:Defns) => parseError("blockTypeToVecType", ListItem(D) ListItem(Ds))
-  //     [owise]
-  // rule blockTypeToVecType(Index:Int, D:Defn Ds:Defns) => blockTypeToVecType(Index -Int 1, Ds)
-  //     requires Index >Int 0
-  // rule blockTypeToVecType(Index:Int, Ds:Defns) => parseError("blockTypeToVecType", ListItem(I) ListItem(Ds))
-  //     requires Index <Int 0
 
 endmodule
 ```

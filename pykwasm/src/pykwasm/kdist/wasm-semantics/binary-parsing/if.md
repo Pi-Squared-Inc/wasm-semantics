@@ -1,5 +1,5 @@
-Parsing [loops](https://webassembly.github.io/spec/core/binary/instructions.html#control-instructions),
-i.e., a blocktype + instr list.
+Parsing [if](https://webassembly.github.io/spec/core/binary/instructions.html#control-instructions)
+instructions.
 
 ```k
 

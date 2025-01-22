@@ -1,4 +1,4 @@
-// Parsing a [float](https://webassembly.github.io/spec/core/binary/values.html#floating-point).
+Parsing a [float](https://webassembly.github.io/spec/core/binary/values.html#floating-point).
 
 ```k
 module BINARY-PARSER-FLOAT-SYNTAX

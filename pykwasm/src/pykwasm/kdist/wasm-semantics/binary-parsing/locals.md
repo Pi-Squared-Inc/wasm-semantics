@@ -1,4 +1,4 @@
-// Parsing a [locals object](https://webassembly.github.io/spec/core/binary/modules.html#binary-local).
+Parsing a [locals object](https://webassembly.github.io/spec/core/binary/modules.html#binary-local).
 
 ```k
 module BINARY-PARSER-LOCALS-SYNTAX

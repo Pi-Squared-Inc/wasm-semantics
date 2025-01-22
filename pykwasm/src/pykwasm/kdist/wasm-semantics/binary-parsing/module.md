@@ -18,10 +18,10 @@ module BINARY-PARSER-MODULE-TEST-SYNTAX
 endmodule
 
 module BINARY-PARSER-MODULE  [private]
+  imports BINARY-PARSER-BINARY-DEFN-CONVERT-SYNTAX
   imports BINARY-PARSER-CODE-SYNTAX
   imports BINARY-PARSER-CONSTANT-SYNTAX
   imports BINARY-PARSER-FUNC-SECTION-ENTRY-SYNTAX
-  imports BINARY-PARSER-HELPERS-SYNTAX
   imports BINARY-PARSER-MODULE-SYNTAX
   imports BINARY-PARSER-MODULE-TEST-SYNTAX
   imports BINARY-PARSER-SECTION-SYNTAX
@@ -69,7 +69,6 @@ module BINARY-PARSER-MODULE  [private]
 
   syntax ModuleOrError ::= addSectionsToModule(Sections, ModuleAndFunctions)  [function, total]
   syntax ModuleOrError ::= #addSectionsToModule(Sections, ModuleAndFunctions)  [function, total]
-  // TODO: Combine the function types with the function definitions and add them to the module.
   rule addSectionsToModule
           ( .Sections
           , moduleAndFunctions

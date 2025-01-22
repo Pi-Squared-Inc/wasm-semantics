@@ -1,4 +1,4 @@
-// Parsing a [func section](https://webassembly.github.io/spec/core/binary/modules.html#function-section).
+Parsing a [func section](https://webassembly.github.io/spec/core/binary/modules.html#function-section).
 
 ```k
 module BINARY-PARSER-FUNC-SECTION-SYNTAX

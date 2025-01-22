@@ -6,6 +6,7 @@ This file defines a Wasm binary parser based on this
 ```k
 
 requires "binary-parsing/base.md"
+requires "binary-parsing/binary-defn-convert.md"
 requires "binary-parsing/block.md"
 requires "binary-parsing/bytes.md"
 requires "binary-parsing/code.md"
@@ -48,6 +49,7 @@ endmodule
 module BINARY-PARSER  [private]
   imports BINARY-PARSER-MODULE-SYNTAX
 
+  imports BINARY-PARSER-BINARY-DEFN-CONVERT
   imports BINARY-PARSER-BLOCK
   imports BINARY-PARSER-BYTES
   imports BINARY-PARSER-CODE

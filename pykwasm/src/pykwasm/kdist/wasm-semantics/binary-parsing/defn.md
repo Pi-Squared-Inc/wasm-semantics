@@ -7,7 +7,7 @@ module BINARY-PARSER-DEFN-SYNTAX
   syntax DefnResult ::= defnResult(BinaryDefn, BytesWithIndex) | ParseError
 
   syntax BinaryDefns ::= List{BinaryDefn, ""}
-  
+
   syntax DefnOrError ::= Defn | ParseError
   syntax DefnsOrError ::= Defns | ParseError
 

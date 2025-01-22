@@ -1,4 +1,4 @@
-// Parsing an [expr/instr list](https://webassembly.github.io/spec/core/binary/instructions.html#binary-expr).
+Parsing an [expr/instr list](https://webassembly.github.io/spec/core/binary/instructions.html#binary-expr).
 
 ```k
 module BINARY-PARSER-INSTR-LIST-SYNTAX
