@@ -1,8 +1,6 @@
 tests/binary-parsing/type-param-v128.wast
 tests/binary-parsing/code-call-indirect.wast
-tests/binary-parsing/code-reference-func.wast
 tests/binary-parsing/code-variable-global.wast
-tests/binary-parsing/code-table.wast
 tests/binary-parsing/code-memory.wast
 tests/binary-parsing/code-numeric-float-parsing.md
 tests/binary-parsing/code-numeric-convert-reinterpret.wast

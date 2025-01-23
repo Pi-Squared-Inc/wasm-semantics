@@ -915,7 +915,7 @@ module BINARY-PARSER-INSTR
                             )  [function, total]
   rule #parseInstrx252x12s1(intResult(UnsignedInt0:Int, BWI:BytesWithIndex)) => #parseInstrx252x12s2(UnsignedInt0, parseLeb128UInt(BWI))
   rule #parseInstrx252x12s1(E:ParseError) => E
-  rule #parseInstrx252x12s2(UnsignedInt0:Int, intResult(UnsignedInt1:Int, BWI:BytesWithIndex)) => instrResult(#table.init(UnsignedInt0, UnsignedInt1), BWI)
+  rule #parseInstrx252x12s2(UnsignedInt0:Int, intResult(UnsignedInt1:Int, BWI:BytesWithIndex)) => instrResult(buildTableInit(UnsignedInt0, UnsignedInt1), BWI)
   rule #parseInstrx252x12s2(_UnsignedInt0:Int, E:ParseError) => E
   syntax InstrResult ::= parseInstrx252x13(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx252x13s1
