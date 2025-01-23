@@ -57,23 +57,23 @@ Bit # | Constraint  | "0" State       | "1" State            |
 2     |  None       | elts by ref     | elts by value        |
 
 ```k
-  syntax Bytes ::= "ELTS_ACTIVE_ZERO_BY_REF" [macro] // 000
-  syntax Bytes ::= "ELTS_PASSIVE_BY_REF"     [macro] // 001
-  syntax Bytes ::= "ELTS_ACTIVE_IDX_BY_REF"  [macro] // 010
-  syntax Bytes ::= "ELTS_DECL_BY_REF"        [macro] // 011
-  syntax Bytes ::= "ELTS_ACTIVE_ZERO_BY_VAL" [macro] // 100
-  syntax Bytes ::= "ELTS_PASSIVE_BY_VAL"     [macro] // 101
-  syntax Bytes ::= "ELTS_ACTIVE_IDX_BY_VAL"  [macro] // 110
-  syntax Bytes ::= "ELTS_DECL_BY_VAL"        [macro] // 110
+  syntax Int ::= "ELTS_ACTIVE_ZERO_BY_REF" [macro] // 000
+  syntax Int ::= "ELTS_PASSIVE_BY_REF"     [macro] // 001
+  syntax Int ::= "ELTS_ACTIVE_IDX_BY_REF"  [macro] // 010
+  syntax Int ::= "ELTS_DECL_BY_REF"        [macro] // 011
+  syntax Int ::= "ELTS_ACTIVE_ZERO_BY_VAL" [macro] // 100
+  syntax Int ::= "ELTS_PASSIVE_BY_VAL"     [macro] // 101
+  syntax Int ::= "ELTS_ACTIVE_IDX_BY_VAL"  [macro] // 110
+  syntax Int ::= "ELTS_DECL_BY_VAL"        [macro] // 110
 
-  rule ELTS_ACTIVE_ZERO_BY_REF => b"\x00"
-  rule ELTS_PASSIVE_BY_REF     => b"\x01"
-  rule ELTS_ACTIVE_IDX_BY_REF  => b"\x02"
-  rule ELTS_DECL_BY_REF        => b"\x03"
-  rule ELTS_ACTIVE_ZERO_BY_VAL => b"\x04"
-  rule ELTS_PASSIVE_BY_VAL     => b"\x05"
-  rule ELTS_ACTIVE_IDX_BY_VAL  => b"\x06"
-  rule ELTS_DECL_BY_VAL        => b"\x07"
+  rule ELTS_ACTIVE_ZERO_BY_REF => 0
+  rule ELTS_PASSIVE_BY_REF     => 1
+  rule ELTS_ACTIVE_IDX_BY_REF  => 2
+  rule ELTS_DECL_BY_REF        => 3
+  rule ELTS_ACTIVE_ZERO_BY_VAL => 4
+  rule ELTS_PASSIVE_BY_VAL     => 5
+  rule ELTS_ACTIVE_IDX_BY_VAL  => 6
+  rule ELTS_DECL_BY_VAL        => 7
 ```
 
 The special _element kind_ constant is used to describe possible element kinds.

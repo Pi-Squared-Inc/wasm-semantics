@@ -13,6 +13,10 @@ requires "binary-parsing/code.md"
 requires "binary-parsing/code-section.md"
 requires "binary-parsing/constant.md"
 requires "binary-parsing/defn.md"
+requires "binary-parsing/elem.md"
+requires "binary-parsing/elem-section.md"
+requires "binary-parsing/expr.md"
+requires "binary-parsing/expr-vec.md"
 requires "binary-parsing/float.md"
 requires "binary-parsing/func-section.md"
 requires "binary-parsing/func-section-entry.md"
@@ -32,6 +36,7 @@ requires "binary-parsing/memarg.md"
 requires "binary-parsing/module.md"
 requires "binary-parsing/name.md"
 requires "binary-parsing/resulttype.md"
+requires "binary-parsing/reftype.md"
 requires "binary-parsing/section.md"
 requires "binary-parsing/tags.md"
 requires "binary-parsing/table.md"
@@ -57,6 +62,10 @@ module BINARY-PARSER  [private]
   imports BINARY-PARSER-CODE
   imports BINARY-PARSER-CODE-SECTION
   imports BINARY-PARSER-CONSTANT
+  imports BINARY-PARSER-ELEM
+  imports BINARY-PARSER-ELEM-SECTION
+  imports BINARY-PARSER-EXPR
+  imports BINARY-PARSER-EXPR-VEC
   imports BINARY-PARSER-FLOAT
   imports BINARY-PARSER-FUNC-SECTION
   imports BINARY-PARSER-FUNC-SECTION-ENTRY
@@ -76,6 +85,7 @@ module BINARY-PARSER  [private]
   imports BINARY-PARSER-MODULE
   imports BINARY-PARSER-NAME
   imports BINARY-PARSER-RESULTTYPE
+  imports BINARY-PARSER-REFTYPE
   imports BINARY-PARSER-SECTION
   imports BINARY-PARSER-SYNTAX
   imports BINARY-PARSER-TABLE

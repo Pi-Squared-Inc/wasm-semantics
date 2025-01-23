@@ -106,6 +106,7 @@ module BINARY-PARSER-INT  [private]
       requires Count >Int 0
   rule #parseUnsignedIntVec2(Count:Int, L:Ints, BWI:BytesWithIndex)
       => parseError("parseUnsignedIntVec2", ListItem(Count) ListItem(L) ListItem(BWI))
+      requires Count <Int 0
   rule #parseUnsignedIntVec3(Count:Int, L:Ints, intResult(Value:Int, BWI:BytesWithIndex))
       => #parseUnsignedIntVec2(Count, Value L, BWI)
   rule #parseUnsignedIntVec3(_Count:Int, _:Ints, E:ParseError) => E

@@ -5,10 +5,12 @@ module BINARY-PARSER-BINARY-DEFN-CONVERT-SYNTAX
   imports BINARY-PARSER-BASE-SYNTAX
   imports BINARY-PARSER-CODE-SYNTAX
   imports BINARY-PARSER-DEFN-SYNTAX
+  imports BINARY-PARSER-ELEM-SYNTAX
   imports BINARY-PARSER-FUNC-SECTION-ENTRY-SYNTAX
   imports WASM-DATA-COMMON
 
   syntax DefnsOrError ::= buildFunctionDefns(Defns, BinaryDefnFunctionTypes, BinaryDefnFunctionBodies)  [function, total]
+  syntax DefnsOrError ::= buildElementDefns(Defns, BinaryDefnElements)  [function, total]
 
 endmodule
 
@@ -119,5 +121,33 @@ module BINARY-PARSER-BINARY-DEFN-CONVERT  [private]
   rule resolvedBlockInstrsToIf(E:ParseError, _:InstrsOrError) => E
   rule resolvedBlockInstrsToIf(_:ResolvedBlockOrError, E:ParseError) => E
       [owise]
+
+
+  syntax DefnsOrError ::= #buildElementDefns1(DefnOrError, DefnsOrError)  [function, total]
+  rule buildElementDefns(_:Defns, .BinaryDefnElements) => .Defns
+  rule buildElementDefns
+          ( Ds:Defns
+          , E:BinaryDefnElem Es:BinaryDefnElements
+          )
+      => #buildElementDefns1(buildElementDefn(Ds, E), buildElementDefns(Ds, Es))
+  rule #buildElementDefns1(D:Defn, Ds:Defns) => D Ds
+  rule #buildElementDefns1(E:ParseError, _:DefnsOrError) => E
+  rule #buildElementDefns1(_:Defn, E:ParseError) => E
+
+  syntax DefnOrError  ::= buildElementDefn(Defns, BinaryDefnElem)  [function, total]
+                        | #buildElementDefn(RefValType, ListRef, Int, InstrsOrError)  [function, total]
+  rule buildElementDefn
+          ( Ds:Defns
+          , #binaryElem
+              ( T:RefValType
+              , Segment:ListRef
+              , #binaryElemActive(Table:Int, Offset:BinaryInstrs)
+              )
+          )
+      => #buildElementDefn(T, Segment, Table, binaryInstrsToInstrs(Ds, Offset))
+  rule #buildElementDefn(T:RefValType, Segment:ListRef, Table:Int, Is:Instrs)
+      => #elem(T, Segment, #elemActive(Table, Is), )
+  rule #buildElementDefn(_:RefValType, _:ListRef, _:Int, E:ParseError) => E
+
 endmodule
 ```

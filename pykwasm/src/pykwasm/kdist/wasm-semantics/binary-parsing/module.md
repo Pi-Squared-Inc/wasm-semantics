@@ -21,6 +21,7 @@ module BINARY-PARSER-MODULE  [private]
   imports BINARY-PARSER-BINARY-DEFN-CONVERT-SYNTAX
   imports BINARY-PARSER-CODE-SYNTAX
   imports BINARY-PARSER-CONSTANT-SYNTAX
+  imports BINARY-PARSER-ELEM-SYNTAX
   imports BINARY-PARSER-FUNC-SECTION-ENTRY-SYNTAX
   imports BINARY-PARSER-MODULE-SYNTAX
   imports BINARY-PARSER-MODULE-TEST-SYNTAX
@@ -58,6 +59,7 @@ module BINARY-PARSER-MODULE  [private]
                       )
                   , .BinaryDefnFunctionTypes
                   , .BinaryDefnFunctionBodies
+                  , .BinaryDefnElements
                   )
               )
           , BWI
@@ -75,9 +77,10 @@ module BINARY-PARSER-MODULE  [private]
               ( #module(... types: Ds:Defns) #as M:ModuleDecl
               , FT:BinaryDefnFunctionTypes
               , FB:BinaryDefnFunctionBodies
+              , E:BinaryDefnElements
               )
           )
-      => addOrderedDefnsOrErrorToModule(M, buildFunctionDefns(Ds, FT, FB))
+      => addOrderedDefnsOrErrorToModule(M, buildFunctionDefns(Ds, FT, FB), buildElementDefns(Ds, E))
   rule addSectionsToModule(S:Section : Ss:Sections, M:ModuleAndFunctions)
       => #addSectionsToModule(Ss, addSectionToModule(S, M))
   rule #addSectionsToModule(Ss:Sections, M:ModuleAndFunctions)
@@ -88,17 +91,19 @@ module BINARY-PARSER-MODULE  [private]
   rule addSectionToModule(defnsSection(D:BinaryDefns), M:ModuleAndFunctions)
       => addDefnsToModuleAndFunctions(D, M)
 
-  syntax ModuleOrError ::= addOrderedDefnsOrErrorToModule(ModuleDecl, DefnsOrError)  [function, total]
-  rule addOrderedDefnsOrErrorToModule(M:ModuleDecl, D:Defns)
+  syntax ModuleOrError ::= addOrderedDefnsOrErrorToModule(ModuleDecl, DefnsOrError, DefnsOrError)  [function, total]
+  rule addOrderedDefnsOrErrorToModule(M:ModuleDecl, D1:Defns, D2:Defns)
       // We need to reverse the defns because addDefnsToModule adds then in
       // reverse order.
-      => addDefnsToModule(reverse(D), M)
-  rule addOrderedDefnsOrErrorToModule(_:ModuleDecl, E:ParseError) => E
+      => addDefnsToModule(reverse(D2), addDefnsToModule(reverse(D1), M))
+  rule addOrderedDefnsOrErrorToModule(_:ModuleDecl, E:ParseError, _:DefnsOrError) => E
+  rule addOrderedDefnsOrErrorToModule(_:ModuleDecl, _:Defns, E:ParseError) => E
 
   syntax ModuleAndFunctions ::= moduleAndFunctions
                                     ( mod: ModuleDecl
                                     , functionTypes: BinaryDefnFunctionTypes
                                     , functionBodies: BinaryDefnFunctionBodies
+                                    , elements: BinaryDefnElements
                                     )
 
   syntax ModuleAndFunctions ::= addDefnsToModuleAndFunctions(BinaryDefns, ModuleAndFunctions)  [function, total]
@@ -113,9 +118,14 @@ module BINARY-PARSER-MODULE  [private]
           , moduleAndFunctions(... functionTypes: FTs:BinaryDefnFunctionTypes => FT FTs)
           )
   rule addDefnsToModuleAndFunctions
-          ( (binaryDefnFunctionBody(...) #as FB:BinaryDefnFunctionBody) Ds:BinaryDefns
+          ( FB:BinaryDefnFunctionBody Ds:BinaryDefns
               => Ds
           , moduleAndFunctions(... functionBodies: FBs:BinaryDefnFunctionBodies => FB FBs)
+          )
+  rule addDefnsToModuleAndFunctions
+          ( EB:BinaryDefnElem Ds:BinaryDefns
+              => Ds
+          , moduleAndFunctions(... elements: EBs:BinaryDefnElements => EB EBs)
           )
 
   syntax ModuleDecl ::= addDefnsToModule(Defns, ModuleDecl)  [function, total]
@@ -133,6 +143,7 @@ module BINARY-PARSER-MODULE  [private]
   rule addDefnToModule(false => true, I:ImportDefn, #module(... importDefns: Is => I Is))
   rule addDefnToModule(false => true, F:FuncDefn, #module(... funcs: Fs => F Fs))
   rule addDefnToModule(false => true, T:TableDefn, #module(... tables: Ts => T Ts))
+  rule addDefnToModule(false => true, E:ElemDefn, #module(... elem: Es => E Es))
 
   // TODO: Merge with #reverseDefns in wasm-text.md
   syntax Defns ::= reverse(Defns)  [function, total]
