@@ -143,6 +143,7 @@ module BINARY-PARSER-MODULE  [private]
   rule addDefnToModule(false => true, I:ImportDefn, #module(... importDefns: Is => I Is))
   rule addDefnToModule(false => true, F:FuncDefn, #module(... funcs: Fs => F Fs))
   rule addDefnToModule(false => true, T:TableDefn, #module(... tables: Ts => T Ts))
+  rule addDefnToModule(false => true, M:MemoryDefn, #module(... mems: Ms => M Ms))
   rule addDefnToModule(false => true, E:ElemDefn, #module(... elem: Es => E Es))
 
   // TODO: Merge with #reverseDefns in wasm-text.md

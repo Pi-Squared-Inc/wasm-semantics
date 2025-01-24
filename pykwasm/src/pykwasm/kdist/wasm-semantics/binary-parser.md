@@ -29,6 +29,7 @@ requires "binary-parsing/limits.md"
 requires "binary-parsing/locals.md"
 requires "binary-parsing/loop.md"
 requires "binary-parsing/memarg.md"
+requires "binary-parsing/memory.md"
 requires "binary-parsing/module.md"
 requires "binary-parsing/name.md"
 requires "binary-parsing/resulttype.md"
@@ -72,6 +73,7 @@ module BINARY-PARSER  [private]
   imports BINARY-PARSER-LOCALS
   imports BINARY-PARSER-LOOP
   imports BINARY-PARSER-MEMARG
+  imports BINARY-PARSER-MEMORY
   imports BINARY-PARSER-MODULE
   imports BINARY-PARSER-NAME
   imports BINARY-PARSER-RESULTTYPE
