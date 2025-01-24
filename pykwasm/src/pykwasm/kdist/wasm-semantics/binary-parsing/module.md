@@ -156,6 +156,7 @@ module BINARY-PARSER-MODULE  [private]
   rule addDefnToModule(false => true, E:ElemDefn, #module(... elem: Es => E Es))
   rule addDefnToModule(false => true, G:GlobalDefn, #module(... globals: Gs => G Gs))
   rule addDefnToModule(false => true, E:ExportDefn, #module(... exports: Es => E Es))
+  rule addDefnToModule(false => true, S:StartDefn, #module(... start: Ss => S Ss))
 
   // TODO: Merge with #reverseDefns in wasm-text.md
   syntax Defns ::= reverse(Defns)  [function, total]

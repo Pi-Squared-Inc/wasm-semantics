@@ -37,6 +37,7 @@ requires "binary-parsing/name.md"
 requires "binary-parsing/resulttype.md"
 requires "binary-parsing/reftype.md"
 requires "binary-parsing/section.md"
+requires "binary-parsing/start-section.md"
 requires "binary-parsing/tags.md"
 requires "binary-parsing/table.md"
 requires "binary-parsing/valtype.md"
@@ -84,6 +85,7 @@ module BINARY-PARSER  [private]
   imports BINARY-PARSER-REFTYPE
   imports BINARY-PARSER-SECTION
   imports BINARY-PARSER-SYNTAX
+  imports BINARY-PARSER-START-SECTION
   imports BINARY-PARSER-TABLE
   imports BINARY-PARSER-VALTYPE
 

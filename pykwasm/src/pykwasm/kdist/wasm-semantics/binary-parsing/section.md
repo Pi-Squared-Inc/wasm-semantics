@@ -42,6 +42,7 @@ module BINARY-PARSER-SECTION  [private]
   imports BINARY-PARSER-INT-SYNTAX
   imports BINARY-PARSER-MEMORY-SYNTAX
   imports BINARY-PARSER-SECTION-SYNTAX
+  imports BINARY-PARSER-START-SECTION-SYNTAX
   imports BINARY-PARSER-TAGS
   imports BINARY-PARSER-TABLE-SYNTAX
   imports BINARY-PARSER-FUNCTYPE-SYNTAX
@@ -63,6 +64,8 @@ module BINARY-PARSER-SECTION  [private]
       => #parseSection1(defnGlobal, bwi(Data, 0))
   rule parseSection(unparsedSection(EXPORT_SEC, Data:Bytes))
       => #parseSection1(defnExport, bwi(Data, 0))
+  rule parseSection(unparsedSection(START_SEC, Data:Bytes))
+      => parseStartSection(bwi(Data, 0))
   rule parseSection(unparsedSection(ELT_SEC, Data:Bytes))
       => #parseSection1(defnElem, bwi(Data, 0))
   rule parseSection(unparsedSection(CODE_SEC, Data:Bytes))
