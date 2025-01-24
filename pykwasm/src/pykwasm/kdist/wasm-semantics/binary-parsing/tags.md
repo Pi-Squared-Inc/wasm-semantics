@@ -86,9 +86,9 @@ Currently, only one element kind is supported.
 _Data_ sections are tagged based on their kind.
 
 ```k
-  syntax Bytes ::= "DATA_ACTIVE_ZERO" [macro] rule DATA_ACTIVE_ZERO  => b"\x00"
-  syntax Bytes ::= "DATA_PASSIVE"     [macro] rule DATA_PASSIVE => b"\x01"
-  syntax Bytes ::= "DATA_ACTIVE_IDX"  [macro] rule DATA_ACTIVE_IDX   => b"\x02"
+  syntax Int ::= "DATA_ACTIVE_ZERO" [macro] rule DATA_ACTIVE_ZERO  => 0
+  syntax Int ::= "DATA_PASSIVE"     [macro] rule DATA_PASSIVE      => 1
+  syntax Int ::= "DATA_ACTIVE_IDX"  [macro] rule DATA_ACTIVE_IDX   => 2
 ```
 
 Each value _type_ is tagged by a unique integer.
