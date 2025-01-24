@@ -40,10 +40,10 @@ In the import/export sections, different kinds of imports/exports are tagged.
   syntax Bytes ::= "IMPORT_TBLT" [macro] rule IMPORT_TBLT => b"\x01"
   syntax Bytes ::= "IMPORT_MEMT" [macro] rule IMPORT_MEMT => b"\x02"
   syntax Bytes ::= "IMPORT_GLBT" [macro] rule IMPORT_GLBT => b"\x03"
-  syntax Bytes ::= "EXPORT_FUNC" [macro] rule EXPORT_FUNC => b"\x00"
-  syntax Bytes ::= "EXPORT_TBLT" [macro] rule EXPORT_TBLT => b"\x01"
-  syntax Bytes ::= "EXPORT_MEMT" [macro] rule EXPORT_MEMT => b"\x02"
-  syntax Bytes ::= "EXPORT_GLBT" [macro] rule EXPORT_GLBT => b"\x03"
+  syntax Int ::= "EXPORT_FUNC" [macro] rule EXPORT_FUNC => 0
+  syntax Int ::= "EXPORT_TBLT" [macro] rule EXPORT_TBLT => 1
+  syntax Int ::= "EXPORT_MEMT" [macro] rule EXPORT_MEMT => 2
+  syntax Int ::= "EXPORT_GLBT" [macro] rule EXPORT_GLBT => 3
 ```
 
 _Element_ sections have various possible formats which are stored in a 3-bit code.

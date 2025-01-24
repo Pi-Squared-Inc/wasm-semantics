@@ -13,6 +13,7 @@ requires "binary-parsing/code.md"
 requires "binary-parsing/constant.md"
 requires "binary-parsing/defn.md"
 requires "binary-parsing/elem.md"
+requires "binary-parsing/export.md"
 requires "binary-parsing/expr.md"
 requires "binary-parsing/expr-vec.md"
 requires "binary-parsing/float.md"
@@ -58,6 +59,7 @@ module BINARY-PARSER  [private]
   imports BINARY-PARSER-CODE
   imports BINARY-PARSER-CONSTANT
   imports BINARY-PARSER-ELEM
+  imports BINARY-PARSER-EXPORT
   imports BINARY-PARSER-EXPR
   imports BINARY-PARSER-EXPR-VEC
   imports BINARY-PARSER-FLOAT
