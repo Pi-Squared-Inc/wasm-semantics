@@ -9,9 +9,6 @@ module BINARY-PARSER-SECTION-SYNTAX
   syntax Section  ::= customSection(Bytes)
                     | defnsSection(reverseDefns:BinaryDefns)
 
-  syntax DefnKind
-  syntax DefnResult ::= parseDefn(DefnKind, BytesWithIndex)  [function, total]
-
   syntax SectionResult ::= sectionResult(Section, BytesWithIndex) | ParseError
   syntax SectionResult ::= parseSection(UnparsedSection)  [function, total]
   syntax SectionResult  ::= parseSectionVector
@@ -36,34 +33,40 @@ endmodule
 
 module BINARY-PARSER-SECTION  [private]
   imports BOOL
-  imports BINARY-PARSER-CODE-SECTION-SYNTAX
-  imports BINARY-PARSER-ELEM-SECTION-SYNTAX
-  imports BINARY-PARSER-FUNC-SECTION-SYNTAX
-  imports BINARY-PARSER-IMPORT-SECTION-SYNTAX
+  imports BINARY-PARSER-CODE-SYNTAX
+  imports BINARY-PARSER-ELEM-SYNTAX
+  imports BINARY-PARSER-FUNC-SECTION-ENTRY-SYNTAX
+  imports BINARY-PARSER-IMPORT-SYNTAX
   imports BINARY-PARSER-INT-SYNTAX
   imports BINARY-PARSER-SECTION-SYNTAX
   imports BINARY-PARSER-TAGS
-  imports BINARY-PARSER-TABLE-SECTION-SYNTAX
-  imports BINARY-PARSER-TYPE-SECTION-SYNTAX
+  imports BINARY-PARSER-TABLE-SYNTAX
+  imports BINARY-PARSER-FUNCTYPE-SYNTAX
   imports K-EQUAL-SYNTAX
 
   rule parseSection(unparsedSection(CUSTOM_SEC, Data:Bytes))
       => sectionResult(customSection(Data), bwi(Data, lengthBytes(Data)))
   rule parseSection(unparsedSection(TYPE_SEC, Data:Bytes))
-      => parseTypeSection(bwi(Data, 0))
+      => #parseSection1(defnType, bwi(Data, 0))
   rule parseSection(unparsedSection(IMPORT_SEC, Data:Bytes))
-      => parseImportSection(bwi(Data, 0))
+      => #parseSection1(defnImport, bwi(Data, 0))
   rule parseSection(unparsedSection(FUNC_SEC, Data:Bytes))
-      => parseFuncSection(bwi(Data, 0))
+      => #parseSection1(defnFunc, bwi(Data, 0))
   rule parseSection(unparsedSection(TABLE_SEC, Data:Bytes))
-      => parseTableSection(bwi(Data, 0))
+      => #parseSection1(defnTable, bwi(Data, 0))
   rule parseSection(unparsedSection(ELT_SEC, Data:Bytes))
-      => parseElemSection(bwi(Data, 0))
+      => #parseSection1(defnElem, bwi(Data, 0))
   rule parseSection(unparsedSection(CODE_SEC, Data:Bytes))
-      => parseCodeSection(bwi(Data, 0))
+      => #parseSection1(defnCode, bwi(Data, 0))
   rule parseSection(A) => parseError("parseSection", ListItem(A))
       [owise]
 
+  syntax SectionResult  ::= #parseSection1(DefnKind, BytesWithIndex)  [function, total]
+                          | #parseSection2(DefnKind, IntResult)  [function, total]
+  rule #parseSection1(D:DefnKind, BWI:BytesWithIndex) => #parseSection2(D, parseLeb128UInt(BWI))
+  rule #parseSection2(D:DefnKind, intResult(Count:Int, BWI:BytesWithIndex))
+      => parseSectionVector(D, Count, .BinaryDefns, BWI)
+  rule #parseSection2(_:DefnKind, E:ParseError) => E
 
   syntax ParsedSectionsResult ::= #parseSections(SectionResult, ParsedSectionsResult)  [function, total]
   rule parseSections(.UnparsedSections) => .Sections

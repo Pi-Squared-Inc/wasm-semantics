@@ -9,6 +9,8 @@ module BINARY-PARSER-ELEM-SYNTAX
   imports WASM
   imports WASM-DATA-COMMON-SYNTAX
 
+  syntax DefnKind ::= "defnElem"
+
   syntax BinaryDefnElements ::= List{BinaryDefnElem, ""}
 
   syntax BinaryElemMode ::= #binaryElemActive( table: Int, offset: BinaryInstrs )
@@ -18,7 +20,6 @@ module BINARY-PARSER-ELEM-SYNTAX
             , mode: BinaryElemMode
             )
   syntax BinaryDefn ::= BinaryDefnElem
-  syntax DefnResult  ::= parseDefnElem(BytesWithIndex)  [function, total]
 
 endmodule
 
@@ -31,7 +32,10 @@ module BINARY-PARSER-ELEM  [private]
   imports BINARY-PARSER-REFTYPE-SYNTAX
   imports BINARY-PARSER-TAGS
 
-  syntax DefnResult ::= #parseDefnElem(IntResult)  [function, total]
+  rule parseDefn(defnElem, BWI:BytesWithIndex) => parseDefnElem(BWI)
+
+  syntax DefnResult ::= parseDefnElem(BytesWithIndex)  [function, total]
+                      | #parseDefnElem(IntResult)  [function, total]
   rule parseDefnElem(BWI:BytesWithIndex) => #parseDefnElem(parseLeb128UInt(BWI))
   rule #parseDefnElem(intResult(ELTS_ACTIVE_ZERO_BY_REF, BWI:BytesWithIndex)) => parseElem0(BWI)
   rule #parseDefnElem(intResult(ELTS_PASSIVE_BY_REF, BWI:BytesWithIndex)) => parseElem1(BWI)

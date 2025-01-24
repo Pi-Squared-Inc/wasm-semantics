@@ -6,24 +6,28 @@ module BINARY-PARSER-CODE-SYNTAX
   imports BINARY-PARSER-INSTR-LIST-SYNTAX
   imports WASM
 
+  syntax DefnKind ::= "defnCode"
+
   syntax BinaryDefn ::= BinaryDefnFunctionBody
   syntax BinaryDefnFunctionBody ::= binaryDefnFunctionBody(VecType, BinaryInstrs)
 
   syntax BinaryDefnFunctionBodies ::= List{BinaryDefnFunctionBody, ""}
 
-  syntax DefnResult ::= parseDefnCode(BytesWithIndex)  [function, total]
 endmodule
 
 module BINARY-PARSER-CODE  [private]
   imports BINARY-PARSER-CODE-SYNTAX
+  imports BINARY-PARSER-DEFN-SYNTAX
   imports BINARY-PARSER-INSTR-LIST-SYNTAX
   imports BINARY-PARSER-INT-SYNTAX
   imports BINARY-PARSER-LOCALS-SYNTAX
-  imports BINARY-PARSER-SECTION-SYNTAX
   imports BINARY-PARSER-VALTYPE-SYNTAX
   imports BOOL
 
-  syntax DefnResult ::= #parseDefnCode(sizeInBytes:IntResult)  [function, total]
+  rule parseDefn(defnCode, BWI:BytesWithIndex) => parseDefnCode(BWI)
+
+  syntax DefnResult ::= parseDefnCode(BytesWithIndex)  [function, total]
+                      | #parseDefnCode(sizeInBytes:IntResult)  [function, total]
                       | #parseDefnCode1(sizeInBytes:Int, LocalsVecResult)  [function, total]
                       | #parseDefnCode2(sizeInBytes:Int, ValTypes, InstrListResult)  [function, total]
   rule parseDefnCode(BWI:BytesWithIndex) => #parseDefnCode(parseLeb128UInt(BWI))

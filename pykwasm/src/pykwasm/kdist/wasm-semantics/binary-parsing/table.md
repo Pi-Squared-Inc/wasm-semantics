@@ -2,19 +2,22 @@ Parsing a [table](https://webassembly.github.io/spec/core/binary/modules.html#bi
 
 ```k
 module BINARY-PARSER-TABLE-SYNTAX
-  imports BINARY-PARSER-BASE-SYNTAX
 
-  syntax DefnResult ::= parseDefnTable(BytesWithIndex)  [function, total]
+  syntax DefnKind ::= "defnTable"
 
 endmodule
 
 module BINARY-PARSER-TABLE  [private]
+  imports BINARY-PARSER-BASE-SYNTAX
   imports BINARY-PARSER-DEFN-SYNTAX
   imports BINARY-PARSER-LIMITS-SYNTAX
   imports BINARY-PARSER-TABLE-SYNTAX
   imports BINARY-PARSER-VALTYPE-SYNTAX
 
-  syntax DefnResult ::= #parseDefnTable1(ValTypeResult)  [function, total]
+  rule parseDefn(defnTable, BWI:BytesWithIndex) => parseDefnTable(BWI)
+
+  syntax DefnResult ::= parseDefnTable(BytesWithIndex)  [function, total]
+                      | #parseDefnTable1(ValTypeResult)  [function, total]
                       | #parseDefnTable2(RefValType, LimitsResult)  [function, total]
   rule parseDefnTable(BWI:BytesWithIndex) => #parseDefnTable1(parseValType(BWI))
   rule #parseDefnTable1(valTypeResult(T:RefValType, BWI:BytesWithIndex))
