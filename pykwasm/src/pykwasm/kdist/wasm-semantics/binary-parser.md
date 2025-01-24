@@ -18,6 +18,7 @@ requires "binary-parsing/expr-vec.md"
 requires "binary-parsing/float.md"
 requires "binary-parsing/func-section-entry.md"
 requires "binary-parsing/functype.md"
+requires "binary-parsing/global.md"
 requires "binary-parsing/globaltype.md"
 requires "binary-parsing/helpers.md"
 requires "binary-parsing/if.md"
@@ -62,6 +63,7 @@ module BINARY-PARSER  [private]
   imports BINARY-PARSER-FLOAT
   imports BINARY-PARSER-FUNC-SECTION-ENTRY
   imports BINARY-PARSER-FUNCTYPE
+  imports BINARY-PARSER-GLOBAL
   imports BINARY-PARSER-GLOBALTYPE
   imports BINARY-PARSER-HELPERS
   imports BINARY-PARSER-IF

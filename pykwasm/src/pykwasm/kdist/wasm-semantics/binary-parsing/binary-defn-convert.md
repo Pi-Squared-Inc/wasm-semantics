@@ -6,11 +6,13 @@ module BINARY-PARSER-BINARY-DEFN-CONVERT-SYNTAX
   imports BINARY-PARSER-CODE-SYNTAX
   imports BINARY-PARSER-DEFN-SYNTAX
   imports BINARY-PARSER-ELEM-SYNTAX
+  imports BINARY-PARSER-GLOBAL-SYNTAX
   imports BINARY-PARSER-FUNC-SECTION-ENTRY-SYNTAX
   imports WASM-DATA-COMMON
 
   syntax DefnsOrError ::= buildFunctionDefns(Defns, BinaryDefnFunctionTypes, BinaryDefnFunctionBodies)  [function, total]
   syntax DefnsOrError ::= buildElementDefns(Defns, BinaryDefnElements)  [function, total]
+  syntax DefnsOrError ::= buildGlobalDefns(Defns, BinaryDefnGlobals)  [function, total]
 
 endmodule
 
@@ -148,6 +150,31 @@ module BINARY-PARSER-BINARY-DEFN-CONVERT  [private]
   rule #buildElementDefn(T:RefValType, Segment:ListRef, Table:Int, Is:Instrs)
       => #elem(T, Segment, #elemActive(Table, Is), )
   rule #buildElementDefn(_:RefValType, _:ListRef, _:Int, E:ParseError) => E
+
+
+  syntax DefnsOrError ::= #buildGlobalDefns1(DefnOrError, DefnsOrError)  [function, total]
+  rule buildGlobalDefns(_:Defns, .BinaryDefnGlobals) => .Defns
+  rule buildGlobalDefns
+          ( Ds:Defns
+          , E:BinaryDefnGlobal Es:BinaryDefnGlobals
+          )
+      => #buildGlobalDefns1(buildGlobalDefn(Ds, E), buildGlobalDefns(Ds, Es))
+  rule #buildGlobalDefns1(D:Defn, Ds:Defns) => D Ds
+  rule #buildGlobalDefns1(E:ParseError, _:DefnsOrError) => E
+  rule #buildGlobalDefns1(_:Defn, E:ParseError) => E
+
+  syntax DefnOrError  ::= buildGlobalDefn(Defns, BinaryDefnGlobal)  [function, total]
+                        | #buildGlobalDefn(GlobalType, InstrsOrError)  [function, total]
+  rule buildGlobalDefn
+          ( Ds:Defns
+          , #binaryGlobal
+              ( T:GlobalType
+              , Is:BinaryInstrs
+              )
+          )
+      => #buildGlobalDefn(T, binaryInstrsToInstrs(Ds, Is))
+  rule #buildGlobalDefn(T:GlobalType, Is:Instrs) => #global(T, Is, )
+  rule #buildGlobalDefn(_:GlobalType, E:ParseError) => E
 
 endmodule
 ```
