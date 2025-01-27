@@ -24,7 +24,7 @@ module BINARY-PARSER-INT  [private]
   rule bit8IsSet(I:Int) => I &Int 128 =/=Int 0
 
   syntax Int ::= clearBit8(Int) [function, total]
-  rule clearBit8(I:Int) => I -Int 128 requires 128 <=Int 128
+  rule clearBit8(I:Int) => I -Int 128 requires 128 <=Int I
   rule clearBit8(I:Int) => I requires I <Int 128
 
   syntax IntsResult ::= parseLeb128IntChunks(BytesWithIndex) [function, total]
