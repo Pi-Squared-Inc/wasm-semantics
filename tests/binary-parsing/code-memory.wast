@@ -123,12 +123,6 @@
     i32.const 0
     memory.copy
 
-    i32.const 0
-    i32.const 0
-    i32.const 0
-    memory.init 0
-
-    data.drop 0
     (return (i32.const 1))
   )
   (memory (;0;) 17)
