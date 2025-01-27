@@ -509,9 +509,19 @@ module BINARY-PARSER-INSTR
   rule #parseInstrx62s1(memArgResult(MemArg2:MemArg, BWI:BytesWithIndex)) => instrResult(#store(i64, store32, getMemArgOffset(MemArg2)), BWI)
   rule #parseInstrx62s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx63(BytesWithIndex)  [function, total]
-  rule parseInstrx63(BWI:BytesWithIndex) => instrResult(memory.size, BWI)
+  syntax InstrResult ::= #parseInstrx63s1
+                            ( BytesWithIndexOrError
+                            )  [function, total]
+  rule parseInstrx63(BWI) => #parseInstrx63s1(parseConstant(BWI, b"\x00"))
+  rule #parseInstrx63s1(BWI:BytesWithIndex) => instrResult(memory.size, BWI)
+  rule #parseInstrx63s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx64(BytesWithIndex)  [function, total]
-  rule parseInstrx64(BWI:BytesWithIndex) => instrResult(memory.grow, BWI)
+  syntax InstrResult ::= #parseInstrx64s1
+                            ( BytesWithIndexOrError
+                            )  [function, total]
+  rule parseInstrx64(BWI) => #parseInstrx64s1(parseConstant(BWI, b"\x00"))
+  rule #parseInstrx64s1(BWI:BytesWithIndex) => instrResult(memory.grow, BWI)
+  rule #parseInstrx64s1(E:ParseError) => E
   syntax InstrResult ::= parseInstrx65(BytesWithIndex)  [function, total]
   syntax InstrResult ::= #parseInstrx65s1
                             ( IntResult
