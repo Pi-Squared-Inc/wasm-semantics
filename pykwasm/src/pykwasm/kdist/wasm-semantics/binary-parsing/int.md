@@ -54,10 +54,6 @@ module BINARY-PARSER-INT  [private]
       => intResult(buildLeb128UInt(L), BWI)
   rule #parseLeb128UInt(E:ParseError) => E
 
-  syntax Int ::= buildLeb128UInt(Ints) [function, total]
-  rule buildLeb128UInt(.Ints) => 0
-  rule buildLeb128UInt(Value:Int L:Ints) => Value +Int 128 *Int buildLeb128UInt(L)
-
   syntax IntResult  ::= #parseLeb128SInt(IntsResult)  [function, total]
 
   rule parseLeb128SInt(BWI:BytesWithIndex) => #parseLeb128SInt(parseLeb128IntChunks(BWI))
