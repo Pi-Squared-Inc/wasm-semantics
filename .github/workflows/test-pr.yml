@@ -109,8 +109,6 @@ jobs:
         run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} poetry -C pykwasm install
       - name: 'Build ulm-wasm'
         run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "CXX=clang++-16 make ulm-wasm"
-      - name: 'Build ulm-contract-compiler'
-        run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "CXX=clang++-16 make ulm-contract-compiler"
       - name: 'Build ulm-build'
         run: docker exec -u user kwasm-ci-erc20-${GITHUB_SHA} bash -c "CXX=clang++-16 make ulm-build"
       - name: 'Build erc20-bin'
