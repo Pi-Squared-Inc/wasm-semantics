@@ -184,9 +184,7 @@ ulm-wasm: $(ULM_WASM_TARGET)
 $(ULM_WASM_TARGET): $(ULM_KRYPTO_TARGET) $(ULM_HOOKS_TARGET) $(ULM_WASM_SRC) pykwasm
 	$(KDIST) -v build wasm-semantics.$(ULM_WASM_TARGET_NAME) -j3
 	$(eval ULM_WASM_DIR := $(shell $(KDIST) which wasm-semantics.$(ULM_WASM_TARGET_NAME)))
-	kore-rich-header "$(ULM_WASM_DIR)/definition.kore" -o "$(ULM_WASM_DIR)/header.bin"
 	$(if $(ULM_TEST),,cp "$(ULM_WASM_DIR)/$(ULM_WASM_LIB)" "$(ULM_LIB_DIR)";)
-	$(if $(ULM_TEST),,cp "$(ULM_WASM_DIR)/header.bin"      "$(ULM_LIB_DIR)";)
 
 
 
