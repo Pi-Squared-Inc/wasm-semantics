@@ -35,6 +35,7 @@ module BINARY-PARSER-SECTION  [private]
   imports BOOL
   imports BINARY-PARSER-CODE-SYNTAX
   imports BINARY-PARSER-DATA-SYNTAX
+  imports BINARY-PARSER-DATA-COUNT-SECTION-SYNTAX
   imports BINARY-PARSER-ELEM-SYNTAX
   imports BINARY-PARSER-EXPORT-SYNTAX
   imports BINARY-PARSER-FUNC-SECTION-ENTRY-SYNTAX
@@ -73,6 +74,8 @@ module BINARY-PARSER-SECTION  [private]
       => #parseSection1(defnCode, bwi(Data, 0))
   rule parseSection(unparsedSection(DAT_SEC, Data:Bytes))
       => #parseSection1(defnData, bwi(Data, 0))
+  rule parseSection(unparsedSection(CNT_SEC, Data:Bytes))
+      => parseDataCountSection(bwi(Data, 0))
   rule parseSection(A) => parseError("parseSection", ListItem(A))
       [owise]
 

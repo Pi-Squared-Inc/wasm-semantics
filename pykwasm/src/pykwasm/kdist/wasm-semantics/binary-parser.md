@@ -12,6 +12,7 @@ requires "binary-parsing/bytes.md"
 requires "binary-parsing/code.md"
 requires "binary-parsing/constant.md"
 requires "binary-parsing/data.md"
+requires "binary-parsing/data-count-section.md"
 requires "binary-parsing/defn.md"
 requires "binary-parsing/elem.md"
 requires "binary-parsing/export.md"
@@ -61,6 +62,7 @@ module BINARY-PARSER  [private]
   imports BINARY-PARSER-CODE
   imports BINARY-PARSER-CONSTANT
   imports BINARY-PARSER-DATA
+  imports BINARY-PARSER-DATA-COUNT-SECTION
   imports BINARY-PARSER-ELEM
   imports BINARY-PARSER-EXPORT
   imports BINARY-PARSER-EXPR
