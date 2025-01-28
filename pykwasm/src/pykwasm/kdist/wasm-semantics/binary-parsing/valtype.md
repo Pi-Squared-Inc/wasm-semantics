@@ -11,11 +11,20 @@ module BINARY-PARSER-VALTYPE-SYNTAX
   syntax ValTypeResult ::= parseValType(BytesWithIndex)  [function, total]
 
   syntax ValTypesResult ::= valTypesResult(ValTypes, BytesWithIndex) | ParseError
-  syntax ValTypesResult ::= parseValTypes(remaining:Int, ValTypes, BytesWithIndex)  [function, total]
+  syntax ValTypesResult ::= parseValTypes(BytesWithIndex)  [function, total]
+
+```
+
+  Sometimes (see ref.null) we neef to parse a value type as a heap type.
+
+```k
+  syntax HeapTypeResult ::= heapTypeResult(HeapType, BytesWithIndex) | ParseError
+  syntax HeapTypeResult ::= parseHeapType(BytesWithIndex)  [function, total]
 endmodule
 
 module BINARY-PARSER-VALTYPE  [private]
   imports BINARY-PARSER-CONSTANT-SYNTAX
+  imports BINARY-PARSER-INT-SYNTAX
   imports BINARY-PARSER-TAGS
   imports BINARY-PARSER-VALTYPE-SYNTAX
 
@@ -53,24 +62,43 @@ module BINARY-PARSER-VALTYPE  [private]
       => E
 
 
-  syntax ValTypesResult ::= #parseValTypes(remaining:Int, ValTypes, ValTypeResult)  [function, total]
-  rule parseValTypes(0, V:ValTypes, BWI:BytesWithIndex)
+  syntax ValTypesResult ::= #parseValTypes1(IntResult)  [function, total]
+  syntax ValTypesResult ::= #parseValTypes2(remaining:Int, ValTypes, BytesWithIndex)  [function, total]
+  syntax ValTypesResult ::= #parseValTypes3(remaining:Int, ValTypes, ValTypeResult)  [function, total]
+
+  rule parseValTypes(BWI:BytesWithIndex)
+      => #parseValTypes1(parseLeb128UInt(BWI))
+  rule #parseValTypes1(intResult(Count:Int, BWI:BytesWithIndex))
+      => #parseValTypes2(Count, .ValTypes, BWI)
+  rule #parseValTypes1(E:ParseError) => E
+  rule #parseValTypes2(0, V:ValTypes, BWI:BytesWithIndex)
       => valTypesResult(reverse(V), BWI)
-  rule parseValTypes(Count:Int, V:ValTypes, BWI:BytesWithIndex)
-      => #parseValTypes(Count -Int 1, V, parseValType(BWI))
+  rule #parseValTypes2(Count:Int, V:ValTypes, BWI:BytesWithIndex)
+      => #parseValTypes3(Count -Int 1, V, parseValType(BWI))
       requires Count >Int 0
-  rule parseValTypes(Count:Int, V:ValTypes, bwi(B:Bytes, I:Int))
-      => parseError("parseValTypes", ListItem(Count) ListItem(V) ListItem(I) ListItem(lengthBytes(B)) ListItem(B))
+  rule #parseValTypes2(Count:Int, V:ValTypes, bwi(B:Bytes, I:Int))
+      => parseError("#parseValTypes2", ListItem(Count) ListItem(V) ListItem(I) ListItem(lengthBytes(B)) ListItem(B))
       [owise]
-  rule #parseValTypes(Count:Int, Vs:ValTypes, valTypeResult(V:ValType, BWI:BytesWithIndex))
-      => parseValTypes(Count, V Vs, BWI)
-  rule #parseValTypes(_:Int, _:ValTypes, E:ParseError) => E
+  rule #parseValTypes3(Count:Int, Vs:ValTypes, valTypeResult(V:ValType, BWI:BytesWithIndex))
+      => #parseValTypes2(Count, V Vs, BWI)
+  rule #parseValTypes3(_:Int, _:ValTypes, E:ParseError) => E
 
   syntax ValTypes ::= reverse(ValTypes)  [function, total]
                     | #reverse(ValTypes, ValTypes)  [function, total]
   rule reverse(V:ValTypes) => #reverse(V, .ValTypes)
   rule #reverse(.ValTypes, Vs:ValTypes) => Vs
   rule #reverse(V:ValType Vs1:ValTypes, Vs2:ValTypes) => #reverse(Vs1, V Vs2)
+
+  syntax HeapTypeResult ::= #parseHeapTypeFuncRef(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                          | #parseHeapTypeExtRef(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+  rule parseHeapType(BWI:BytesWithIndex)
+      => #parseHeapTypeFuncRef(BWI, parseConstant(BWI, TYPE_FUN_REF))
+  rule #parseHeapTypeFuncRef(_, BWI:BytesWithIndex) => heapTypeResult(func, BWI)
+  rule #parseHeapTypeFuncRef(BWI:BytesWithIndex, _:ParseError)
+      => #parseHeapTypeExtRef(BWI, parseConstant(BWI, TYPE_EXT_REF))
+  rule #parseHeapTypeExtRef(_, BWI:BytesWithIndex) => heapTypeResult(extern, BWI)
+  rule #parseHeapTypeExtRef(_:BytesWithIndex, E:ParseError)
+      => E
 
 endmodule
 

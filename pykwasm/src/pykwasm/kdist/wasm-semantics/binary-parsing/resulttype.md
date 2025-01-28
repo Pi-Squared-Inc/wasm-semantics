@@ -14,15 +14,11 @@ module BINARY-PARSER-RESULTTYPE  [private]
   imports BINARY-PARSER-RESULTTYPE-SYNTAX
   imports BINARY-PARSER-VALTYPE-SYNTAX
 
-  syntax ResultTypeResult ::= #parseResultType(IntResult)  [function, total]
-                            | #parseResultType1(ValTypesResult)  [function, total]
+  syntax ResultTypeResult ::= #parseResultType(ValTypesResult)  [function, total]
 
-  rule parseResultType(BWI:BytesWithIndex) => #parseResultType(parseLeb128UInt(BWI))
-  rule #parseResultType(intResult(Count:Int, BWI:BytesWithIndex))
-      => #parseResultType1(parseValTypes(Count, .ValTypes, BWI))
-  rule #parseResultType(E:ParseError) => E
-  rule #parseResultType1(valTypesResult(V:ValTypes, BWI:BytesWithIndex))
+  rule parseResultType(BWI:BytesWithIndex) => #parseResultType(parseValTypes(BWI))
+  rule #parseResultType(valTypesResult(V:ValTypes, BWI:BytesWithIndex))
       => resultTypeResult([V], BWI)
-  rule #parseResultType1(E:ParseError) => E
+  rule #parseResultType(E:ParseError) => E
 endmodule
 ```

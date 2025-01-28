@@ -24,9 +24,44 @@ module BINARY-PARSER-TEST
 
     rule addDefnToModule
             ( false => true
+            , _D:GlobalDefn
+            , #module(... metadata: _ => #meta (... id:  , funcIds: .Map , filename: "error: test addDefnToModule(GlobalDefn) branch called." )))
+        [owise]
+    rule addDefnToModule
+            ( false => true
+            , _D:TableDefn
+            , #module(... metadata: _ => #meta (... id:  , funcIds: .Map , filename: "error: test addDefnToModule(TableDefn) branch called." )))
+        [owise]
+    rule addDefnToModule
+            ( false => true
+            , _D:MemoryDefn
+            , #module(... metadata: _ => #meta (... id:  , funcIds: .Map , filename: "error: test addDefnToModule(MemoryDefn) branch called." )))
+        [owise]
+    rule addDefnToModule
+            ( false => true
+            , _D:ElemDefn
+            , #module(... metadata: _ => #meta (... id:  , funcIds: .Map , filename: "error: test addDefnToModule(ElemDefn) branch called." )))
+        [owise]
+    rule addDefnToModule
+            ( false => true
+            , _D:DataDefn
+            , #module(... metadata: _ => #meta (... id:  , funcIds: .Map , filename: "error: test addDefnToModule(DataDefn) branch called." )))
+        [owise]
+    rule addDefnToModule
+            ( false => true
+            , _D:StartDefn
+            , #module(... metadata: _ => #meta (... id:  , funcIds: .Map , filename: "error: test addDefnToModule(StartDefn) branch called." )))
+        [owise]
+    rule addDefnToModule
+            ( false => true
+            , _D:ExportDefn
+            , #module(... metadata: _ => #meta (... id:  , funcIds: .Map , filename: "error: test addDefnToModule(ExportDefn) branch called." )))
+        [owise]
+    rule addDefnToModule
+            ( false => true
             , _D:Defn
             , #module(... metadata: _ => #meta (... id:  , funcIds: .Map , filename: "error: test addDefnToModule branch called." )))
-        [owise]
+        [priority(250)]
 
 endmodule
 ```
