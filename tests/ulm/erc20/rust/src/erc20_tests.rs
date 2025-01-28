@@ -23,6 +23,24 @@ mod erc20_tests {
     }
 
     #[test]
+    fn name_test() {
+        let api = ulm::mock::UlmMock::new();
+
+        let erc20 = Erc20::new(api);
+
+        assert_eq!("Doge Coin", erc20.name());
+    }
+
+    #[test]
+    fn symbol_test() {
+        let api = ulm::mock::UlmMock::new();
+
+        let erc20 = Erc20::new(api);
+
+        assert_eq!("DOGE", erc20.symbol());
+    }
+
+    #[test]
     fn mint_test() {
         let api = ulm::mock::UlmMock::new();
 

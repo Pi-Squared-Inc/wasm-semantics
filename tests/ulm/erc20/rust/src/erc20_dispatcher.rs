@@ -33,6 +33,10 @@ fn dispatch(api: Rc<RefCell<dyn ulm::Ulm>>, init: bool) {
         let signature = buffer;
         if same_signature(&*api.borrow(), &signature, "decimals()") {
             decimalsCaller(api, arguments);
+        } else if same_signature(&*api.borrow(), &signature, "name()") {
+            nameCaller(api, arguments);
+        } else if same_signature(&*api.borrow(), &signature, "symbol()") {
+            symbolCaller(api, arguments);
         } else if same_signature(&*api.borrow(), &signature, "totalSupply()") {
             totalSupplyCaller(api, arguments);
         } else if same_signature(&*api.borrow(), &signature, "balanceOf(address)") {
@@ -62,6 +66,32 @@ fn initCaller(api: Rc<RefCell<dyn ulm::Ulm>>, arguments: Bytes) {
     contract.init();
 
     let encoder = Encoder::new();
+    ulm::set_output(&mut *api.borrow_mut(), &encoder.encode());
+}
+
+#[allow(non_snake_case)]
+fn nameCaller(api: Rc<RefCell<dyn ulm::Ulm>>, arguments: Bytes) {
+    let decoder: Decoder<()> = Decoder::from_buffer(arguments);
+    decoder.check_done();
+
+    let contract = Erc20::new(api.clone());
+    let value = contract.name();
+
+    let mut encoder = Encoder::new();
+    encoder.add(&value.to_string());
+    ulm::set_output(&mut *api.borrow_mut(), &encoder.encode());
+}
+
+#[allow(non_snake_case)]
+fn symbolCaller(api: Rc<RefCell<dyn ulm::Ulm>>, arguments: Bytes) {
+    let decoder: Decoder<()> = Decoder::from_buffer(arguments);
+    decoder.check_done();
+
+    let contract = Erc20::new(api.clone());
+    let value = contract.symbol();
+
+    let mut encoder = Encoder::new();
+    encoder.add(&value.to_string());
     ulm::set_output(&mut *api.borrow_mut(), &encoder.encode());
 }
 

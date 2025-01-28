@@ -11,6 +11,8 @@ from web3.middleware import SignAndSendRawMiddlewareBuilder
 ABI_MAP = {
     'erc20': [
         {'type': 'function', 'name': 'decimals', 'inputs': [], 'outputs': ['uint8'], 'stateMutability': 'view'},
+        {'type': 'function', 'name': 'name', 'inputs': [], 'outputs': ['string'], 'stateMutability': 'view'},
+        {'type': 'function', 'name': 'symbol', 'inputs': [], 'outputs': ['string'], 'stateMutability': 'view'},
         {'type': 'function', 'name': 'totalSupply', 'inputs': [], 'outputs': ['uint256'], 'stateMutability': 'view'},
         {
             'type': 'function',

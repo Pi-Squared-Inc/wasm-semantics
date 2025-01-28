@@ -37,6 +37,18 @@ function erc20_deploy {
   deploy build/erc20/erc20.bin http://localhost:8545 /dev/stdin <<< $key
 }
 
+function erc20_name {
+  local key=$1
+  local contract=$2
+  call http://localhost:8545 erc20 $contract /dev/stdin 0 name <<< $key
+}
+
+function erc20_symbol {
+  local key=$1
+  local contract=$2
+  call http://localhost:8545 erc20 $contract /dev/stdin 0 symbol <<< $key
+}
+
 function erc20_decimals {
   local key=$1
   local contract=$2
@@ -95,6 +107,54 @@ function erc20_transfer_from {
   local to_account=$4
   local amount=$5
   call http://localhost:8545 erc20 $contract /dev/stdin 0 transferFrom $from_account $to_account $amount <<< $key
+}
+
+function test_name {
+  echo -n "Name test "
+
+  # generate some accounts
+  account1=($(mkacct))
+  a1=${account1[0]}
+  k1=${account1[1]}
+  echo -n "."
+
+  # fund accounts
+  fund /dev/stdin <<< $k1
+  echo -n "."
+
+  # deploy contract
+  contract=$(erc20_deploy $k1)
+  echo -n "."
+
+  name=$(erc20_name $k1 $contract)
+  echo -n "."
+  assert_eq "Doge Coin" "$name" "Name"
+
+  echo -e " ${GREEN}passed${NC}"
+}
+
+function test_symbol {
+  echo -n "Symbol test "
+
+  # generate some accounts
+  account1=($(mkacct))
+  a1=${account1[0]}
+  k1=${account1[1]}
+  echo -n "."
+
+  # fund accounts
+  fund /dev/stdin <<< $k1
+  echo -n "."
+
+  # deploy contract
+  contract=$(erc20_deploy $k1)
+  echo -n "."
+
+  symbol=$(erc20_symbol $k1 $contract)
+  echo -n "."
+  assert_eq "DOGE" "$symbol" "Symbol"
+
+  echo -e " ${GREEN}passed${NC}"
 }
 
 function test_decimals {
@@ -551,6 +611,8 @@ function test_transfer_from {
 }
 
 
+test_name
+test_symbol
 test_decimals
 test_mint
 test_transfer
