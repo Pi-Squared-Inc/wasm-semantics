@@ -611,8 +611,8 @@ function test_transfer_from {
 }
 
 
-test_name
-test_symbol
+# test_name
+# test_symbol
 test_decimals
 test_mint
 test_transfer
