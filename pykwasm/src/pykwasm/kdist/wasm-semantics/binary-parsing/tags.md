@@ -80,7 +80,7 @@ The special _element kind_ constant is used to describe possible element kinds.
 Currently, only one element kind is supported.
 
 ```k
-  syntax Bytes ::= "ELT_KIND" [macro] rule ELT_KIND => b"\x00"
+  syntax Bytes ::= "ELT_KIND_FUNCREF" [macro] rule ELT_KIND_FUNCREF => b"\x00"
 ```
 
 _Data_ sections are tagged based on their kind.

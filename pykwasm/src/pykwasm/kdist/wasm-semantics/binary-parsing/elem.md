@@ -71,7 +71,7 @@ module BINARY-PARSER-ELEM  [private]
   syntax DefnResult ::= parseElem1(BytesWithIndex)  [function, total]
                       | #parseElem1a(BytesWithIndexOrError)  [function, total]
                       | #parseElem1b(IntsResult)  [function, total]
-  rule parseElem1(BWI:BytesWithIndex) => #parseElem1a(parseConstant(BWI, b"\x00"))
+  rule parseElem1(BWI:BytesWithIndex) => #parseElem1a(parseConstant(BWI, ELT_KIND_FUNCREF))
   rule #parseElem1a(BWI:BytesWithIndex) => #parseElem1b(parseUnsignedIntVec(BWI))
   rule #parseElem1a(E:ParseError) => E
   rule #parseElem1b(intsResult(L:Ints, BWI:BytesWithIndex))
@@ -97,7 +97,7 @@ module BINARY-PARSER-ELEM  [private]
       => #parseElem2b(TableIdx, parseExpr(BWI))
   rule #parseElem2a(E:ParseError) => E
   rule #parseElem2b(TableIdx:Int, exprResult(Is:BinaryInstrs, BWI:BytesWithIndex))
-      => #parseElem2c(TableIdx, Is, parseConstant(BWI, b"\x00"))
+      => #parseElem2c(TableIdx, Is, parseConstant(BWI, ELT_KIND_FUNCREF))
   rule #parseElem2b(_, E:ParseError) => E
   rule #parseElem2c(TableIdx:Int, Is:BinaryInstrs, BWI:BytesWithIndex)
       => #parseElem2d(TableIdx, Is, parseUnsignedIntVec(BWI))
@@ -117,7 +117,7 @@ module BINARY-PARSER-ELEM  [private]
   syntax DefnResult ::= parseElem3(BytesWithIndex)  [function, total]
                       | #parseElem3a(BytesWithIndexOrError)  [function, total]
                       | #parseElem3b(IntsResult)  [function, total]
-  rule parseElem3(BWI:BytesWithIndex) => #parseElem3a(parseConstant(BWI, b"\x00"))
+  rule parseElem3(BWI:BytesWithIndex) => #parseElem3a(parseConstant(BWI, ELT_KIND_FUNCREF))
   rule #parseElem3a(BWI:BytesWithIndex) => #parseElem3b(parseUnsignedIntVec(BWI))
   rule #parseElem3a(E:ParseError) => E
   rule #parseElem3b(intsResult(L:Ints, BWI:BytesWithIndex))
