@@ -2,24 +2,24 @@ Parsing a [function type](https://webassembly.github.io/spec/core/binary/types.h
 
 ```k
 module BINARY-PARSER-FUNCTYPE-SYNTAX
-  imports BINARY-PARSER-BASE-SYNTAX
-  imports BINARY-PARSER-DEFN-SYNTAX
-  imports WASM-DATA-COMMON
 
-  syntax DefnResult ::= parseDefnType(BytesWithIndex)  [function, total]
+  syntax DefnKind ::= "defnType"
 
-  syntax FuncTypeResult ::= funcTypeResult(FuncType, BytesWithIndex) | ParseError
-  syntax FuncTypeResult ::= parseFuncType(BytesWithIndex)  [function, total]
 endmodule
 
 module BINARY-PARSER-FUNCTYPE  [private]
+  imports BINARY-PARSER-BASE-SYNTAX
   imports BINARY-PARSER-CONSTANT-SYNTAX
+  imports BINARY-PARSER-DEFN-SYNTAX
   imports BINARY-PARSER-FUNCTYPE-SYNTAX
   imports BINARY-PARSER-RESULTTYPE-SYNTAX
   imports BINARY-PARSER-TAGS
   imports WASM
 
-  syntax DefnResult ::= #parseDefnType(FuncTypeResult)  [function, total]
+  rule parseDefn(defnType, BWI:BytesWithIndex) => parseDefnType(BWI)
+
+  syntax DefnResult ::= parseDefnType(BytesWithIndex)  [function, total]
+                      | #parseDefnType(FuncTypeResult)  [function, total]
 
   rule parseDefnType(BWI:BytesWithIndex) => #parseDefnType(parseFuncType(BWI))
 
@@ -27,7 +27,9 @@ module BINARY-PARSER-FUNCTYPE  [private]
       => defnResult(#type(F, ), BWI)
   rule #parseDefnType(E:ParseError) => E
 
-  syntax FuncTypeResult ::= #parseFuncType(BytesWithIndexOrError)  [function, total]
+  syntax FuncTypeResult ::= funcTypeResult(FuncType, BytesWithIndex) | ParseError
+  syntax FuncTypeResult ::= parseFuncType(BytesWithIndex)  [function, total]
+                          | #parseFuncType(BytesWithIndexOrError)  [function, total]
                           | #parseFuncType1(ResultTypeResult)  [function, total]
                           | #parseFuncType2(VecType, ResultTypeResult)  [function, total]
 

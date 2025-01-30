@@ -2,13 +2,13 @@
 
 ```k
 module BINARY-PARSER-IMPORT-SYNTAX
-  imports BINARY-PARSER-BASE-SYNTAX
 
-  syntax DefnResult ::= parseDefnImport(BytesWithIndex)  [function, total]
+  syntax DefnKind ::= "defnImport"
 
 endmodule
 
 module BINARY-PARSER-IMPORT  [private]
+  imports BINARY-PARSER-BASE-SYNTAX
   imports BINARY-PARSER-CONSTANT-SYNTAX
   imports BINARY-PARSER-DEFN-SYNTAX
   imports BINARY-PARSER-GLOBALTYPE-SYNTAX
@@ -16,12 +16,14 @@ module BINARY-PARSER-IMPORT  [private]
   imports BINARY-PARSER-INT-SYNTAX
   imports BINARY-PARSER-LIMITS-SYNTAX
   imports BINARY-PARSER-NAME-SYNTAX
-  imports BINARY-PARSER-SECTION-SYNTAX
   imports BINARY-PARSER-TAGS
   imports BINARY-PARSER-VALTYPE-SYNTAX
   imports WASM
 
-  syntax DefnResult ::= #parseDefnImport1(NameResult)  [function, total]
+  rule parseDefn(defnImport, BWI:BytesWithIndex) => parseDefnImport(BWI)
+
+  syntax DefnResult ::= parseDefnImport(BytesWithIndex)  [function, total]
+                      | #parseDefnImport1(NameResult)  [function, total]
                       | #parseDefnImport2(WasmString, NameResult)  [function, total]
                       | #parseDefnImport3(WasmString, WasmString, ImportDescResult)  [function, total]
   rule parseDefnImport(BWI:BytesWithIndex) => #parseDefnImport1(parseName(BWI))

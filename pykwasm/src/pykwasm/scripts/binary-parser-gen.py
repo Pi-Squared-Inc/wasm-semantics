@@ -372,7 +372,7 @@ INSTRS_CONFIG:list[InstrConfig]=[
 
     InstrConfig('TABLE_GET', b'\x25', ['UnsignedInt', ], '#table.get'),
     InstrConfig('TABLE_SET', b'\x26', ['UnsignedInt', ], '#table.set'),
-    InstrConfig('TABLE_INIT', b'\xFC\x0C', ['UnsignedInt', 'UnsignedInt', ], '#table.init'),
+    InstrConfig('TABLE_INIT', b'\xFC\x0C', ['UnsignedInt', 'UnsignedInt', ], 'buildTableInit'),
     InstrConfig('ELEM_DROP', b'\xFC\x0D', ['UnsignedInt', ], '#elem.drop'),
     InstrConfig('TABLE_COPY', b'\xFC\x0E', ['UnsignedInt', 'UnsignedInt', ], '#table.copy'),
     InstrConfig('TABLE_GROW', b'\xFC\x0F', ['UnsignedInt', ], '#table.grow'),

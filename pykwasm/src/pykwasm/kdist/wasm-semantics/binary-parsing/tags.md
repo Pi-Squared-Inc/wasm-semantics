@@ -40,10 +40,10 @@ In the import/export sections, different kinds of imports/exports are tagged.
   syntax Bytes ::= "IMPORT_TBLT" [macro] rule IMPORT_TBLT => b"\x01"
   syntax Bytes ::= "IMPORT_MEMT" [macro] rule IMPORT_MEMT => b"\x02"
   syntax Bytes ::= "IMPORT_GLBT" [macro] rule IMPORT_GLBT => b"\x03"
-  syntax Bytes ::= "EXPORT_FUNC" [macro] rule EXPORT_FUNC => b"\x00"
-  syntax Bytes ::= "EXPORT_TBLT" [macro] rule EXPORT_TBLT => b"\x01"
-  syntax Bytes ::= "EXPORT_MEMT" [macro] rule EXPORT_MEMT => b"\x02"
-  syntax Bytes ::= "EXPORT_GLBT" [macro] rule EXPORT_GLBT => b"\x03"
+  syntax Int ::= "EXPORT_FUNC" [macro] rule EXPORT_FUNC => 0
+  syntax Int ::= "EXPORT_TBLT" [macro] rule EXPORT_TBLT => 1
+  syntax Int ::= "EXPORT_MEMT" [macro] rule EXPORT_MEMT => 2
+  syntax Int ::= "EXPORT_GLBT" [macro] rule EXPORT_GLBT => 3
 ```
 
 _Element_ sections have various possible formats which are stored in a 3-bit code.
@@ -57,38 +57,38 @@ Bit # | Constraint  | "0" State       | "1" State            |
 2     |  None       | elts by ref     | elts by value        |
 
 ```k
-  syntax Bytes ::= "ELTS_ACTIVE_ZERO_BY_REF" [macro] // 000
-  syntax Bytes ::= "ELTS_PASSIVE_BY_REF"     [macro] // 001
-  syntax Bytes ::= "ELTS_ACTIVE_IDX_BY_REF"  [macro] // 010
-  syntax Bytes ::= "ELTS_DECL_BY_REF"        [macro] // 011
-  syntax Bytes ::= "ELTS_ACTIVE_ZERO_BY_VAL" [macro] // 100
-  syntax Bytes ::= "ELTS_PASSIVE_BY_VAL"     [macro] // 101
-  syntax Bytes ::= "ELTS_ACTIVE_IDX_BY_VAL"  [macro] // 110
-  syntax Bytes ::= "ELTS_DECL_BY_VAL"        [macro] // 110
+  syntax Int ::= "ELTS_ACTIVE_ZERO_BY_REF" [macro] // 000
+  syntax Int ::= "ELTS_PASSIVE_BY_REF"     [macro] // 001
+  syntax Int ::= "ELTS_ACTIVE_IDX_BY_REF"  [macro] // 010
+  syntax Int ::= "ELTS_DECL_BY_REF"        [macro] // 011
+  syntax Int ::= "ELTS_ACTIVE_ZERO_BY_VAL" [macro] // 100
+  syntax Int ::= "ELTS_PASSIVE_BY_VAL"     [macro] // 101
+  syntax Int ::= "ELTS_ACTIVE_IDX_BY_VAL"  [macro] // 110
+  syntax Int ::= "ELTS_DECL_BY_VAL"        [macro] // 110
 
-  rule ELTS_ACTIVE_ZERO_BY_REF => b"\x00"
-  rule ELTS_PASSIVE_BY_REF     => b"\x01"
-  rule ELTS_ACTIVE_IDX_BY_REF  => b"\x02"
-  rule ELTS_DECL_BY_REF        => b"\x03"
-  rule ELTS_ACTIVE_ZERO_BY_VAL => b"\x04"
-  rule ELTS_PASSIVE_BY_VAL     => b"\x05"
-  rule ELTS_ACTIVE_IDX_BY_VAL  => b"\x06"
-  rule ELTS_DECL_BY_VAL        => b"\x07"
+  rule ELTS_ACTIVE_ZERO_BY_REF => 0
+  rule ELTS_PASSIVE_BY_REF     => 1
+  rule ELTS_ACTIVE_IDX_BY_REF  => 2
+  rule ELTS_DECL_BY_REF        => 3
+  rule ELTS_ACTIVE_ZERO_BY_VAL => 4
+  rule ELTS_PASSIVE_BY_VAL     => 5
+  rule ELTS_ACTIVE_IDX_BY_VAL  => 6
+  rule ELTS_DECL_BY_VAL        => 7
 ```
 
 The special _element kind_ constant is used to describe possible element kinds.
 Currently, only one element kind is supported.
 
 ```k
-  syntax Bytes ::= "ELT_KIND" [macro] rule ELT_KIND => b"\x00"
+  syntax Bytes ::= "ELT_KIND_FUNCREF" [macro] rule ELT_KIND_FUNCREF => b"\x00"
 ```
 
 _Data_ sections are tagged based on their kind.
 
 ```k
-  syntax Bytes ::= "DATA_ACTIVE_ZERO" [macro] rule DATA_ACTIVE_ZERO  => b"\x00"
-  syntax Bytes ::= "DATA_PASSIVE"     [macro] rule DATA_PASSIVE => b"\x01"
-  syntax Bytes ::= "DATA_ACTIVE_IDX"  [macro] rule DATA_ACTIVE_IDX   => b"\x02"
+  syntax Int ::= "DATA_ACTIVE_ZERO" [macro] rule DATA_ACTIVE_ZERO  => 0
+  syntax Int ::= "DATA_PASSIVE"     [macro] rule DATA_PASSIVE      => 1
+  syntax Int ::= "DATA_ACTIVE_IDX"  [macro] rule DATA_ACTIVE_IDX   => 2
 ```
 
 Each value _type_ is tagged by a unique integer.

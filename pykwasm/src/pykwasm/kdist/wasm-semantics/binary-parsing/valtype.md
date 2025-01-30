@@ -25,6 +25,7 @@ endmodule
 module BINARY-PARSER-VALTYPE  [private]
   imports BINARY-PARSER-CONSTANT-SYNTAX
   imports BINARY-PARSER-INT-SYNTAX
+  imports BINARY-PARSER-REFTYPE-SYNTAX
   imports BINARY-PARSER-TAGS
   imports BINARY-PARSER-VALTYPE-SYNTAX
 
@@ -33,8 +34,7 @@ module BINARY-PARSER-VALTYPE  [private]
                           | #parseValTypeF32(BytesWithIndex, BytesWithIndexOrError)  [function, total]
                           | #parseValTypeF64(BytesWithIndex, BytesWithIndexOrError)  [function, total]
                           | #parseValTypeVec(BytesWithIndex, BytesWithIndexOrError)  [function, total]
-                          | #parseValTypeFuncRef(BytesWithIndex, BytesWithIndexOrError)  [function, total]
-                          | #parseValTypeExtRef(BytesWithIndex, BytesWithIndexOrError)  [function, total]
+                          | #parseValTypeRef(RefTypeResult)  [function, total]
 
   rule parseValType(BWI:BytesWithIndex)
       => #parseValTypeI32(BWI, parseConstant(BWI, TYPE_I32))
@@ -53,13 +53,10 @@ module BINARY-PARSER-VALTYPE  [private]
   rule #parseValTypeVec(_:BytesWithIndex, _:BytesWithIndex)
       => parseError("#parseValTypeVec: v128 not implemented", .List)
   rule #parseValTypeVec(BWI:BytesWithIndex, _:ParseError)
-      => #parseValTypeFuncRef(BWI, parseConstant(BWI, TYPE_FUN_REF))
-  rule #parseValTypeFuncRef(_, BWI:BytesWithIndex) => valTypeResult(funcref, BWI)
-  rule #parseValTypeFuncRef(BWI:BytesWithIndex, _:ParseError)
-      => #parseValTypeExtRef(BWI, parseConstant(BWI, TYPE_EXT_REF))
-  rule #parseValTypeExtRef(_, BWI:BytesWithIndex) => valTypeResult(externref, BWI)
-  rule #parseValTypeExtRef(_:BytesWithIndex, E:ParseError)
-      => E
+      => #parseValTypeRef(parseRefType(BWI))
+  rule #parseValTypeRef(refTypeResult(T:RefValType, BWI:BytesWithIndex))
+      => valTypeResult(T, BWI)
+  rule #parseValTypeRef(E:ParseError) => E
 
 
   syntax ValTypesResult ::= #parseValTypes1(IntResult)  [function, total]

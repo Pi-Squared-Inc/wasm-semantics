@@ -5,6 +5,8 @@ module BINARY-PARSER-DEFN-SYNTAX
 
   syntax BinaryDefn ::= Defn
   syntax DefnResult ::= defnResult(BinaryDefn, BytesWithIndex) | ParseError
+  syntax DefnKind
+  syntax DefnResult ::= parseDefn(DefnKind, BytesWithIndex)  [function, total]
 
   syntax BinaryDefns ::= List{BinaryDefn, ""}
 
