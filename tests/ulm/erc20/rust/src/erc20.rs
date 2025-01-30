@@ -66,6 +66,14 @@ impl Erc20 {
 
     pub fn init(&self) {}
 
+    pub fn name(&self) -> &str {
+        "Doge Coin"
+    }
+
+    pub fn symbol(&self) -> &str {
+        "DOGE"
+    }
+
     pub fn decimals(&self) -> u8 {
         18
     }
