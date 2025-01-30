@@ -63,8 +63,6 @@ ULM_WASM_TARGET=$(ULM_LIB_DIR)/$(ULM_WASM_LIB)
 ULM_WASM_MAIN=$(ULM_WASM_SRC_DIR)/ulm-wasm.md
 ULM_WASM_SRC=$(wildcard $(ULM_WASM_SRC_DIR)/*.md $(ULM_WASM_SRC_DIR)/data/*.k)
 
-ULM_WASM_COMPILER_TARGET=$(ULM_BUILD_DIR)/ulm-contract-compiler
-
 ## Depedencies
 
 ULM_KRYPTO_DIR=$(ULM_DEP_DIR)/plugin
@@ -186,27 +184,9 @@ ulm-wasm: $(ULM_WASM_TARGET)
 $(ULM_WASM_TARGET): $(ULM_KRYPTO_TARGET) $(ULM_HOOKS_TARGET) $(ULM_WASM_SRC) pykwasm
 	$(KDIST) -v build wasm-semantics.$(ULM_WASM_TARGET_NAME) -j3
 	$(eval ULM_WASM_DIR := $(shell $(KDIST) which wasm-semantics.$(ULM_WASM_TARGET_NAME)))
-	kore-rich-header "$(ULM_WASM_DIR)/definition.kore" -o "$(ULM_WASM_DIR)/header.bin"
 	$(if $(ULM_TEST),,cp "$(ULM_WASM_DIR)/$(ULM_WASM_LIB)" "$(ULM_LIB_DIR)";)
-	$(if $(ULM_TEST),,cp "$(ULM_WASM_DIR)/header.bin"      "$(ULM_LIB_DIR)";)
 
 
-### ULM Wasm Contract Compiler
-
-$(ULM_WASM_COMPILER_TARGET): $(ULM_WASM_TARGET)
-	$(CXX) "$(ULM_HOOKS_DIR)/emit_contract_bytes.cpp" \
-	  -I "$(ULM_KF_INCLUDE_DIR)" \
-	  -I "$(ULM_KF_INCLUDE_DIR)/kllvm" \
-	  -std=c++20 \
-	  -DULM_LANG_ID=wasm \
-	  -Wno-return-type-c-linkage \
-	  -L"$(ULM_LIB_DIR)" \
-	  -lulmkllvm \
-	  -lkwasm \
-	  -o "$(ULM_WASM_COMPILER_TARGET)"
-
-.PHONY: ulm-contract-compiler
-ulm-contract-compiler: $(ULM_WASM_COMPILER_TARGET)
 
 ERC20_DIR=tests/ulm/erc20/rust
 ERC20_SRC=$(shell find "$(ERC20_DIR)" -type f -a '(' -name '*.rs' -or -name '*.toml' -or -name '*.lock' ')')
@@ -223,10 +203,9 @@ $(ERC20_WASM_TARGET): $(ERC20_SRC) $(ERC20_BUILD_DIR)
 	cd $(ERC20_DIR) && cargo build --target=wasm32-unknown-unknown --release
 	cp $(ERC20_DIR)/target/wasm32-unknown-unknown/release/erc20.wasm $@
 
-$(ERC20_BIN_TARGET): $(ERC20_WASM_TARGET) $(ULM_WASM_COMPILER_TARGET) $(ULM_WASM_TARGET)
-	$(eval ULM_WASM_DIR := $(shell $(KDIST) which wasm-semantics.$(ULM_WASM_TARGET_NAME)))
-	poetry -C pykwasm run wasm2kore $(ULM_WASM_DIR) $< $(ERC20_BUILD_DIR)/erc20.kore
-	scripts/compile-contract $(ERC20_BUILD_DIR)/erc20.kore > $@
+$(ERC20_BIN_TARGET): $(ERC20_WASM_TARGET)
+	echo -n "7761736D" > $@
+	xxd -p $< | tr -d '\n' >> $@
 
 .PHONY: erc20-bin
 erc20-bin: $(ERC20_BIN_TARGET)

@@ -49,8 +49,8 @@ module BINARY-PARSER-SYNTAX
   imports BINARY-PARSER-BASE-SYNTAX
   imports WASM
 
-  syntax ModuleOrError ::= ModuleDecl | ParseError
-  syntax ModuleOrError ::= parseModule(Bytes)  [function, total]
+  syntax ModuleDeclOrError ::= ModuleDecl | ParseError
+  syntax ModuleDeclOrError ::= parseModule(Bytes)  [function, total]
 endmodule
 
 module BINARY-PARSER  [private]
@@ -95,7 +95,7 @@ module BINARY-PARSER  [private]
 
   rule parseModule(B:Bytes) => checkAllBytesParsed(parseModule(bwi(B, 0)))
 
-  syntax ModuleOrError ::= checkAllBytesParsed(ModuleResult)  [function, total]
+  syntax ModuleDeclOrError ::= checkAllBytesParsed(ModuleResult)  [function, total]
   rule checkAllBytesParsed(moduleResult(M, bwi(B:Bytes, Index:Int))) => M requires Index ==Int lengthBytes(B)
   rule checkAllBytesParsed(E:ParseError) => E
 

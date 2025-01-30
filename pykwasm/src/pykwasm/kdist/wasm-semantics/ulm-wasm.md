@@ -2,6 +2,7 @@
 requires "wasm.md"
 requires "ulm.k"
 requires "plugin/krypto.md"
+requires "binary-parser.md"
 ```
 
 ```k
@@ -33,6 +34,8 @@ endmodule
 
 ```k
 module ULM-WASM
+    imports BINARY-PARSER
+    imports BINARY-PARSER-SYNTAX
     imports ULM-WASM-SYNTAX
     imports ULM
 ```
@@ -52,8 +55,11 @@ The WASM VM must decode the input program:
 
 2.  In the remote ULM-integrated VM case, a specialized, hooked byte decoder is used.
 
+    If parsing fails, we leave the result at the top of the `<k>` cell, which
+    will help debugging.
     ```remote
-    syntax ModuleDecl ::= decodePgm(Bytes) [function, hook(ULM.decode)]
+    syntax ModuleDeclOrError ::= decodePgm(Bytes) [function, total]
+    rule decodePgm(B:Bytes) => parseModule(B)
     ```
 
 Configuration

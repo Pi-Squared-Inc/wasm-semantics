@@ -34,7 +34,7 @@ module BINARY-PARSER-MODULE  [private]
 
   syntax ModuleResult ::= parseModuleSections(UnparsedSectionsResult)  [function, total]
                         | #parseModuleSections1(ParsedSectionsResult, BytesWithIndex)  [function, total]
-                        | #parseModuleSections2(ModuleOrError, BytesWithIndex)  [function, total]
+                        | #parseModuleSections2(ModuleDeclOrError, BytesWithIndex)  [function, total]
 
   rule parseModuleSections(unparsedSectionsResult(S:UnparsedSections, BWI:BytesWithIndex))
       => #parseModuleSections1(parseSections(S), BWI)
@@ -71,8 +71,8 @@ module BINARY-PARSER-MODULE  [private]
       => moduleResult(M, BWI)
   rule #parseModuleSections2(E:ParseError, _:BytesWithIndex) => E
 
-  syntax ModuleOrError ::= addSectionsToModule(Sections, ModuleAndFunctions)  [function, total]
-  syntax ModuleOrError ::= #addSectionsToModule(Sections, ModuleAndFunctions)  [function, total]
+  syntax ModuleDeclOrError ::= addSectionsToModule(Sections, ModuleAndFunctions)  [function, total]
+  syntax ModuleDeclOrError ::= #addSectionsToModule(Sections, ModuleAndFunctions)  [function, total]
   rule addSectionsToModule
           ( .Sections
           , moduleAndFunctions
@@ -104,7 +104,7 @@ module BINARY-PARSER-MODULE  [private]
 
   syntax DefnsOrErrorList ::= List{DefnsOrError, ""}
 
-  syntax ModuleOrError ::= addOrderedDefnsOrErrorToModule(ModuleDecl, DefnsOrErrorList)  [function, total]
+  syntax ModuleDeclOrError ::= addOrderedDefnsOrErrorToModule(ModuleDecl, DefnsOrErrorList)  [function, total]
   rule addOrderedDefnsOrErrorToModule(M:ModuleDecl, .DefnsOrErrorList) => M
   rule addOrderedDefnsOrErrorToModule(M:ModuleDecl, D:Defns Ds:DefnsOrErrorList)
       // We need to reverse the defns because addDefnsToModule adds then in
