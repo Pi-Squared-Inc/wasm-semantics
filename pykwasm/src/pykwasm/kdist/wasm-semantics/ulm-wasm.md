@@ -55,6 +55,8 @@ The WASM VM must decode the input program:
 
 2.  In the remote ULM-integrated VM case, a specialized, hooked byte decoder is used.
 
+    If parsing fails, we leave the result at the top of the `<k>` cell, which
+    will help debugging.
     ```remote
     syntax ModuleDeclOrError ::= decodePgm(Bytes) [function, total]
     rule decodePgm(B:Bytes) => parseModule(B)
