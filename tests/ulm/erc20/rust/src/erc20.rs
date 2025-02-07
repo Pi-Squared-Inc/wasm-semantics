@@ -44,8 +44,8 @@ impl Erc20 {
         let mut encoder = Encoder::new();
         encoder.add(value);
         log3(
-            &*self.api.borrow(),
-            "Transfer(address,address,u256)",
+            &mut *self.api.borrow_mut(),
+            "Transfer(address,address,uint256)",
             &from.into(), &to.into(),
             encoder.encode()
         )
@@ -55,8 +55,8 @@ impl Erc20 {
         let mut encoder = Encoder::new();
         encoder.add(value);
         log3(
-            &*self.api.borrow(),
-            "Approval(address,address,u256)",
+            &mut *self.api.borrow_mut(),
+            "Approval(address,address,uint256)",
             &owner.into(), &spender.into(),
             encoder.encode()
         )
@@ -67,7 +67,7 @@ impl Erc20 {
     pub fn init(&self) {}
 
     pub fn name(&self) -> &str {
-        "Doge Coin"
+        "Dogecoin"
     }
 
     pub fn symbol(&self) -> &str {

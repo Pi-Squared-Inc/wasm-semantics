@@ -67,6 +67,12 @@ impl<const N: usize> Unsigned<N> {
         Unsigned { chunks }
     }
 
+    pub fn from_array_be(chunks: [u8; N]) -> Unsigned<N> {
+        let r_c_v : Vec<u8> = chunks.into_iter().rev().collect();
+        let reverse_chunks: [u8; N] = r_c_v.try_into().unwrap();
+        Unsigned { chunks: reverse_chunks }
+    }
+
     pub fn from_u64(value: u64) -> Unsigned<N> {
         if 8 <= N {
             let mut chunks = [0_u8; N];

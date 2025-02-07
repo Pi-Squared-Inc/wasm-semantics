@@ -28,7 +28,7 @@ mod erc20_tests {
 
         let erc20 = Erc20::new(api);
 
-        assert_eq!("Doge Coin", erc20.name());
+        assert_eq!("Dogecoin", erc20.name());
     }
 
     #[test]
@@ -92,6 +92,41 @@ mod erc20_tests {
         assert_eq!(balance(800), erc20.balance_of(&account1));
         assert_eq!(balance(200), erc20.balance_of(&account2));
         assert_eq!(balance(1000), erc20.total_supply());
+
+        let api_result = api.borrow();
+        assert_eq!(1, api_result.log.len());
+        assert_eq!(3, api_result.log[0].indexed_fields.len());
+        assert_eq!(
+            vec![
+                18 , 77 , 182, 52 , 90 , 145, 127, 172,
+                177, 59 , 159, 146, 140, 132, 227, 44 ,
+                17 , 91 , 63 , 82 , 12 , 4  , 3  , 40 ,
+                230, 157, 210, 99 , 154, 105, 86 , 253,
+            ],
+            api_result.log[0].indexed_fields[0]
+        );
+        assert_eq!(
+            vec![
+                123_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8,
+                0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8,
+                0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8,
+                0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8,
+            ],
+            api_result.log[0].indexed_fields[1]
+        );
+        assert_eq!(
+            vec![
+                200_u8, 1_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8,
+                0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8,
+                0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8,
+                0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8,
+            ],
+            api_result.log[0].indexed_fields[2]
+        );
+        let data = api_result.log[0].data.clone();
+        let b = data.slice(0..data.len());
+        let expected = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xc8";
+        assert_eq!(expected, &b[..])
     }
 
     #[test]

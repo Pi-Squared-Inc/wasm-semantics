@@ -128,7 +128,7 @@ function test_name {
 
   name=$(erc20_name $k1 $contract)
   echo -n "."
-  assert_eq "Doge Coin" "$name" "Name"
+  assert_eq "Dogecoin" "$name" "Name"
 
   echo -e " ${GREEN}passed${NC}"
 }

@@ -278,7 +278,7 @@ pub fn keccak_hash(api: &dyn Ulm, value: &Bytes) -> [u8; 32] {
 
 pub fn keccak_hash_int(api: &dyn Ulm, value: &Bytes) -> U256 {
     let fingerprint = keccak_hash(api, value);
-    U256::from_array_le(fingerprint)
+    U256::from_array_be(fingerprint)
 }
 
 pub fn endpoint_fingerprint(api: &dyn Ulm, value: &str) -> [u8; 4] {
