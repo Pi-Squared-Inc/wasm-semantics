@@ -17,7 +17,7 @@ pub use mock::failWrapper;
 pub use impl_::failWrapper;
 
 pub trait Ulm {
-    fn log3(&self, data1: &[u8; 32], data2: &[u8; 32], data3: &[u8; 32], bytes: &[u8]);
+    fn log3(&mut self, data1: &[u8; 32], data2: &[u8; 32], data3: &[u8; 32], bytes: &[u8]);
     fn caller(&self, result: &mut [u8; 20]);
 
     fn call_data_length(&self) -> u32;
@@ -88,7 +88,7 @@ pub mod impl_ {
     }
 
     impl Ulm for UlmImpl {
-        fn log3(&self, data1: &[u8; 32], data2: &[u8; 32], data3: &[u8; 32], bytes: &[u8]) {
+        fn log3(&mut self, data1: &[u8; 32], data2: &[u8; 32], data3: &[u8; 32], bytes: &[u8]) {
             unsafe { Log3(data1.as_ptr(), data2.as_ptr(), data3.as_ptr(), bytes.as_ptr(), bytes.len()); }
         }
         fn caller(&self, result: &mut [u8; 20]) {
@@ -142,10 +142,16 @@ pub mod mock {
         panic!("{}", msg);
     }
 
+    pub struct UlmLogEntry {
+        pub indexed_fields: Vec<[u8; 32]>,
+        pub data: Bytes,
+    }
+
     pub struct UlmMock {
         storage: HashMap<Bytes, Bytes>,
         caller: [u8; 20],
         call_data: Bytes,
+        pub log: Vec<UlmLogEntry>,
     }
 
     impl UlmMock {
@@ -154,6 +160,7 @@ pub mod mock {
                 storage: HashMap::new(),
                 caller: [0_u8; 20],
                 call_data: Bytes::new(),
+                log: Vec::new()
             }))
         }
         pub fn set_caller(&mut self, caller: Address) {
@@ -163,7 +170,12 @@ pub mod mock {
     }
 
     impl Ulm for UlmMock {
-        fn log3(&self, _data1: &[u8; 32], _data2: &[u8; 32], _data3: &[u8; 32], _bytes: &[u8]) {}
+        fn log3(&mut self, data1: &[u8; 32], data2: &[u8; 32], data3: &[u8; 32], bytes: &[u8]) {
+            self.log.push(UlmLogEntry{
+                indexed_fields: vec![data1.clone(), data2.clone(), data3.clone()],
+                data: Bytes::copy_from_slice(bytes),
+            });
+        }
 
         fn caller(&self, result: &mut [u8; 20]) {
             *result = self.caller;
@@ -219,7 +231,7 @@ pub mod mock {
     }
 }
 
-pub fn log3(api: &dyn Ulm, signature: &str, data2: &U256, data3: &U256, bytes: Bytes) {
+pub fn log3(api: &mut dyn Ulm, signature: &str, data2: &U256, data3: &U256, bytes: Bytes) {
     let signature_fingerprint = keccak_hash_int(api, &Bytes::copy_from_slice(signature.as_bytes()));
     let mut data1_bytes = [0_u8; 32];
     signature_fingerprint.copy_to_array_le(&mut data1_bytes);
@@ -278,7 +290,7 @@ pub fn keccak_hash(api: &dyn Ulm, value: &Bytes) -> [u8; 32] {
 
 pub fn keccak_hash_int(api: &dyn Ulm, value: &Bytes) -> U256 {
     let fingerprint = keccak_hash(api, value);
-    U256::from_array_le(fingerprint)
+    U256::from_array_be(fingerprint)
 }
 
 pub fn endpoint_fingerprint(api: &dyn Ulm, value: &str) -> [u8; 4] {
