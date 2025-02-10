@@ -134,7 +134,9 @@ impl Erc20 {
 
     pub fn mint(&self, account: &Address, value: &Balance) {
         require!(!account.is_zero(), "Zero address");
-        self._update(&Address::zero(), account, value);
+        let zero = Address::zero();
+        self._update(&zero, account, value);
+        self.transfer_event(zero, account.clone(), value);
     }
 
     fn _approve(&self, owner: &Address, spender: &Address, value: &Balance, emit_event: bool) {
